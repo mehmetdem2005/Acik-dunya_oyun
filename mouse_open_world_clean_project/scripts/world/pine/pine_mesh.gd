@@ -246,13 +246,16 @@ static func _sprigs(st: SurfaceTool, stem: Dictionary, size: float, lvl: int,
 		var t := carry
 		while t < seg_len:
 			var fr: float = (float(k) + t / seg_len) / float(n - 1)
-			var dens: float = 1.0 if (lvl == 3 or tip_full) else smoothstep(r0, r1, fr)
+			# UCA-TOPLU TÜY: yalnız sürgün UCUNDA yuvarlak küme; iç/orta
+			# çıplak odun -> açık katmanlı taç (sürekli kılıf/blob DEĞİL).
+			var tail: float = 0.40 if tip_full else (0.60 if lvl == 1 else 0.52)
+			var dens: float = smoothstep(tail, 1.0, fr)
 			if broken and fr > 0.85:
 				dens = 0.0
 			if dens > 0.02:
 				var c: Vector3 = c0 + ax * t
 				idx += 1
-				for s in range(2):
+				for s in range(4 if dens > 0.5 else 2):
 					var az: float = float(idx) * GOLDEN + PI * float(s)
 					var outd: Vector3 = nm.rotated(ax, az).normalized()
 					var up: Vector3 = (outd * 0.72 + ax * 0.30 + Vector3.UP * 0.14).normalized()
@@ -264,8 +267,9 @@ static func _sprigs(st: SurfaceTool, stem: Dictionary, size: float, lvl: int,
 					var shade: float = clampf(lerp(0.62, 1.14, fr) * tint, 0.48, 1.25)
 					var hsh: float = sin(float(idx) * 12.9898 + float(s) * 3.71) * 43758.5453
 					var vrnd: float = 0.62 + 0.76 * (hsh - floor(hsh))
-					var ccs: float = fl * (0.78 + 0.42 * fr) * vrnd * (1.25 if tip_full else 1.0)
-					_card(st, c, up * ccs, rt * (ccs * 0.60), shade, flex, idx % 25)
+					# Küme merkezinde büyür -> yuvarlak pom-pom.
+					var ccs: float = fl * (1.05 + 1.05 * dens) * vrnd * (1.3 if tip_full else 1.0)
+					_card(st, c, up * ccs, rt * (ccs * 0.88), shade, flex, idx % 25)
 			# Uca doğru sıklaş; ışık yönüne göre asimetri.
 			var dstep := step / maxf(dens, 0.10)
 			if light_bias > 0.0:

@@ -21,7 +21,7 @@ class_name PineTree
 @export_range(1.5, 6.0, 0.1) var crown_radius: float = 2.7
 @export_range(20, 110, 1) var branch_count: int = 58
 @export_range(0.0, 1.0, 0.02) var branch_droop: float = 0.22
-@export_range(3, 14, 1) var shoots_per_branch: int = 8
+@export_range(3, 16, 1) var shoots_per_branch: int = 11
 @export var fine_twigs: bool = true
 @export_range(0, 4, 1) var twigs_per_shoot: int = 2
 
@@ -127,7 +127,7 @@ func rebuild() -> void:
 			f_droop = maxf(branch_droop * 1.1, 0.25)
 			f_el = -0.10; f_eh = 0.45
 		_:
-			f_crown = 0.32
+			f_crown = 0.36
 
 	var cfg := {
 		"seed": seed if seed != 0 else hash(name),

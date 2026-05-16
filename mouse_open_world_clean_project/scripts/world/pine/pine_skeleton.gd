@@ -70,7 +70,7 @@ func _spawn_level1(cfg: Dictionary, trunk: Dictionary, trunk_idx: int) -> void:
 	var dal_seg: int = int(cfg.get("dal_segment", 10))
 	var dal_yay: float = float(cfg.get("dal_yay", 0.16))
 	# Daha seyrek, belirgin whorl katmanları (açık koni silüet).
-	var tier_count: int = clampi(int(round(height * 0.62 / whorl_gap)), 5, 7)
+	var tier_count: int = clampi(int(round(height * 0.80 / whorl_gap)), 7, 12)
 	var lean: float = _rng.randf_range(-0.12, 0.12)
 	var lean_ph: float = _rng.randf() * TAU
 	var whorl_h: PackedFloat32Array = trunk["whorl_h"]
@@ -78,7 +78,7 @@ func _spawn_level1(cfg: Dictionary, trunk: Dictionary, trunk_idx: int) -> void:
 	var az := _rng.randf() * TAU
 	for ti in range(tier_count):
 		var tf := float(ti) / float(tier_count - 1)
-		var h01: float = clampf(lerp(crown_start, 0.95, tf) + _rng.randf_range(-0.012, 0.012), 0.0, 1.0)
+		var h01: float = clampf(lerp(crown_start, 0.95, tf) + _rng.randf_range(-0.05, 0.05), 0.0, 1.0)
 		# Koni: tepeye doğru tek-yönlü güçlü kısalma (orta şişlik yok).
 		# Alt-orta tier'ler uzun -> geniş, dolgun, billur taç (referans).
 		# Alt tier'ler EN uzun (referans: uzun süpüren alt dallar),
@@ -89,7 +89,7 @@ func _spawn_level1(cfg: Dictionary, trunk: Dictionary, trunk_idx: int) -> void:
 			continue
 		whorl_h.append(h01)
 		var per := int(round(lerp(float(total) / float(tier_count) * 1.05, 3.0, tf)))
-		per = clampi(per + _rng.randi_range(-1, 1), 3, 7)
+		per = clampi(per + _rng.randi_range(-1, 1), 3, 6)
 		az += GOLDEN * 1.3
 		var aaccum := az
 		var seg := TAU / float(per)
@@ -157,8 +157,8 @@ func _spawn_level1(cfg: Dictionary, trunk: Dictionary, trunk_idx: int) -> void:
 		var aa := _rng.randf() * TAU
 		var awob := _rng.randf_range(-1.0, 1.0)
 		var afr := float(ai) / 8.0
-		var adir := (Vector3(cos(aa), 0, sin(aa)) * (0.08 + 0.42 * afr) + Vector3.UP * 1.35).normalized()
-		var al := crown_radius * lerpf(0.62, 0.16, afr)
+		var adir := (Vector3(cos(aa), 0, sin(aa)) * (0.04 + 0.55 * afr) + Vector3.UP * (2.1 if ai == 0 else 1.2)).normalized()
+		var al := (crown_radius * 0.80) if ai == 0 else (crown_radius * lerpf(0.42, 0.16, afr))
 		var ac := _grow(sp, adir, maxf(al, 0.18), 4, 0.06, 0.10, 0.05, awob)
 		ac["level"] = 1
 		ac["parent"] = trunk_idx
@@ -167,7 +167,7 @@ func _spawn_level1(cfg: Dictionary, trunk: Dictionary, trunk_idx: int) -> void:
 		ac["dry"] = false
 		ac["broken"] = false
 		ac["tint"] = _rng.randf_range(0.95, 1.15)
-		ac["radius0"] = tr * lerp(0.36, 0.12, afr)
+		ac["radius0"] = tr * (0.55 if ai == 0 else lerp(0.30, 0.10, afr))
 		ac["radius1"] = tr * lerp(0.36, 0.12, afr) * 0.32
 		stems.append(ac)
 		_spawn_level2(cfg, ac, stems.size() - 1, 0.95, 0.05)
