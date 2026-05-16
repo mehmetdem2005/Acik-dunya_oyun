@@ -70,7 +70,7 @@ func _spawn_level1(cfg: Dictionary, trunk: Dictionary, trunk_idx: int) -> void:
 	var dal_seg: int = int(cfg.get("dal_segment", 10))
 	var dal_yay: float = float(cfg.get("dal_yay", 0.16))
 	# Daha seyrek, belirgin whorl katmanları (açık koni silüet).
-	var tier_count: int = clampi(int(round(height * 0.72 / whorl_gap)), 5, 8)
+	var tier_count: int = clampi(int(round(height * 0.62 / whorl_gap)), 5, 7)
 	var lean: float = _rng.randf_range(-0.12, 0.12)
 	var lean_ph: float = _rng.randf() * TAU
 	var whorl_h: PackedFloat32Array = trunk["whorl_h"]

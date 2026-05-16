@@ -229,7 +229,7 @@ static func _sprigs(st: SurfaceTool, stem: Dictionary, size: float, lvl: int,
 					rt = rt.normalized()
 					# Renk: uca doğru taze açık yeşil, içte koyu/mat.
 					var shade: float = clampf(lerp(0.62, 1.14, fr) * tint, 0.48, 1.25)
-					_card(st, c, up * (size * (1.05 + 0.55 * fr)), rt * (size * (1.05 + 0.55 * fr) * 0.66), shade, flex, idx % 25)
+					_card(st, c, up * (size * (1.05 + 0.55 * fr) * (1.45 if tip_full else 1.0)), rt * (size * (1.05 + 0.55 * fr) * (1.45 if tip_full else 1.0) * 0.66), shade, flex, idx % 25)
 			# Uca doğru sıklaş; ışık yönüne göre asimetri.
 			var dstep := step / maxf(dens, 0.10)
 			if light_bias > 0.0:

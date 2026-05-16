@@ -60,7 +60,7 @@ void fragment() {
 	vec3 varc = texture(needle_variation, auv).rgb;
 	col *= mix(vec3(1.0), varc * 1.15, variation_amt);
 	vec3 orm = texture(needle_orm, auv).rgb;       // R=AO G=Rough B=Metal
-	ALBEDO = col * mix(1.0, orm.r, 0.7);
+	ALBEDO = col * mix(1.0, orm.r, 0.4) * 1.12;
 	ALPHA = op;
 	ALPHA_SCISSOR_THRESHOLD = alpha_cut;
 	// İğne mat: yüksek roughness + çok düşük specular -> beyaz parlama yok.
