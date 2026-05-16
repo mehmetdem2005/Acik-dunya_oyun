@@ -46,7 +46,7 @@ void vertex() {
 
 void fragment() {
 	// 5x5 atlas: UV2.y = hücre indeksi, UV = kart yerel (0..1).
-	float cell = UV2.y;
+	float cell = floor(UV2.y + 0.5);   // mediump varying -> hücreyi yuvarla
 	vec2 cb = vec2(mod(cell, 5.0), floor(cell / 5.0));
 	vec2 auv = (clamp(UV, 0.0, 1.0) * 0.92 + 0.04 + cb) / 5.0;
 	vec4 alb = texture(needle_albedo, auv);

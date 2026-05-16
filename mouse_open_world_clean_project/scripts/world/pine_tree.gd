@@ -303,10 +303,12 @@ func _needle_material() -> Material:
 	m.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA_SCISSOR
 	m.alpha_scissor_threshold = 0.33
 	m.cull_mode = BaseMaterial3D.CULL_DISABLED
-	m.roughness = 0.65
-	m.specular = 0.5
+	# Mat iğne: düşük specular + yüksek roughness -> beyaz parlama yok
+	# (shader yolu çalışmasa bile fallback'te de garanti).
+	m.roughness = 0.9
+	m.specular = 0.15
 	m.backlight_enabled = true
-	m.backlight = needle_mid * 0.45
+	m.backlight = needle_mid * 0.28
 	m.emission_enabled = true
 	m.emission = needle_dark
 	m.emission_energy_multiplier = 0.02
