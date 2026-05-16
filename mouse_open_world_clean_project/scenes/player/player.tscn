@@ -1,0 +1,43 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/player/player_controller.gd" id="1_player_controller"]
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_1"]
+radius = 0.16
+height = 0.42
+
+[node name="Player" type="CharacterBody3D"]
+script = ExtResource("1_player_controller")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.25, 0)
+shape = SubResource("CapsuleShape3D_1")
+
+[node name="GroundProbe" type="RayCast3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.22, 0)
+target_position = Vector3(0, -0.55, 0)
+enabled = true
+
+[node name="CameraRig" type="Node3D" parent="."]
+
+[node name="CameraPivot" type="Node3D" parent="CameraRig"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.65, 0)
+
+[node name="CameraSpring" type="SpringArm3D" parent="CameraRig/CameraPivot"]
+spring_length = 2.8
+
+[node name="Camera3D" type="Camera3D" parent="CameraRig/CameraPivot/CameraSpring"]
+current = true
+fov = 65.0
+
+[node name="ModelRoot" type="Node3D" parent="."]
+
+[node name="MouseVisual" type="Node3D" parent="ModelRoot"]
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
+
+[node name="AudioRoot" type="Node3D" parent="."]
+
+[node name="FootstepAudio" type="AudioStreamPlayer3D" parent="AudioRoot"]
+
+[node name="SqueakAudio" type="AudioStreamPlayer3D" parent="AudioRoot"]

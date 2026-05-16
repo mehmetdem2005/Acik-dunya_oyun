@@ -1,0 +1,46 @@
+[gd_scene load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://scripts/terrain/terrain_runtime_loader.gd" id="1_terrain_runtime"]
+[ext_resource type="Script" path="res://scripts/world/world_runtime_spawner.gd" id="2_spawner"]
+[ext_resource type="Script" path="res://scripts/world/pine_forest.gd" id="3_forest"]
+
+[sub_resource type="Environment" id="Environment_1"]
+background_mode = 2
+ambient_light_source = 1
+ambient_light_color = Color(0.55, 0.58, 0.62, 1)
+ambient_light_energy = 0.75
+fog_enabled = true
+fog_light_color = Color(0.58, 0.62, 0.66, 1)
+fog_density = 0.025
+fog_aerial_perspective = 0.2
+
+[node name="World" type="Node3D"]
+
+[node name="TerrainRuntime" type="Node3D" parent="."]
+script = ExtResource("1_terrain_runtime")
+
+[node name="LoadedChunks" type="Node3D" parent="TerrainRuntime"]
+
+[node name="RuntimeSpawner" type="Node" parent="."]
+script = ExtResource("2_spawner")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(0.819152, -0.40558, 0.40558, 0, 0.707107, 0.707107, -0.573576, -0.579228, 0.579228, 0, 0, 0)
+light_energy = 1.25
+shadow_enabled = true
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_1")
+
+[node name="PineForest" type="Node3D" parent="."]
+script = ExtResource("3_forest")
+tree_count = 32
+area_radius = 38.0
+min_spacing = 3.5
+forest_seed = 2026
+height_min = 4.5
+height_max = 9.0
+ground_y = 0.0
+raycast_to_ground = true
+ray_collision_mask = 1
+generate_collision = true

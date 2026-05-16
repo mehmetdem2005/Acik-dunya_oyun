@@ -1,0 +1,7 @@
+Heightmap dosyanı buraya koy.
+Önerilen adlar:
+- terrain_height.png
+- heightmap.png
+- displacement.png
+
+Sonra Godot'ta scenes/terrain/terrain_bake.tscn açıp TerrainBake node'unda Heightmap Texture alanına bu dosyayı bağla.

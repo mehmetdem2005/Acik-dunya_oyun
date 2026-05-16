@@ -1,0 +1,10 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/world/pine_tree.gd" id="1_pine"]
+
+[node name="PineTree" type="Node3D"]
+script = ExtResource("1_pine")
+total_height = 6.5
+trunk_radius = 0.16
+foliage_layers = 9
+crown_max_radius = 2.1
