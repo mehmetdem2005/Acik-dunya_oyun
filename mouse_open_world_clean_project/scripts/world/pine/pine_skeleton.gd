@@ -303,7 +303,7 @@ func _fork(cfg: Dictionary, parent_stem: Dictionary, parent_idx: int,
 	# Eksen boyunca PİNNAT yan dalcıklar: çatallanma yalnız uçta değil,
 	# orta/dipte de (gerçek çam frond'u). Uç (is_tip) -> ucuz, odun yok.
 	if depth >= 2:
-		for li in range(2):
+		for li in range(1):
 			var lu: float = 0.40 + 0.26 * float(li)        # ~0.40, 0.66
 			var lwob: float = _rng.randf_range(-1.0, 1.0)
 			var lang: float = deg_to_rad(_rng.randf_range(32.0, 55.0))

@@ -21,7 +21,7 @@ class_name PineTree
 @export_range(1.5, 6.0, 0.1) var crown_radius: float = 2.7
 @export_range(20, 110, 1) var branch_count: int = 58
 @export_range(0.0, 1.0, 0.02) var branch_droop: float = 0.22
-@export_range(3, 14, 1) var shoots_per_branch: int = 11
+@export_range(3, 14, 1) var shoots_per_branch: int = 8
 @export var fine_twigs: bool = true
 @export_range(0, 4, 1) var twigs_per_shoot: int = 2
 
@@ -259,13 +259,9 @@ func _bark_material() -> StandardMaterial3D:
 		bark_tiling, true)
 
 func _branch_material() -> StandardMaterial3D:
-	return _pbr_wood_material(
-		_tex_or(branch_albedo_tex, _TEX_ROOT + "branches/pine_branch_albedo_2k.png"),
-		_tex_or(branch_normal_tex, ""),
-		_tex_or(branch_ormc_tex, ""),
-		_tex_or(branch_detail_normal_tex, ""),
-		null,
-		branch_tiling, false)
+	# Dal kabuğu = GÖVDE kabuğu (gerçek çamda aynı): texture tutarlı,
+	# dal-gövde geçişinde uyumsuzluk/bozulma olmaz.
+	return _bark_material()
 
 func _needle_material() -> Material:
 	var n_alb := _tex_or(needle_albedo_tex, _TEX_ROOT + "needles/pine_needles_albedo_alpha_2k.png")
