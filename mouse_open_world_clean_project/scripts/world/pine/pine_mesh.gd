@@ -90,6 +90,7 @@ static func _tube(st: SurfaceTool, stem: Dictionary, sides: int,
 	var flare_s: float = float(cfg.get("flare_strength", 1.0))
 	var flare_l: float = float(cfg.get("flare_lobe", 0.5))
 	var roots_n: float = float(int(cfg.get("root_count", 5)))
+	var tseed: float = float(int(cfg.get("seed", 12345)) % 1000)
 	# Yay uzunluğu -> UV.V fiziksel: 1 tile ≈ 1 çevre (kabuk kare hücre,
 	# dalda smear yok). uv1_scale materyalde (1,1,1) zorlanır.
 	var arc := PackedFloat32Array()
@@ -159,6 +160,31 @@ static func _tube(st: SurfaceTool, stem: Dictionary, sides: int,
 						r10 += g0 * s1a
 						r01 += g1 * s0a
 						r11 += g1 * s1a
+			if lvl == 0:
+				# Gerçek odun: dikey oluk + eksenel şişme + mikro kırılma
+				# + ölçülü düzensiz dip kök payandası (mükemmel silindir DEĞİL).
+				var ah0: float = a0 + tseed * 0.011
+				var ah1: float = a1 + tseed * 0.011
+				var flu0: float = sin(ah0 * 7.0) * 0.5 + sin(ah0 * 3.0 + 1.7) * 0.5
+				var flu1: float = sin(ah1 * 7.0) * 0.5 + sin(ah1 * 3.0 + 1.7) * 0.5
+				var swy0: float = sin(f0 * 5.3 + tseed * 0.07) * 0.6 + sin(f0 * 12.0 + tseed * 0.3) * 0.4
+				var swy1: float = sin(f1 * 5.3 + tseed * 0.07) * 0.6 + sin(f1 * 12.0 + tseed * 0.3) * 0.4
+				var mic0: float = sin(ah0 * 21.0 + f0 * 27.0)
+				var mic1: float = sin(ah1 * 21.0 + f1 * 27.0)
+				var hf0: float = clampf(1.0 - f0 * 0.55, 0.45, 1.0)
+				var hf1: float = clampf(1.0 - f1 * 0.55, 0.45, 1.0)
+				r00 *= 1.0 + (flu0 * 0.07 + swy0 * 0.045 + mic0 * 0.014) * hf0
+				r10 *= 1.0 + (flu1 * 0.07 + swy0 * 0.045 + mic1 * 0.014) * hf0
+				r01 *= 1.0 + (flu0 * 0.07 + swy1 * 0.045 + mic0 * 0.014) * hf1
+				r11 *= 1.0 + (flu1 * 0.07 + swy1 * 0.045 + mic1 * 0.014) * hf1
+				var bf0: float = pow(maxf(1.0 - f0 * 4.0, 0.0), 2.2)
+				var bf1: float = pow(maxf(1.0 - f1 * 4.0, 0.0), 2.2)
+				var rl0: float = 0.30 + 0.55 * maxf(sin(ah0 * 3.0 + tseed * 0.5), 0.0)
+				var rl1: float = 0.30 + 0.55 * maxf(sin(ah1 * 3.0 + tseed * 0.5), 0.0)
+				r00 += rad0 * bf0 * rl0
+				r10 += rad0 * bf0 * rl1
+				r01 += rad1 * bf1 * rl0
+				r11 += rad1 * bf1 * rl1
 			var uA := float(si) / float(sides) * 2.0
 			var uB := float(si + 1) / float(sides) * 2.0
 			var fl0 := Vector2(flex0, 0.0)
