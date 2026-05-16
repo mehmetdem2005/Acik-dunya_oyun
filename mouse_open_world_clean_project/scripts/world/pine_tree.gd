@@ -30,6 +30,7 @@ class_name PineTree
 @export_range(0.0, 0.4, 0.01) var dal_yay: float = 0.22    # S süpürme yayı
 @export_range(0.06, 0.4, 0.01) var surgun_konik: float = 0.14  # sürgün uç incelmesi
 @export var level2_wood: bool = true                       # alt-dallar odun olarak görünsün
+@export_range(1, 4, 1) var catal_derinlik: int = 2         # V/Y çatallanma derinliği
 @export_range(0.6, 1.4, 0.05) var tabaka_aralik: float = 1.0   # whorl katman aralığı
 @export_range(0.0, 2.0, 0.05) var govde_kok: float = 0.35      # dip kabarma gücü (hafif)
 @export_range(0.0, 1.0, 0.02) var kok_payanda: float = 0.0     # payanda lob (0 = düz, kapalı)
@@ -149,6 +150,7 @@ func rebuild() -> void:
 		"dal_yay": dal_yay,
 		"shoot_taper": surgun_konik,
 		"level2_wood": level2_wood,
+		"fork_depth": catal_derinlik,
 		"whorl_gap": tabaka_aralik,
 		"flare_strength": govde_kok,
 		"flare_lobe": kok_payanda,

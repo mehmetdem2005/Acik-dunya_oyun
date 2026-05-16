@@ -47,7 +47,7 @@ static func build(stems: Array, cfg: Dictionary) -> Dictionary:
 				if not bool(stem.get("dry", false)):
 					_sprigs(leaf, stem, nlen * 0.22, 1, light_bias)
 		elif lvl == 2:
-			if lvl2_wood:
+			if lvl2_wood and not bool(stem.get("is_tip", false)):
 				_tube(branch, stem, maxi(4, int(sides / 3.0)), empty, 0.0, cfg)
 				has_branch = true
 			_sprigs(leaf, stem, nlen * 0.20, 2, light_bias)

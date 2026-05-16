@@ -198,7 +198,7 @@ func _spawn_level2(cfg: Dictionary, parent: Dictionary, pidx: int, tf: float, ag
 	var p_len: float = float(parent["len"])
 	var az := _rng.randf() * TAU
 	for si in range(shoots):
-		var u: float = lerp(0.30, 0.97, float(si) / float(maxi(shoots - 1, 1)))
+		var u: float = lerp(0.18, 0.95, float(si) / float(maxi(shoots - 1, 1)))
 		var sp := _sample(parent, u)
 		az += GOLDEN
 		var pt := _tangent_at(parent, u)
@@ -224,7 +224,7 @@ func _spawn_level2(cfg: Dictionary, parent: Dictionary, pidx: int, tf: float, ag
 		child["radius1"] = maxf(r0v * float(cfg.get("shoot_taper", 0.14)), 0.003)
 		stems.append(child)
 		if bool(cfg.get("fine_twigs", true)):
-			_spawn_level3(cfg, child, tf, age)
+			_fork(cfg, child, stems.size() - 1, tf, age, int(cfg.get("fork_depth", 2)))
 
 # --- Seviye 3: ince dallar (sadece iğne, silüet kırılımı) ------------
 
@@ -261,6 +261,55 @@ func _spawn_level3(cfg: Dictionary, parent: Dictionary, tf: float, age: float) -
 		child["radius1"] = r0v * 0.35
 		stems.append(child)
 
+# --- V/Y çatallanma: düzlemsel frond (gerçek çam dalı topolojisi) ----
+# Üst sürgünün ucundan AYNI düzlemde +/- açıyla 2 çatal; her çatal
+# yine çatallanır (recursive). Uç çatallar is_tip -> mesh'te odun YOK,
+# sadece iğne püskülü. Çam dalının yassı yelpaze görünümünü verir.
+
+func _fork(cfg: Dictionary, parent_stem: Dictionary, parent_idx: int,
+		tf: float, age: float, depth: int) -> void:
+	if depth <= 0:
+		return
+	var pp: Array = parent_stem["points"]
+	var ptn: Array = parent_stem["tangents"]
+	var tip: Vector3 = pp[pp.size() - 1]
+	var tdir: Vector3 = ptn[ptn.size() - 1]
+	var p_r1: float = float(parent_stem["radius1"])
+	var p_len: float = float(parent_stem["len"])
+	# Yelpaze düzlemi normali (tüm V'ler bu düzlemde -> yassı frond).
+	var lat: Vector3 = tdir.cross(Vector3.UP)
+	if lat.length() < 0.01:
+		lat = tdir.cross(Vector3.RIGHT)
+	lat = lat.normalized()
+	var plane_n: Vector3 = tdir.cross(lat).normalized()
+	for fi in range(2):
+		var wob: float = _rng.randf_range(-1.0, 1.0)
+		var ang: float = deg_to_rad(_rng.randf_range(17.0, 35.0))
+		var lmul: float = _rng.randf_range(0.55, 0.74)
+		var tnt: float = _rng.randf_range(0.93, 1.08)
+		var sgn: float = 1.0 if fi == 0 else -1.0
+		var L: float = p_len * lmul
+		if L < 0.05:
+			continue
+		var dir: Vector3 = tdir.rotated(plane_n, ang * sgn).normalized()
+		var is_tip: bool = depth <= 1 or L < 0.14
+		var seg: int = 3 if is_tip else maxi(4, int(cfg.get("shoot_segment", 7)))
+		var child := _grow(tip, dir, L, seg, 0.28 + 0.40 * tf, 0.06, 0.09, wob)
+		var r0v: float = maxf(p_r1 * 0.66, 0.0022)
+		child["level"] = 2
+		child["parent"] = parent_idx
+		child["depth01"] = tf
+		child["age"] = age
+		child["dry"] = false
+		child["broken"] = false
+		child["is_tip"] = is_tip
+		child["tint"] = lerp(0.82, 1.14, age) * tnt
+		child["radius0"] = r0v
+		child["radius1"] = maxf(r0v * 0.40, 0.0018)
+		stems.append(child)
+		if not is_tip:
+			_fork(cfg, child, stems.size() - 1, tf, age, depth - 1)
+
 # --- Büyüme entegrasyonu ----------------------------------------------
 
 func _grow(start: Vector3, dir0: Vector3, length: float, segs: int,
@@ -286,7 +335,11 @@ func _grow(start: Vector3, dir0: Vector3, length: float, segs: int,
 		# Öne-yüklü yay: erken aşağı süpürür, sonra düzelir.
 		dir = dir.rotated(curve_ax, curve * (0.6 - 0.5 * f)).normalized()
 		# Per-dal organik gürültü (uçlarda 0, ortada en çok).
-		dir = dir.rotated(curve_ax, wob * 0.05 * sin(f * PI)).normalized()
+		var kdir: float = 1.0 if (s % 2) == 0 else -1.15
+		dir = dir.rotated(curve_ax, wob * 0.085 * kdir).normalized()
+		var ax2: Vector3 = curve_ax.cross(dir)
+		if ax2.length() > 0.01:
+			dir = dir.rotated(ax2.normalized(), wob * 0.04 * kdir).normalized()
 	var stem := _frame_stem(pts, 1, -1, 0.0)
 	stem["len"] = length
 	return stem
