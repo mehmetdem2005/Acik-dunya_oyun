@@ -21,7 +21,7 @@ uniform float tree_height = 7.5;
 uniform float alpha_cut : hint_range(0.0, 1.0) = 0.34;
 uniform float normal_amt : hint_range(0.0, 1.0) = 1.0;
 uniform float use_opacity_tex : hint_range(0.0, 1.0) = 1.0;
-uniform float variation_amt : hint_range(0.0, 1.0) = 0.35;
+uniform float variation_amt : hint_range(0.0, 1.0) = 0.22;
 uniform float wind_strength : hint_range(0.0, 0.5) = 0.12;
 uniform float wind_speed : hint_range(0.0, 4.0) = 1.0;
 uniform vec2 wind_dir = vec2(1.0, 0.35);
@@ -58,15 +58,16 @@ void fragment() {
 	}
 	vec3 col = alb.rgb * v_col;
 	vec3 varc = texture(needle_variation, auv).rgb;
-	col *= mix(vec3(1.0), varc * 1.7, variation_amt);
+	col *= mix(vec3(1.0), varc * 1.15, variation_amt);
 	vec3 orm = texture(needle_orm, auv).rgb;       // R=AO G=Rough B=Metal
 	ALBEDO = col * mix(1.0, orm.r, 0.7);
 	ALPHA = op;
 	ALPHA_SCISSOR_THRESHOLD = alpha_cut;
-	ROUGHNESS = clamp(mix(0.62, orm.g, 0.8), 0.2, 1.0);
+	// İğne mat: yüksek roughness + çok düşük specular -> beyaz parlama yok.
+	ROUGHNESS = clamp(mix(0.85, orm.g, 0.45), 0.7, 1.0);
 	METALLIC = 0.0;
-	SPECULAR = 0.4;
+	SPECULAR = 0.06;
 	NORMAL_MAP = mix(vec3(0.5, 0.5, 1.0), texture(needle_normal, auv).rgb, normal_amt);
-	NORMAL_MAP_DEPTH = 1.0;
-	BACKLIGHT = backlight_col;
+	NORMAL_MAP_DEPTH = 0.6;
+	BACKLIGHT = backlight_col * 0.5;
 }

@@ -113,7 +113,7 @@ func _spawn_level1(cfg: Dictionary, trunk: Dictionary, trunk_idx: int) -> void:
 			if is_broken:
 				L *= brk_mul
 			# Alt tier'ler sert süpürür, üst tier'ler dik durur.
-			var grav := droop * (0.55 + 1.1 * (1.0 - tf))
+			var grav := droop * (0.35 + 0.5 * (1.0 - tf))
 			var child := _grow(sp, dir, L, dal_seg, grav, 0.05, dal_yay, wob)
 			var age := 1.0 - tf
 			var r0v: float = tr * lerp(0.13, 0.27, age) * rjit
@@ -200,7 +200,7 @@ func _spawn_level2(cfg: Dictionary, parent: Dictionary, pidx: int, tf: float, ag
 	var p_len: float = float(parent["len"])
 	var az := _rng.randf() * TAU
 	for si in range(shoots):
-		var u: float = lerp(0.18, 0.95, float(si) / float(maxi(shoots - 1, 1)))
+		var u: float = lerp(0.10, 0.96, float(si) / float(maxi(shoots - 1, 1)))
 		var sp := _sample(parent, u)
 		az += GOLDEN
 		var pt := _tangent_at(parent, u)
@@ -284,6 +284,33 @@ func _fork(cfg: Dictionary, parent_stem: Dictionary, parent_idx: int,
 		lat = tdir.cross(Vector3.RIGHT)
 	lat = lat.normalized()
 	var plane_n: Vector3 = tdir.cross(lat).normalized()
+	# Eksen boyunca PİNNAT yan dalcıklar: çatallanma yalnız uçta değil,
+	# orta/dipte de (gerçek çam frond'u). Uç (is_tip) -> ucuz, odun yok.
+	if depth >= 2:
+		for li in range(2):
+			var lu: float = 0.40 + 0.26 * float(li)        # ~0.40, 0.66
+			var lwob: float = _rng.randf_range(-1.0, 1.0)
+			var lang: float = deg_to_rad(_rng.randf_range(32.0, 55.0))
+			var lrand: float = _rng.randf_range(0.32, 0.48)
+			var llen: float = p_len * lrand
+			if llen < 0.06:
+				continue
+			var lsgn: float = 1.0 if li == 0 else -1.0
+			var lpos: Vector3 = _sample(parent_stem, lu)
+			var lt: Vector3 = _tangent_at(parent_stem, lu)
+			var ldir: Vector3 = lt.rotated(plane_n, lang * lsgn).normalized()
+			var lc := _grow(lpos, ldir, llen, 3, 0.30, 0.05, 0.10, lwob)
+			lc["level"] = 2
+			lc["parent"] = parent_idx
+			lc["depth01"] = tf
+			lc["age"] = age
+			lc["dry"] = false
+			lc["broken"] = false
+			lc["is_tip"] = true
+			lc["tint"] = lerp(0.82, 1.14, age) * _rng.randf_range(0.93, 1.08)
+			lc["radius0"] = maxf(p_r1 * 0.5, 0.004)
+			lc["radius1"] = maxf(p_r1 * 0.25, 0.0025)
+			stems.append(lc)
 	for fi in range(2):
 		var wob: float = _rng.randf_range(-1.0, 1.0)
 		var ang: float = deg_to_rad(_rng.randf_range(17.0, 35.0))

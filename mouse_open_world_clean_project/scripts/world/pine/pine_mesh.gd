@@ -48,7 +48,7 @@ static func build(stems: Array, cfg: Dictionary) -> Dictionary:
 					_sprigs(leaf, stem, nlen * 0.34, 1, light_bias)
 		elif lvl == 2:
 			if lvl2_wood and not bool(stem.get("is_tip", false)):
-				_tube(branch, stem, maxi(4, int(sides / 3.0)), empty, 0.0, cfg)
+				_tube(branch, stem, maxi(3, int(sides / 4.0)), empty, 0.0, cfg)
 				has_branch = true
 			_sprigs(leaf, stem, nlen * 0.32, 2, light_bias)
 		elif lvl == 3:
@@ -113,6 +113,11 @@ static func _tube(st: SurfaceTool, stem: Dictionary, sides: int,
 				var dd1: float = (f1 - wh) / 0.045
 				rad0 += exp(-dd0 * dd0) * r0 * knot_s
 				rad1 += exp(-dd1 * dd1) * r0 * knot_s
+		elif lvl == 1 and not bool(stem.get("is_root", false)):
+			# Dal-gövde YAKASI: dipte yumuşak şişme + hızlı incelme ->
+			# dal gövdeye saplanmış çubuk değil, organik bağlanır.
+			rad0 += r0 * 0.85 * pow(maxf(1.0 - f0 * 5.0, 0.0), 1.7)
+			rad1 += r0 * 0.85 * pow(maxf(1.0 - f1 * 5.0, 0.0), 1.7)
 		# Per-side payanda lobu (yalnız govde; dipte guclu, yukari soner).
 		var lobe0: float = (flare_l * pow(maxf(1.0 - f0 * 4.0, 0.0), 2.0)) if lvl == 0 else 0.0
 		var lobe1: float = (flare_l * pow(maxf(1.0 - f1 * 4.0, 0.0), 2.0)) if lvl == 0 else 0.0
@@ -166,8 +171,8 @@ static func _sprigs(st: SurfaceTool, stem: Dictionary, size: float, lvl: int,
 	var r0: float = lerp(0.28, 0.42, age)
 	var r1: float = lerp(0.55, 0.78, age)
 	if lvl == 1:
-		r0 = lerp(0.38, 0.55, age)
-		r1 = lerp(0.66, 0.86, age)
+		r0 = lerp(0.24, 0.40, age)
+		r1 = lerp(0.60, 0.82, age)
 	# Seviye-bazlı rüzgâr flex'i (gövde 0 -> iğne ucu en çok).
 	var flex: float = 0.6
 	if lvl == 3:
@@ -219,7 +224,9 @@ static func _card(st: SurfaceTool, c: Vector3, uv_dir: Vector3, rv: Vector3,
 	# UV2 = (flex, atlas hücresi). Shader 5x5 atlastan demeti seçer.
 	var fb := Vector2(flex, float(cell))
 	var ftp := Vector2(flex * 1.25, float(cell))
-	for q in range(2):
+	# Tek dörtgen (çapraz X kaldırıldı) -> ~%50 daha az iğne üçgeni;
+	# atlas + normal map hacmi taşıdığı için görünüm ~korunur (mobil).
+	for q in range(1):
 		var rq: Vector3
 		if q == 0:
 			rq = rv

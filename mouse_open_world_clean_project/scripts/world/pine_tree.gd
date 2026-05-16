@@ -26,7 +26,7 @@ class_name PineTree
 @export_range(0, 4, 1) var twigs_per_shoot: int = 2
 
 @export_group("Gerçekçi Dal / Kök")
-@export_range(6, 16, 1) var dal_segment: int = 10          # dal kıvrım çözünürlüğü
+@export_range(6, 16, 1) var dal_segment: int = 8          # dal kıvrım çözünürlüğü
 @export_range(0.0, 0.4, 0.01) var dal_yay: float = 0.22    # S süpürme yayı
 @export_range(0.06, 0.4, 0.01) var surgun_konik: float = 0.14  # sürgün uç incelmesi
 @export var level2_wood: bool = true                       # alt-dallar odun olarak görünsün
@@ -292,7 +292,7 @@ func _needle_material() -> Material:
 			else:
 				sm.set_shader_parameter("variation_amt", 0.0)
 			sm.set_shader_parameter("tree_height", total_height)
-			sm.set_shader_parameter("backlight_col", needle_mid * 0.6)
+			sm.set_shader_parameter("backlight_col", needle_mid * 0.28)
 			return sm
 	# Albedo yoksa: prosedürel atlas + güvenli StandardMaterial3D fallback.
 	var tex := PineTextures.needle_atlas()
