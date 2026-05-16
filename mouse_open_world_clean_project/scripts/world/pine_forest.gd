@@ -82,9 +82,10 @@ func _spawn_tree(pine_script: Script, pos2: Vector2, idx: int) -> void:
 
 	var h: float = _rng.randf_range(height_min, height_max)
 	tree.set("total_height", h)
-	tree.set("trunk_radius", h * _rng.randf_range(0.022, 0.030))
-	tree.set("foliage_layers", _rng.randi_range(7, 11))
-	tree.set("crown_max_radius", h * _rng.randf_range(0.28, 0.38))
+	tree.set("trunk_radius", h * _rng.randf_range(0.020, 0.028))
+	tree.set("crown_radius", h * _rng.randf_range(0.30, 0.40))
+	tree.set("branch_count", _rng.randi_range(46, 64))
+	tree.set("fronds_per_branch", _rng.randi_range(4, 6))
 	tree.set("seed", _rng.randi())
 	tree.set("generate_collision", generate_collision)
 	# İğne tonunda hafif tür/mevsim varyasyonu.

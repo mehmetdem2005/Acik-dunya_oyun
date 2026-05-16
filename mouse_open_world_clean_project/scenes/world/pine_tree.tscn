@@ -6,5 +6,5 @@
 script = ExtResource("1_pine")
 total_height = 6.5
 trunk_radius = 0.16
-foliage_layers = 9
-crown_max_radius = 2.1
+crown_radius = 2.2
+branch_count = 54
