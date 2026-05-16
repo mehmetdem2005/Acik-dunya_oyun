@@ -21,13 +21,16 @@ varying vec3 v_col;
 
 void vertex() {
 	v_col = COLOR.rgb;
-	// Yüksekliğe göre artan salınım + uç çırpıntısı.
+	// Hiyerarşik rüzgâr: UV2.x = flex (gövde 0 -> iğne ucu ~1.25).
+	// Gövde neredeyse sabit, ana dal az, sürgün/iğne çok ve hızlı.
+	float flex = UV2.x;
 	float h = clamp(VERTEX.y / max(tree_height, 0.001), 0.0, 1.0);
-	float amp = wind_strength * pow(h, 1.5);
+	float amp = wind_strength * mix(pow(h, 1.5) * 0.25, 1.0, clamp(flex, 0.0, 1.0));
 	vec3 wp = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xyz;
 	float t = TIME * wind_speed + wp.x * 0.15 + wp.z * 0.15;
 	float gust = sin(t) * 0.7 + sin(t * 2.7) * 0.3;
-	float flutter = sin(t * 6.1 + wp.y * 3.0) * 0.18;
+	// İnce hızlı titreşim yalnız uç bölgede (çam iğnesi abartılı sallanmaz).
+	float flutter = sin(t * 6.1 + wp.y * 3.0) * 0.16 * (0.15 + flex);
 	vec2 d = normalize(wind_dir);
 	VERTEX.x += d.x * (gust + flutter) * amp;
 	VERTEX.z += d.y * (gust + flutter) * amp;

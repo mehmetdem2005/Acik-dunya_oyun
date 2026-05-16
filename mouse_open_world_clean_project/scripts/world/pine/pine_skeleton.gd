@@ -45,6 +45,7 @@ func _make_trunk(cfg: Dictionary) -> Dictionary:
 	var stem := _frame_stem(pts, 0, -1, 0.0)
 	stem["radius0"] = float(cfg.get("trunk_radius", 0.16))
 	stem["radius1"] = float(cfg.get("trunk_radius", 0.16)) * float(cfg.get("trunk_top", 0.06))
+	stem["whorl_h"] = PackedFloat32Array()
 	return stem
 
 # --- Seviye 1: ana dallar (whorl tabakaları) --------------------------
@@ -55,38 +56,75 @@ func _spawn_level1(cfg: Dictionary, trunk: Dictionary, trunk_idx: int) -> void:
 	var crown_radius: float = cfg.get("crown_radius", 2.4)
 	var total: int = int(cfg.get("branch_count", 60))
 	var droop: float = cfg.get("branch_droop", 0.55)
+	var tr: float = float(cfg.get("trunk_radius", 0.16))
+	var elev_low: float = float(cfg.get("elev_low", -0.18))
+	var elev_high: float = float(cfg.get("elev_high", 0.55))
+	var prune_low: float = float(cfg.get("prune_low", 0.30))
+	var prune_high: float = float(cfg.get("prune_high", 0.04))
+	var dry_low: float = float(cfg.get("dry_chance_low", 0.16))
+	var broken_ch: float = float(cfg.get("broken_chance", 0.08))
+	var tip_ratio: float = float(cfg.get("branch_taper_tip", 0.18))
 	var tier_count: int = clampi(int(round(height * 1.45)), 7, 13)
+	var lean: float = _rng.randf_range(-0.12, 0.12)
+	var lean_ph: float = _rng.randf() * TAU
+	var whorl_h: PackedFloat32Array = trunk["whorl_h"]
 	var az := _rng.randf() * TAU
 	for ti in range(tier_count):
 		var tf := float(ti) / float(tier_count - 1)
-		var h01: float = lerp(crown_start, 0.95, tf)
-		# DİK KONİ: en uzun dipte, tepeye güçlü sivrilme, küçük apeks.
-		var prof: float = pow(1.0 - tf, 1.18) + 0.05
+		var h01: float = clampf(lerp(crown_start, 0.95, tf) + _rng.randf_range(-0.02, 0.02), 0.0, 1.0)
+		# En uzun alt-ORTA (dip değil), tepeye güçlü sivrilme.
+		var prof: float = pow(1.0 - tf, 0.7) * (0.55 + 0.45 * smoothstep(0.0, 0.22, tf))
 		var blen := crown_radius * prof
 		if blen < 0.16:
 			continue
-		# Açık/seyrek çam tacı: tier başına az dal + düzensizlik jitter'ı.
+		whorl_h.append(h01)
 		var per := int(round(lerp(float(total) / float(tier_count) * 1.5, 3.0, tf)))
-		per = clampi(per + _rng.randi_range(-1, 1), 3, 9)
+		per = clampi(per + _rng.randi_range(-1, 1), 3, 7)
 		az += GOLDEN * 1.3
+		var aaccum := az
+		var seg := TAU / float(per)
 		for bi in range(per):
-			var a := az + TAU * float(bi) / float(per) + _rng.randf_range(-0.22, 0.22)
-			var sp := _sample(trunk, clampf(h01 + _rng.randf_range(-0.02, 0.02), 0.0, 1.0))
-			# Olgun çam: dallar neredeyse YATAY raflar (top değil katmanlı).
-			var up0: float = lerp(0.14, -0.04, tf)
+			# TÜM per-dal rastgele değerleri continue'dan ÖNCE (determinizm).
+			aaccum += seg * _rng.randf_range(0.45, 1.75)
+			var ajit: float = _rng.randf_range(-0.15, 0.15)
+			var up_jit: float = _rng.randf_range(-0.10, 0.10)
+			var lvar: float = _rng.randf_range(0.75, 1.30)
+			var rjit: float = _rng.randf_range(0.90, 1.10)
+			var tipr: float = _rng.randf_range(0.10, 0.25)
+			var tvar: float = _rng.randf_range(0.93, 1.07)
+			var brk_mul: float = _rng.randf_range(0.4, 0.7)
+			var is_dry: bool = _rng.randf() < lerp(dry_low, 0.02, tf)
+			var is_broken: bool = _rng.randf() < broken_ch
+			var miss: bool = _rng.randf() < lerp(prune_low, prune_high, tf)
+			if miss:
+				continue
+			var a: float = aaccum + ajit + lean * cos(aaccum - lean_ph)
+			var sp := _sample(trunk, h01)
+			# Yükseklik-bölgeli açı: alt yatay/sarkık, üst dik.
+			var up0: float = lerp(elev_low, elev_high, smoothstep(0.0, 1.0, tf)) + up_jit
 			var dir := (Vector3(cos(a), 0.0, sin(a)) + Vector3.UP * up0).normalized()
-			var L := blen * _rng.randf_range(0.82, 1.14)
-			var grav := droop * (0.4 + 0.6 * (1.0 - tf))
+			var L: float = blen * lvar
+			if is_broken:
+				L *= brk_mul
+			var grav := droop * (0.35 + 0.95 * (1.0 - tf))
 			var child := _grow(sp, dir, L, 6, grav, 0.04, 0.12)
+			var age := 1.0 - tf
+			var r0v: float = tr * lerp(0.08, 0.20, age) * rjit
 			child["level"] = 1
 			child["parent"] = trunk_idx
 			child["depth01"] = tf
-			child["tint"] = _rng.randf_range(0.80, 1.18)
-			child["radius0"] = float(cfg.get("trunk_radius", 0.16)) * 0.22
-			child["radius1"] = 0.004
+			child["age"] = age
+			child["dry"] = is_dry
+			child["broken"] = is_broken
+			child["tint"] = lerp(0.72, 1.10, age * age) * tvar
+			child["radius0"] = r0v
+			child["radius1"] = r0v * lerp(tip_ratio, tipr, 0.5)
 			stems.append(child)
 			var bidx := stems.size() - 1
-			_spawn_level2(cfg, child, bidx, tf)
+			if not is_dry:
+				_spawn_level2(cfg, child, bidx, tf, age)
+	# PackedFloat32Array değer tipidir -> budak yükseklikleri geri yazılır.
+	trunk["whorl_h"] = whorl_h
 	# Apeks: tepede dik, kısa lider sürgünler -> doğal sivri uç.
 	for ai in range(5):
 		var ah: float = lerp(0.93, 0.995, float(ai) / 4.0)
@@ -98,20 +136,25 @@ func _spawn_level1(cfg: Dictionary, trunk: Dictionary, trunk_idx: int) -> void:
 		ac["level"] = 1
 		ac["parent"] = trunk_idx
 		ac["depth01"] = 1.0
-		ac["tint"] = _rng.randf_range(0.85, 1.15)
-		ac["radius0"] = float(cfg.get("trunk_radius", 0.16)) * 0.16
-		ac["radius1"] = 0.003
+		ac["age"] = 0.05
+		ac["dry"] = false
+		ac["broken"] = false
+		ac["tint"] = _rng.randf_range(0.95, 1.15)
+		ac["radius0"] = tr * 0.10
+		ac["radius1"] = tr * 0.10 * 0.22
 		stems.append(ac)
-		_spawn_level2(cfg, ac, stems.size() - 1, 0.95)
+		_spawn_level2(cfg, ac, stems.size() - 1, 0.95, 0.05)
 
 # --- Seviye 2: yan sürgünler (iğneleri taşır) -------------------------
 
-func _spawn_level2(cfg: Dictionary, parent: Dictionary, pidx: int, tf: float) -> void:
+func _spawn_level2(cfg: Dictionary, parent: Dictionary, pidx: int, tf: float, age: float) -> void:
 	var shoots: int = int(cfg.get("shoots_per_branch", 7))
+	# Sürgünler ana dalın DIŞ kısmına yoğunlaşır (iç çıplak kalır).
+	var p_r1: float = float(parent["radius1"])
+	var p_len: float = float(parent["len"])
 	var az := _rng.randf() * TAU
 	for si in range(shoots):
-		# Sürgünler dal tabanına yakın başlar -> çıplak "tel" dal yok.
-		var u: float = lerp(0.06, 0.97, float(si) / float(maxi(shoots - 1, 1)))
+		var u: float = lerp(0.30, 0.97, float(si) / float(maxi(shoots - 1, 1)))
 		var sp := _sample(parent, u)
 		az += GOLDEN
 		var pt := _tangent_at(parent, u)
@@ -119,29 +162,35 @@ func _spawn_level2(cfg: Dictionary, parent: Dictionary, pidx: int, tf: float) ->
 		var azdir := nm.rotated(pt, az)
 		var down := deg_to_rad(_rng.randf_range(40.0, 62.0))
 		var dir := (pt * cos(down) + azdir * sin(down)).normalized()
-		var L: float = parent["len"] * lerp(0.6, 0.22, u) * _rng.randf_range(0.8, 1.15)
+		var L: float = p_len * lerp(0.55, 0.22, u) * _rng.randf_range(0.8, 1.15)
 		if L < 0.1:
 			continue
 		var child := _grow(sp, dir, L, 4, 0.3 + 0.45 * tf, 0.08, 0.10)
+		var r0v: float = maxf(p_r1 * _rng.randf_range(0.7, 1.0), 0.004)
 		child["level"] = 2
 		child["parent"] = pidx
 		child["depth01"] = tf
-		child["tint"] = _rng.randf_range(0.80, 1.18)
-		child["radius0"] = 0.006
-		child["radius1"] = 0.002
+		child["age"] = age
+		child["dry"] = false
+		child["broken"] = false
+		child["tint"] = lerp(0.78, 1.12, age * age) * _rng.randf_range(0.93, 1.07)
+		child["radius0"] = r0v
+		child["radius1"] = r0v * 0.25
 		stems.append(child)
 		if bool(cfg.get("fine_twigs", true)):
-			_spawn_level3(cfg, child, tf)
+			_spawn_level3(cfg, child, tf, age)
 
 # --- Seviye 3: ince dallar (sadece iğne, silüet kırılımı) ------------
 
-func _spawn_level3(cfg: Dictionary, parent: Dictionary, tf: float) -> void:
+func _spawn_level3(cfg: Dictionary, parent: Dictionary, tf: float, age: float) -> void:
 	var twigs: int = int(cfg.get("twigs_per_shoot", 2))
 	if twigs <= 0:
 		return
+	var p_r1: float = float(parent["radius1"])
+	var p_len: float = float(parent["len"])
 	var az := _rng.randf() * TAU
 	for ti in range(twigs):
-		var u: float = lerp(0.35, 0.9, float(ti) / float(maxi(twigs - 1, 1)))
+		var u: float = lerp(0.4, 0.92, float(ti) / float(maxi(twigs - 1, 1)))
 		var sp := _sample(parent, u)
 		az += GOLDEN
 		var pt := _tangent_at(parent, u)
@@ -149,16 +198,20 @@ func _spawn_level3(cfg: Dictionary, parent: Dictionary, tf: float) -> void:
 		var azdir := nm.rotated(pt, az)
 		var down := deg_to_rad(_rng.randf_range(35.0, 58.0))
 		var dir := (pt * cos(down) + azdir * sin(down)).normalized()
-		var L: float = parent["len"] * 0.35 * _rng.randf_range(0.8, 1.15)
+		var L: float = p_len * 0.32 * _rng.randf_range(0.8, 1.15)
 		if L < 0.06:
 			continue
 		var child := _grow(sp, dir, L, 3, 0.25 + 0.35 * tf, 0.06, 0.08)
+		var r0v: float = maxf(p_r1 * 0.6, 0.0018)
 		child["level"] = 3
 		child["parent"] = -1
 		child["depth01"] = tf
-		child["tint"] = _rng.randf_range(0.80, 1.18)
-		child["radius0"] = 0.003
-		child["radius1"] = 0.0015
+		child["age"] = age
+		child["dry"] = false
+		child["broken"] = false
+		child["tint"] = lerp(0.85, 1.15, age) * _rng.randf_range(0.95, 1.06)
+		child["radius0"] = r0v
+		child["radius1"] = r0v * 0.4
 		stems.append(child)
 
 # --- Büyüme entegrasyonu ----------------------------------------------

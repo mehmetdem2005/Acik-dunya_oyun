@@ -27,6 +27,12 @@ class_name PineTree
 @export_range(2, 5, 1) var blades_per_branch: int = 3
 @export_range(0.4, 2.5, 0.05) var frond_size: float = 1.2
 
+@export_group("Form / Kusur")
+@export_enum("Genc Konik:0", "Olgun Orman:1", "Acikta Yetisen:2") var tree_form: int = 1
+@export_range(0.08, 0.30, 0.01) var branch_taper_tip: float = 0.18
+@export_range(0.0, 0.5, 0.01) var knot_strength: float = 0.22
+@export_range(0.0, 1.0, 0.05) var light_bias: float = 0.0
+
 @export_group("Detay / Performans")
 @export_range(8, 20, 1) var trunk_sides: int = 14
 @export var seed: int = 20260516
@@ -47,22 +53,56 @@ func rebuild() -> void:
 	for c in get_children():
 		c.queue_free()
 
+	# Form ön ayarları (genç konik / olgun orman / açıkta yetişen).
+	var f_crown := crown_start_ratio
+	var f_pl := 0.30
+	var f_ph := 0.04
+	var f_dry := 0.16
+	var f_brk := 0.08
+	var f_droop := branch_droop
+	var f_el := -0.18
+	var f_eh := 0.55
+	match tree_form:
+		0:
+			f_crown = 0.10
+			f_pl = 0.05; f_ph = 0.02
+			f_dry = 0.05; f_brk = 0.03
+			f_droop = maxf(branch_droop * 0.6, 0.10)
+			f_el = 0.05; f_eh = 0.75
+		2:
+			f_crown = 0.06
+			f_pl = 0.04; f_ph = 0.03
+			f_dry = 0.06; f_brk = 0.04
+			f_droop = maxf(branch_droop * 1.1, 0.25)
+			f_el = -0.10; f_eh = 0.45
+		_:
+			f_crown = 0.32
+
 	var cfg := {
 		"seed": seed if seed != 0 else hash(name),
 		"height": total_height,
 		"trunk_radius": trunk_radius,
 		"trunk_top": trunk_top_ratio,
 		"trunk_bend": trunk_bend,
-		"crown_start": crown_start_ratio,
+		"crown_start": f_crown,
 		"crown_radius": crown_radius,
 		"branch_count": branch_count,
-		"branch_droop": branch_droop,
+		"branch_droop": f_droop,
 		"shoots_per_branch": shoots_per_branch,
 		"trunk_sides": trunk_sides,
 		"needle_planes": blades_per_branch,
 		"needle_size": frond_size,
 		"fine_twigs": fine_twigs,
 		"twigs_per_shoot": twigs_per_shoot,
+		"prune_low": f_pl,
+		"prune_high": f_ph,
+		"dry_chance_low": f_dry,
+		"broken_chance": f_brk,
+		"elev_low": f_el,
+		"elev_high": f_eh,
+		"branch_taper_tip": branch_taper_tip,
+		"knot_strength": knot_strength,
+		"light_bias": light_bias,
 	}
 
 	var skel := PineSkeleton.new()
