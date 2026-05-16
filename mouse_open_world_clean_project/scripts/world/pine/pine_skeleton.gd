@@ -170,15 +170,16 @@ func _frame_stem(pts: Array, level: int, parent: int, depth01: float) -> Diction
 	var r := (up - t0 * up.dot(t0)).normalized()
 	norms[0] = r
 	for i in range(n - 1):
-		var v1 := pts[i + 1] - pts[i]
-		var c1 := v1.dot(v1)
+		var v1: Vector3 = pts[i + 1] - pts[i]
+		var c1: float = v1.dot(v1)
 		if c1 < 1e-9:
 			norms[i + 1] = norms[i]
 			continue
-		var rl := r - (2.0 / c1) * v1.dot(r) * v1
-		var tl := tang[i] - (2.0 / c1) * v1.dot(tang[i]) * v1
-		var v2 := tang[i + 1] - tl
-		var c2 := v2.dot(v2)
+		var rl: Vector3 = r - (2.0 / c1) * v1.dot(r) * v1
+		var ti: Vector3 = tang[i]
+		var tl: Vector3 = ti - (2.0 / c1) * v1.dot(ti) * v1
+		var v2: Vector3 = tang[i + 1] - tl
+		var c2: float = v2.dot(v2)
 		if c2 < 1e-9:
 			r = rl
 		else:
