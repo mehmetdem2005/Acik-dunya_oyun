@@ -84,14 +84,15 @@ func _spawn_tree(pine_script: Script, pos2: Vector2, idx: int) -> void:
 	tree.set("total_height", h)
 	tree.set("trunk_radius", h * _rng.randf_range(0.020, 0.028))
 	tree.set("crown_radius", h * _rng.randf_range(0.30, 0.40))
-	tree.set("branch_count", _rng.randi_range(46, 64))
-	tree.set("fronds_per_branch", _rng.randi_range(4, 6))
+	tree.set("branch_count", _rng.randi_range(52, 68))
+	tree.set("blades_per_branch", _rng.randi_range(5, 7))
 	tree.set("seed", _rng.randi())
 	tree.set("generate_collision", generate_collision)
 	# İğne tonunda hafif tür/mevsim varyasyonu.
-	var tint: float = _rng.randf_range(-0.03, 0.05)
-	tree.set("needle_base", Color(0.06 + tint, 0.19 + tint, 0.09 + tint * 0.5))
-	tree.set("needle_tip", Color(0.20 + tint, 0.39 + tint, 0.17 + tint * 0.5))
+	var tint: float = _rng.randf_range(-0.02, 0.05)
+	tree.set("needle_dark", Color(0.05 + tint * 0.5, 0.13 + tint, 0.06 + tint * 0.5))
+	tree.set("needle_mid", Color(0.13 + tint, 0.27 + tint, 0.11 + tint * 0.5))
+	tree.set("needle_lite", Color(0.34 + tint, 0.50 + tint, 0.22 + tint * 0.5))
 
 	var y := ground_y
 	if raycast_to_ground and not Engine.is_editor_hint():
