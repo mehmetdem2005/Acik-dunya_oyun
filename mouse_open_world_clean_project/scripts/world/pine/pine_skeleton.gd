@@ -60,7 +60,9 @@ func _spawn_level1(cfg: Dictionary, trunk: Dictionary, trunk_idx: int) -> void:
 	for ti in range(tier_count):
 		var tf := float(ti) / float(tier_count - 1)
 		var h01: float = lerp(crown_start, 0.955, tf)
-		var prof: float = pow(1.0 - tf, 0.80) * (0.45 + 0.55 * smoothstep(0.0, 0.18, tf))
+		# Klasik köknar silüeti: alt-orta en geniş, tepeye düzgün sivrilir,
+		# yalnız en dipte hafif kısalma.
+		var prof: float = pow(1.0 - tf, 0.62) * (0.55 + 0.45 * smoothstep(0.0, 0.07, tf))
 		var blen := crown_radius * prof
 		if blen < 0.18:
 			continue
@@ -79,7 +81,8 @@ func _spawn_level1(cfg: Dictionary, trunk: Dictionary, trunk_idx: int) -> void:
 			child["level"] = 1
 			child["parent"] = trunk_idx
 			child["depth01"] = tf
-			child["radius0"] = float(cfg.get("trunk_radius", 0.16)) * 0.26
+			child["tint"] = _rng.randf_range(0.80, 1.18)
+			child["radius0"] = float(cfg.get("trunk_radius", 0.16)) * 0.22
 			child["radius1"] = 0.004
 			stems.append(child)
 			var bidx := stems.size() - 1
@@ -95,7 +98,8 @@ func _spawn_level1(cfg: Dictionary, trunk: Dictionary, trunk_idx: int) -> void:
 		ac["level"] = 1
 		ac["parent"] = trunk_idx
 		ac["depth01"] = 1.0
-		ac["radius0"] = float(cfg.get("trunk_radius", 0.16)) * 0.18
+		ac["tint"] = _rng.randf_range(0.85, 1.15)
+		ac["radius0"] = float(cfg.get("trunk_radius", 0.16)) * 0.16
 		ac["radius1"] = 0.003
 		stems.append(ac)
 		_spawn_level2(cfg, ac, stems.size() - 1, 0.95)
@@ -106,21 +110,23 @@ func _spawn_level2(cfg: Dictionary, parent: Dictionary, pidx: int, tf: float) ->
 	var shoots: int = int(cfg.get("shoots_per_branch", 7))
 	var az := _rng.randf() * TAU
 	for si in range(shoots):
-		var u: float = lerp(0.18, 0.95, float(si) / float(maxi(shoots - 1, 1)))
+		# Sürgünler dal tabanına yakın başlar -> çıplak "tel" dal yok.
+		var u: float = lerp(0.06, 0.97, float(si) / float(maxi(shoots - 1, 1)))
 		var sp := _sample(parent, u)
 		az += GOLDEN
 		var pt := _tangent_at(parent, u)
 		var nm := _normal_at(parent, u)
 		var azdir := nm.rotated(pt, az)
-		var down := deg_to_rad(_rng.randf_range(38.0, 60.0))
+		var down := deg_to_rad(_rng.randf_range(40.0, 62.0))
 		var dir := (pt * cos(down) + azdir * sin(down)).normalized()
-		var L: float = parent["len"] * lerp(0.55, 0.25, u) * _rng.randf_range(0.8, 1.15)
-		if L < 0.12:
+		var L: float = parent["len"] * lerp(0.6, 0.22, u) * _rng.randf_range(0.8, 1.15)
+		if L < 0.1:
 			continue
-		var child := _grow(sp, dir, L, 4, 0.35 + 0.4 * tf, 0.08, 0.10)
+		var child := _grow(sp, dir, L, 4, 0.3 + 0.45 * tf, 0.08, 0.10)
 		child["level"] = 2
 		child["parent"] = pidx
 		child["depth01"] = tf
+		child["tint"] = _rng.randf_range(0.80, 1.18)
 		child["radius0"] = 0.006
 		child["radius1"] = 0.002
 		stems.append(child)

@@ -22,9 +22,14 @@ static func build(stems: Array, cfg: Dictionary) -> Dictionary:
 		var lvl: int = stem["level"]
 		if lvl <= 1:
 			_tube(wood, stem, sides if lvl == 0 else maxi(4, int(sides / 2.0)))
+		if lvl == 1:
+			# Ana dalın kendisi de iğnelenir (çıplak kahverengi dal yok).
+			var bp := clampi(planes - 1, 2, 3)
+			for pj in range(bp):
+				_needle_blade(leaf, stem, TAU * float(pj) / float(bp), nlen * 1.05)
 		if lvl == 2:
 			for pi in range(planes):
-				var roll := PI * float(pi) / float(planes)
+				var roll := TAU * float(pi) / float(planes)
 				_needle_blade(leaf, stem, roll, nlen)
 
 	wood.generate_normals()
@@ -84,6 +89,7 @@ static func _needle_blade(st: SurfaceTool, stem: Dictionary, roll: float, nlen: 
 	var norms: Array = stem["normals"]
 	var n := pts.size()
 	var depth01: float = stem.get("depth01", 0.5)
+	var tint: float = stem.get("tint", 1.0)
 	var width := nlen * 0.16
 	var acc := 0.0
 	for k in range(n - 1):
@@ -113,8 +119,8 @@ static func _needle_blade(st: SurfaceTool, stem: Dictionary, roll: float, nlen: 
 		var v0 := acc
 		acc += seg_len / maxf(nlen * 0.42, 0.08)
 		var v1 := acc
-		var ao0: float = clampf(0.42 + 0.58 * f0 + 0.08 * depth01, 0.0, 1.0)
-		var ao1: float = clampf(0.42 + 0.58 * f1 + 0.08 * depth01, 0.0, 1.0)
+		var ao0: float = clampf((0.40 + 0.55 * f0 + 0.08 * depth01) * tint, 0.0, 1.0)
+		var ao1: float = clampf((0.40 + 0.55 * f1 + 0.08 * depth01) * tint, 0.0, 1.0)
 		# Sol yarım yüz.
 		var nLf := _soft(L0, pn - flat)
 		var nRf := _soft(R0, pn + flat)
