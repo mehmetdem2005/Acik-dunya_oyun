@@ -27,13 +27,13 @@ class_name PineTree
 
 @export_group("Gerçekçi Dal / Kök")
 @export_range(6, 16, 1) var dal_segment: int = 10          # dal kıvrım çözünürlüğü
-@export_range(0.0, 0.4, 0.01) var dal_yay: float = 0.16    # S süpürme yayı
+@export_range(0.0, 0.4, 0.01) var dal_yay: float = 0.22    # S süpürme yayı
 @export_range(0.06, 0.4, 0.01) var surgun_konik: float = 0.14  # sürgün uç incelmesi
 @export var level2_wood: bool = true                       # alt-dallar odun olarak görünsün
 @export_range(0.6, 1.4, 0.05) var tabaka_aralik: float = 1.0   # whorl katman aralığı
-@export_range(0.0, 2.0, 0.05) var govde_kok: float = 1.0       # dip kabarma gücü
-@export_range(0.0, 1.0, 0.02) var kok_payanda: float = 0.5     # payanda lob derinliği
-@export_range(0, 8, 1) var kok_sayisi: int = 5                 # zemine yayılan kök sayısı
+@export_range(0.0, 2.0, 0.05) var govde_kok: float = 0.35      # dip kabarma gücü (hafif)
+@export_range(0.0, 1.0, 0.02) var kok_payanda: float = 0.0     # payanda lob (0 = düz, kapalı)
+@export_range(0, 8, 1) var kok_sayisi: int = 0                 # zemine yayılan kök stem (0 = yok)
 
 @export_group("İğne Yaprak")
 @export_range(2, 5, 1) var blades_per_branch: int = 3

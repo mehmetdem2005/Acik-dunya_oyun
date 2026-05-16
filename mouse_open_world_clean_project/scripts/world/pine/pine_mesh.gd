@@ -99,9 +99,10 @@ static func _tube(st: SurfaceTool, stem: Dictionary, sides: int,
 		var flex0: float = 0.0 if lvl == 0 else lerp(0.0, 0.40, f0)
 		var flex1: float = 0.0 if lvl == 0 else lerp(0.0, 0.40, f1)
 		if lvl == 0:
-			# Yumuşatılmış dip kabarması (eski sert kubbe değil).
-			rad0 += r0 * flare_s * pow(maxf(1.0 - f0 * 5.0, 0.0), 2.2)
-			rad1 += r0 * flare_s * pow(maxf(1.0 - f1 * 5.0, 0.0), 2.2)
+			# Çok hafif, pürüzsüz dip genişlemesi (trompet/eteklenme YOK;
+			# referans çamda gövde zemine düz girer).
+			rad0 += r0 * flare_s * 0.30 * pow(maxf(1.0 - f0 * 9.0, 0.0), 2.0)
+			rad1 += r0 * flare_s * 0.30 * pow(maxf(1.0 - f1 * 9.0, 0.0), 2.0)
 			# Budak/knot: whorl yüksekliklerinde gövde şişer.
 			for wi in range(knots.size()):
 				var wh: float = knots[wi]
@@ -168,7 +169,7 @@ static func _sprigs(st: SurfaceTool, stem: Dictionary, size: float, lvl: int,
 	if lvl == 3:
 		flex = 1.0
 	var sun := Vector3(0.6, 0.0, 0.32).normalized()
-	var step := maxf(size * 0.5, 0.035)
+	var step := maxf(size * 0.42, 0.03)
 	var carry := 0.0
 	var idx := 0
 	for k in range(n - 1):
@@ -192,14 +193,14 @@ static func _sprigs(st: SurfaceTool, stem: Dictionary, size: float, lvl: int,
 				for s in range(2):
 					var az: float = float(idx) * GOLDEN + PI * float(s)
 					var outd: Vector3 = nm.rotated(ax, az).normalized()
-					var up: Vector3 = (outd * 0.78 + ax * 0.42 + Vector3.DOWN * 0.16).normalized()
+					var up: Vector3 = (outd * 0.72 + ax * 0.30 + Vector3.UP * 0.14).normalized()
 					var rt: Vector3 = up.cross(Vector3.UP)
 					if rt.length() < 0.02:
 						rt = up.cross(Vector3.RIGHT)
 					rt = rt.normalized()
 					# Renk: uca doğru taze açık yeşil, içte koyu/mat.
-					var shade: float = clampf(lerp(0.50, 1.05, fr) * tint, 0.0, 1.0)
-					_card(st, c, up * size, rt * (size * 0.55), shade, flex)
+					var shade: float = clampf(lerp(0.62, 1.14, fr) * tint, 0.48, 1.25)
+					_card(st, c, up * (size * (0.80 + 0.50 * fr)), rt * (size * (0.80 + 0.50 * fr) * 0.62), shade, flex)
 			# Uca doğru sıklaş; ışık yönüne göre asimetri.
 			var dstep := step / maxf(dens, 0.10)
 			if light_bias > 0.0:

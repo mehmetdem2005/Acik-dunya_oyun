@@ -169,14 +169,14 @@ func _spawn_roots(cfg: Dictionary, trunk: Dictionary, trunk_idx: int) -> void:
 	var a0 := _rng.randf() * TAU
 	for ri in range(rc):
 		var ajit: float = _rng.randf_range(-0.30, 0.30)
-		var spread: float = _rng.randf_range(0.75, 1.05)
-		var lmul: float = _rng.randf_range(3.0, 5.0)
+		var spread: float = _rng.randf_range(0.55, 0.85)
+		var lmul: float = _rng.randf_range(1.4, 2.2)
 		var rmul: float = _rng.randf_range(0.85, 1.15)
 		var tnt: float = _rng.randf_range(0.70, 0.95)
 		var wob: float = _rng.randf_range(-1.0, 1.0)
 		var a: float = a0 + TAU * float(ri) / float(rc) + ajit
-		var dir := (Vector3(cos(a), 0.0, sin(a)) * spread + Vector3.DOWN * 0.5).normalized()
-		var rt := _grow(base, dir, tr * lmul, dal_seg, 0.9, 0.0, 0.10, wob)
+		var dir := (Vector3(cos(a), 0.0, sin(a)) * spread + Vector3.DOWN * 1.3).normalized()
+		var rt := _grow(base, dir, tr * lmul, maxi(4, int(dal_seg / 2)), 0.35, 0.0, 0.06, wob)
 		rt["level"] = 1
 		rt["is_root"] = true
 		rt["parent"] = trunk_idx
@@ -185,8 +185,8 @@ func _spawn_roots(cfg: Dictionary, trunk: Dictionary, trunk_idx: int) -> void:
 		rt["dry"] = false
 		rt["broken"] = false
 		rt["tint"] = tnt
-		rt["radius0"] = tr * 0.55 * rmul
-		rt["radius1"] = tr * 0.12
+		rt["radius0"] = tr * 0.85 * rmul
+		rt["radius1"] = tr * 0.05
 		stems.append(rt)
 
 # --- Seviye 2: yan sürgünler (iğneleri taşır) -------------------------

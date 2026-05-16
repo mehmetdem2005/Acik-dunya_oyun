@@ -110,8 +110,8 @@ static func needle_atlas() -> Texture2D:
 	var rng := RandomNumberGenerator.new()
 	rng.seed = 7331
 	var cx := float(s) * 0.5
-	var dark := Color(0.045, 0.110, 0.050)
-	var lite := Color(0.300, 0.420, 0.170)
+	var dark := Color(0.130, 0.235, 0.105)
+	var lite := Color(0.440, 0.560, 0.255)
 	var signs: Array[float] = [-1.0, 1.0]
 	# Sap boyunca ~110 çıkış noktası; her noktada 3-5'li iğne demeti.
 	var pts := 110
@@ -134,7 +134,7 @@ static func needle_atlas() -> Texture2D:
 	for r2 in range(s):
 		var sx := int(round(cx + sin(float(r2) * 0.04) * 14.0))
 		if sx >= 0 and sx < s:
-			img.set_pixel(sx, r2, Color(0.045, 0.090, 0.045, 1.0))
+			img.set_pixel(sx, r2, Color(0.105, 0.160, 0.080, 1.0))
 	img.generate_mipmaps()
 	_needle = ImageTexture.create_from_image(img)
 	return _needle
