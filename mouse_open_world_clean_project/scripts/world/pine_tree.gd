@@ -79,6 +79,16 @@ class_name PineTree
 @export var branch_tip_age_tex: Texture2D     # R=tip G=age B=bend A=young
 @export var branch_detail_normal_tex: Texture2D
 
+@export_group("Ultra Texture — İğne (5x5 atlas)")
+@export var needle_albedo_tex: Texture2D       # RGB renk (siyah zemin)
+@export var needle_opacity_tex: Texture2D      # alpha kesimi
+@export var needle_normal_tex: Texture2D       # normal map
+@export var needle_orm_tex: Texture2D          # R=AO G=Rough B=Metal
+@export var needle_variation_tex: Texture2D    # renk varyasyonu
+@export var needle_windmask_tex: Texture2D
+@export var needle_height_tex: Texture2D
+@export var needle_bent_tex: Texture2D
+
 @export_group("Ultra Texture — Ayar")
 @export_enum("Low:0", "Balanced:1", "High:2") var texture_quality: int = 1
 @export var bark_tiling: Vector2 = Vector2(2.5, 3.5)
@@ -258,17 +268,34 @@ func _branch_material() -> StandardMaterial3D:
 		branch_tiling, false)
 
 func _needle_material() -> Material:
-	var tex := PineTextures.needle_atlas()
-	if enable_wind and ResourceLoader.exists("res://shaders/pine_wind.gdshader"):
+	var n_alb := _tex_or(needle_albedo_tex, _TEX_ROOT + "needles/pine_needles_albedo_alpha_2k.png")
+	if n_alb != null and enable_wind and ResourceLoader.exists("res://shaders/pine_wind.gdshader"):
 		var sh := ResourceLoader.load("res://shaders/pine_wind.gdshader") as Shader
 		if sh != null:
 			var sm := ShaderMaterial.new()
 			sm.shader = sh
-			sm.set_shader_parameter("needle_tex", tex)
+			sm.set_shader_parameter("needle_albedo", n_alb)
+			var n_op := _tex_or(needle_opacity_tex, _TEX_ROOT + "needles/pine_needles_opacity_1k.png")
+			sm.set_shader_parameter("use_opacity_tex", 1.0 if n_op != null else 0.0)
+			if n_op != null:
+				sm.set_shader_parameter("needle_opacity", n_op)
+			var n_nrm := _tex_or(needle_normal_tex, "")
+			sm.set_shader_parameter("normal_amt", 1.0 if n_nrm != null else 0.0)
+			if n_nrm != null:
+				sm.set_shader_parameter("needle_normal", n_nrm)
+			var n_orm := _tex_or(needle_orm_tex, _TEX_ROOT + "needles/pine_needles_orm_2k.png")
+			if n_orm != null:
+				sm.set_shader_parameter("needle_orm", n_orm)
+			var n_var := _tex_or(needle_variation_tex, _TEX_ROOT + "needles/pine_needles_variation_1k.png")
+			if n_var != null:
+				sm.set_shader_parameter("needle_variation", n_var)
+			else:
+				sm.set_shader_parameter("variation_amt", 0.0)
 			sm.set_shader_parameter("tree_height", total_height)
-			sm.set_shader_parameter("backlight_col", needle_mid * 0.45)
+			sm.set_shader_parameter("backlight_col", needle_mid * 0.6)
 			return sm
-	# Güvenli fallback (rüzgârsız ama doğru): native backlight.
+	# Albedo yoksa: prosedürel atlas + güvenli StandardMaterial3D fallback.
+	var tex := PineTextures.needle_atlas()
 	var m := StandardMaterial3D.new()
 	m.albedo_texture = tex
 	m.albedo_color = Color(1, 1, 1, 1)

@@ -116,7 +116,7 @@ func _spawn_level1(cfg: Dictionary, trunk: Dictionary, trunk_idx: int) -> void:
 			var grav := droop * (0.55 + 1.1 * (1.0 - tf))
 			var child := _grow(sp, dir, L, dal_seg, grav, 0.05, dal_yay, wob)
 			var age := 1.0 - tf
-			var r0v: float = tr * lerp(0.08, 0.20, age) * rjit
+			var r0v: float = tr * lerp(0.13, 0.27, age) * rjit
 			child["level"] = 1
 			child["parent"] = trunk_idx
 			child["depth01"] = tf
@@ -125,22 +125,24 @@ func _spawn_level1(cfg: Dictionary, trunk: Dictionary, trunk_idx: int) -> void:
 			child["broken"] = is_broken
 			child["tint"] = lerp(0.72, 1.10, age * age) * tvar
 			child["radius0"] = r0v
-			# Güçlü güç-yasası incelme (uç gerçekten incelir, min koru).
-			child["radius1"] = maxf(r0v * pow(maxf(tip_ratio, 0.01), 1.4) * (0.6 + 0.8 * tipr), 0.006)
+			# Yumuşak incelme: uç tabanın ~%22-34'ü (ANİ kesilme YOK).
+			child["radius1"] = maxf(r0v * lerp(0.34, 0.22, tf) * (0.85 + 0.6 * tipr), 0.012)
 			stems.append(child)
 			var bidx := stems.size() - 1
 			if not is_dry:
 				_spawn_level2(cfg, child, bidx, tf, age)
 	# PackedFloat32Array değer tipidir -> budak yükseklikleri geri yazılır.
 	trunk["whorl_h"] = whorl_h
-	# Apeks: tepede dik, kısa lider sürgünler -> doğal sivri uç.
-	for ai in range(5):
-		var ah: float = lerp(0.93, 0.995, float(ai) / 4.0)
+	# Apeks: merkezde uzun-kalın dik LİDER + çevresinde kısalan sürgünler
+	# -> dolgun, özenli, sivri konik tepe (referans gibi).
+	for ai in range(9):
+		var ah: float = lerp(0.86, 0.99, float(ai) / 8.0)
 		var sp := _sample(trunk, ah)
 		var aa := _rng.randf() * TAU
 		var awob := _rng.randf_range(-1.0, 1.0)
-		var adir := (Vector3(cos(aa), 0, sin(aa)) * 0.25 + Vector3.UP).normalized()
-		var al := crown_radius * 0.20 * (1.0 - float(ai) / 6.0)
+		var afr := float(ai) / 8.0
+		var adir := (Vector3(cos(aa), 0, sin(aa)) * (0.08 + 0.42 * afr) + Vector3.UP * 1.35).normalized()
+		var al := crown_radius * lerp(0.62, 0.16, afr)
 		var ac := _grow(sp, adir, maxf(al, 0.18), 4, 0.06, 0.10, 0.05, awob)
 		ac["level"] = 1
 		ac["parent"] = trunk_idx
@@ -149,8 +151,8 @@ func _spawn_level1(cfg: Dictionary, trunk: Dictionary, trunk_idx: int) -> void:
 		ac["dry"] = false
 		ac["broken"] = false
 		ac["tint"] = _rng.randf_range(0.95, 1.15)
-		ac["radius0"] = tr * 0.10
-		ac["radius1"] = tr * 0.10 * 0.22
+		ac["radius0"] = tr * lerp(0.36, 0.12, afr)
+		ac["radius1"] = tr * lerp(0.36, 0.12, afr) * 0.32
 		stems.append(ac)
 		_spawn_level2(cfg, ac, stems.size() - 1, 0.95, 0.05)
 
@@ -221,7 +223,7 @@ func _spawn_level2(cfg: Dictionary, parent: Dictionary, pidx: int, tf: float, ag
 		child["broken"] = false
 		child["tint"] = lerp(0.78, 1.12, age * age) * _rng.randf_range(0.93, 1.07)
 		child["radius0"] = r0v
-		child["radius1"] = maxf(r0v * float(cfg.get("shoot_taper", 0.14)), 0.003)
+		child["radius1"] = maxf(r0v * (0.35 + float(cfg.get("shoot_taper", 0.14))), 0.006)
 		stems.append(child)
 		if bool(cfg.get("fine_twigs", true)):
 			_fork(cfg, child, stems.size() - 1, tf, age, int(cfg.get("fork_depth", 2)))
@@ -295,7 +297,7 @@ func _fork(cfg: Dictionary, parent_stem: Dictionary, parent_idx: int,
 		var is_tip: bool = depth <= 1 or L < 0.14
 		var seg: int = 3 if is_tip else maxi(4, int(cfg.get("shoot_segment", 7)))
 		var child := _grow(tip, dir, L, seg, 0.28 + 0.40 * tf, 0.06, 0.09, wob)
-		var r0v: float = maxf(p_r1 * 0.66, 0.0022)
+		var r0v: float = maxf(p_r1 * 0.86, 0.006)
 		child["level"] = 2
 		child["parent"] = parent_idx
 		child["depth01"] = tf
@@ -305,7 +307,7 @@ func _fork(cfg: Dictionary, parent_stem: Dictionary, parent_idx: int,
 		child["is_tip"] = is_tip
 		child["tint"] = lerp(0.82, 1.14, age) * tnt
 		child["radius0"] = r0v
-		child["radius1"] = maxf(r0v * 0.40, 0.0018)
+		child["radius1"] = maxf(r0v * 0.58, 0.004)
 		stems.append(child)
 		if not is_tip:
 			_fork(cfg, child, stems.size() - 1, tf, age, depth - 1)

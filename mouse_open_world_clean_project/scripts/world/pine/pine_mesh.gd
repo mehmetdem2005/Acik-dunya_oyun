@@ -45,12 +45,12 @@ static func build(stems: Array, cfg: Dictionary) -> Dictionary:
 				has_branch = true
 				# Kuru dal iğne taşımaz (yalnız odun çizilir).
 				if not bool(stem.get("dry", false)):
-					_sprigs(leaf, stem, nlen * 0.22, 1, light_bias)
+					_sprigs(leaf, stem, nlen * 0.34, 1, light_bias)
 		elif lvl == 2:
 			if lvl2_wood and not bool(stem.get("is_tip", false)):
 				_tube(branch, stem, maxi(4, int(sides / 3.0)), empty, 0.0, cfg)
 				has_branch = true
-			_sprigs(leaf, stem, nlen * 0.20, 2, light_bias)
+			_sprigs(leaf, stem, nlen * 0.32, 2, light_bias)
 		elif lvl == 3:
 			_sprigs(leaf, stem, nlen * 0.16, 3, light_bias)
 
@@ -157,13 +157,14 @@ static func _sprigs(st: SurfaceTool, stem: Dictionary, size: float, lvl: int,
 	var tint: float = stem.get("tint", 1.0)
 	var age: float = stem.get("age", 0.5)
 	var broken: bool = bool(stem.get("broken", false))
-	# Yaşa bağlı yoğunluk rampası: yaşlı dal iç kısmı daha çok çıplak.
-	# İç kısım çıplak odun, iğne dış ~%55-65'te yoğunlaşır (açık taç).
-	var r0: float = lerp(0.38, 0.55, age)
-	var r1: float = lerp(0.62, 0.85, age)
+	var tip_full: bool = bool(stem.get("is_tip", false))
+	# İç kısım hafif çıplak, iğne dışta yoğun. Uç frond'lar TAM dolu
+	# (kel bırakma) -> taç dolgun, referans gibi.
+	var r0: float = lerp(0.28, 0.42, age)
+	var r1: float = lerp(0.55, 0.78, age)
 	if lvl == 1:
-		r0 = lerp(0.45, 0.62, age)
-		r1 = lerp(0.70, 0.90, age)
+		r0 = lerp(0.38, 0.55, age)
+		r1 = lerp(0.66, 0.86, age)
 	# Seviye-bazlı rüzgâr flex'i (gövde 0 -> iğne ucu en çok).
 	var flex: float = 0.6
 	if lvl == 3:
@@ -184,7 +185,7 @@ static func _sprigs(st: SurfaceTool, stem: Dictionary, size: float, lvl: int,
 		var t := carry
 		while t < seg_len:
 			var fr: float = (float(k) + t / seg_len) / float(n - 1)
-			var dens: float = 1.0 if lvl == 3 else smoothstep(r0, r1, fr)
+			var dens: float = 1.0 if (lvl == 3 or tip_full) else smoothstep(r0, r1, fr)
 			if broken and fr > 0.85:
 				dens = 0.0
 			if dens > 0.02:
@@ -200,7 +201,7 @@ static func _sprigs(st: SurfaceTool, stem: Dictionary, size: float, lvl: int,
 					rt = rt.normalized()
 					# Renk: uca doğru taze açık yeşil, içte koyu/mat.
 					var shade: float = clampf(lerp(0.62, 1.14, fr) * tint, 0.48, 1.25)
-					_card(st, c, up * (size * (0.80 + 0.50 * fr)), rt * (size * (0.80 + 0.50 * fr) * 0.62), shade, flex)
+					_card(st, c, up * (size * (0.90 + 0.55 * fr)), rt * (size * (0.90 + 0.55 * fr) * 0.66), shade, flex, idx % 25)
 			# Uca doğru sıklaş; ışık yönüne göre asimetri.
 			var dstep := step / maxf(dens, 0.10)
 			if light_bias > 0.0:
@@ -211,9 +212,10 @@ static func _sprigs(st: SurfaceTool, stem: Dictionary, size: float, lvl: int,
 
 # Tek demet = çapraz 2 dörtgen (X); tabandan uca yelpaze.
 static func _card(st: SurfaceTool, c: Vector3, uv_dir: Vector3, rv: Vector3,
-		ao: float, flex: float) -> void:
-	var fb := Vector2(flex, 0.0)            # taban: orta flex
-	var ftp := Vector2(flex * 1.25, 0.0)    # iğne ucu: en hızlı titreşim
+		ao: float, flex: float, cell: int) -> void:
+	# UV2 = (flex, atlas hücresi). Shader 5x5 atlastan demeti seçer.
+	var fb := Vector2(flex, float(cell))
+	var ftp := Vector2(flex * 1.25, float(cell))
 	for q in range(2):
 		var rq: Vector3
 		if q == 0:
