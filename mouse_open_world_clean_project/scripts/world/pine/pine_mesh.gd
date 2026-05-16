@@ -51,7 +51,7 @@ static func build(stems: Array, cfg: Dictionary) -> Dictionary:
 					_sprigs(leaf, stem, nlen * 0.42, 1, light_bias)
 		elif lvl == 2:
 			if lvl2_wood and not bool(stem.get("is_tip", false)):
-				_tube(branch, stem, maxi(3, int(sides / 4.0)), empty, 0.0, cfg)
+				_tube(branch, stem, maxi(4, int(sides / 2.6)), empty, 0.0, cfg)
 				has_branch = true
 			_sprigs(leaf, stem, nlen * 0.40, 2, light_bias)
 		elif lvl == 3:
@@ -103,6 +103,10 @@ static func _tube(st: SurfaceTool, stem: Dictionary, sides: int,
 		var f1 := float(k + 1) / float(n - 1)
 		var rad0: float = lerp(r0, r1, pow(f0, 0.85))
 		var rad1: float = lerp(r0, r1, pow(f1, 0.85))
+		# Nominal yarıçap (şişmeden ÖNCE): UV.v buna göre -> yaka/
+		# knot/burl yalnız KONUMU değiştirir, bark akışını DEĞİL.
+		var rn0: float = rad0
+		var rn1: float = rad1
 		# Gövdeye yakın odun ince dalda daha çok daralma profili korunur.
 		var flex0: float = 0.0 if lvl == 0 else lerp(0.0, 0.40, f0)
 		var flex1: float = 0.0 if lvl == 0 else lerp(0.0, 0.40, f1)
@@ -132,8 +136,8 @@ static func _tube(st: SurfaceTool, stem: Dictionary, sides: int,
 		var n1: Vector3 = norms[k + 1]
 		var b0: Vector3 = (tang[k] as Vector3).cross(n0).normalized()
 		var b1: Vector3 = (tang[k + 1] as Vector3).cross(n1).normalized()
-		var v0 := arc[k] / (TAU * maxf(rad0, 1e-4))
-		var v1 := arc[k + 1] / (TAU * maxf(rad1, 1e-4))
+		var v0 := arc[k] / (TAU * maxf(rn0, 1e-4))
+		var v1 := arc[k + 1] / (TAU * maxf(rn1, 1e-4))
 		for si in range(sides):
 			var a0 := TAU * float(si) / float(sides)
 			var a1 := TAU * float(si + 1) / float(sides)
@@ -214,10 +218,10 @@ static func _sprigs(st: SurfaceTool, stem: Dictionary, size: float, lvl: int,
 	# İç kısım hafif çıplak, iğne dışta yoğun. Uç frond'lar TAM dolu
 	# (kel bırakma) -> taç dolgun, referans gibi.
 	# Açık/tüylü taç: iç boş, iğne dış ~%40'ta yuvarlak küme (uç=tam).
-	var r0: float = lerp(0.34, 0.50, age)
+	var r0: float = lerp(0.22, 0.38, age)
 	var r1: float = lerp(0.66, 0.86, age)
 	if lvl == 1:
-		r0 = lerp(0.40, 0.56, age)
+		r0 = lerp(0.28, 0.44, age)
 		r1 = lerp(0.74, 0.92, age)
 	# Seviye-bazlı rüzgâr flex'i (gövde 0 -> iğne ucu en çok).
 	var flex: float = 0.6
@@ -227,7 +231,7 @@ static func _sprigs(st: SurfaceTool, stem: Dictionary, size: float, lvl: int,
 	# Tek kart = KÜÇÜK iğne demeti (fascicle); çoğu üst üste
 	# binerek çam yaprak KÜMESİNİ oluşturur (büyütülmüş tek demet DEĞİL).
 	var fl: float = clampf(size * 0.32, 0.11, 0.26)
-	var step := maxf(fl * 0.50, 0.028)
+	var step := maxf(fl * 0.33, 0.022)
 	var carry := 0.0
 	var idx := 0
 	for k in range(n - 1):

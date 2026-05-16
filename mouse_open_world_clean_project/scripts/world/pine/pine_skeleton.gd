@@ -83,8 +83,8 @@ func _spawn_level1(cfg: Dictionary, trunk: Dictionary, trunk_idx: int) -> void:
 		# Alt-orta tier'ler uzun -> geniş, dolgun, billur taç (referans).
 		# Alt tier'ler EN uzun (referans: uzun süpüren alt dallar),
 		# tepeye doğru hızlı kısalır -> havadar katmanlı koni.
-		var prof: float = pow(1.0 - tf, 0.60) * (0.90 + 0.10 * smoothstep(0.0, 0.22, tf))
-		var blen := crown_radius * prof * 1.28
+		var prof: float = pow(1.0 - tf, 0.50) * (1.0 - 0.55 * smoothstep(0.55, 1.0, tf))
+		var blen := crown_radius * prof * 1.42
 		if blen < 0.16:
 			continue
 		whorl_h.append(h01)
@@ -120,7 +120,7 @@ func _spawn_level1(cfg: Dictionary, trunk: Dictionary, trunk_idx: int) -> void:
 			var embed: float = minf(r0v, tr_h * 0.6)
 			var sp := sp_axis + radial0 * (tr_h - embed)
 			# Yükseklik-bölgeli açı: alt yatay/sarkık, üst dik (koni).
-			var up0: float = lerp(elev_low, elev_high, pow(tf, 0.7)) + up_jit
+			var up0: float = lerp(elev_low, minf(elev_high, 0.20), pow(tf, 0.7)) + up_jit
 			var dir := (Vector3(cos(a), 0.0, sin(a)) + Vector3.UP * up0).normalized()
 			var L: float = blen * lvar
 			if is_broken:
@@ -128,7 +128,7 @@ func _spawn_level1(cfg: Dictionary, trunk: Dictionary, trunk_idx: int) -> void:
 			# Alt tier'ler sert süpürür, üst tier'ler dik durur.
 			var grav := droop * (0.42 + 0.95 * (1.0 - tf))
 			# knee=1.0 -> dal gövdeden YUKARI çıkıp sonra dışa kıvrılır.
-			var child := _grow(sp, dir, L, dal_seg, grav, 0.05, dal_yay, wob, 1.0)
+			var child := _grow(sp, dir, L, dal_seg, grav, 0.05, dal_yay, wob, 0.55)
 			whorl_az.append(h01)
 			whorl_az.append(a)
 			whorl_az.append(r0v)
@@ -239,7 +239,7 @@ func _spawn_level2(cfg: Dictionary, parent: Dictionary, pidx: int, tf: float, ag
 		child["broken"] = false
 		child["tint"] = lerp(0.78, 1.12, age * age) * _rng.randf_range(0.93, 1.07)
 		child["radius0"] = r0v
-		child["radius1"] = maxf(r0v * (0.35 + float(cfg.get("shoot_taper", 0.14))), 0.006)
+		child["radius1"] = maxf(r0v * (0.55 + float(cfg.get("shoot_taper", 0.14))), 0.010)
 		stems.append(child)
 		if bool(cfg.get("fine_twigs", true)):
 			_fork(cfg, child, stems.size() - 1, tf, age, int(cfg.get("fork_depth", 2)))
@@ -303,7 +303,7 @@ func _fork(cfg: Dictionary, parent_stem: Dictionary, parent_idx: int,
 	# Eksen boyunca PİNNAT yan dalcıklar: çatallanma yalnız uçta değil,
 	# orta/dipte de (gerçek çam frond'u). Uç (is_tip) -> ucuz, odun yok.
 	if depth >= 2:
-		for li in range(1):
+		for li in range(2):
 			var lu: float = 0.40 + 0.26 * float(li)        # ~0.40, 0.66
 			var lwob: float = _rng.randf_range(-1.0, 1.0)
 			var lang: float = deg_to_rad(_rng.randf_range(32.0, 55.0))
