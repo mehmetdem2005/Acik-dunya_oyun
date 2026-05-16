@@ -6,7 +6,9 @@ class_name PineTree
 #   PineSkeleton (özyinelemeli dal grafiği, RMF frame, tropizm)
 #   -> PineMesh (odun tüpleri + katlı iğne şeritleri, yumuşak normal)
 #   -> PineTextures (önbellekli prosedürel kabuk + iğne atlası)
-# Harici model/doku dosyası GEREKMEZ. .tscn export adları korunur.
+# Doku: Inspector "Ultra Texture" yuvalarına foto PNG/JPG sürüklenirse
+# gerçek PBR kabuk/dal kullanılır; boşsa prosedürel fallback (model dosyası
+# yine GEREKMEZ — mesh tamamen prosedürel). .tscn export adları korunur.
 
 @export_group("Boyut")
 @export var total_height: float = 7.5
@@ -45,6 +47,34 @@ class_name PineTree
 @export var needle_dark: Color = Color(0.045, 0.110, 0.050)
 @export var needle_mid: Color = Color(0.110, 0.230, 0.105)
 @export var needle_lite: Color = Color(0.300, 0.420, 0.170)
+
+# Gerçek foto texture yuvaları. Godot editöründe ilgili PNG/JPG'yi bu
+# yuvalara SÜRÜKLE-BIRAK. Yuva boşsa otomatik prosedürel doku kullanılır
+# (eski davranış korunur). Import ayarlarını editör doğru yapar:
+#   normal/detail_normal -> "Normal Map" olarak içe aktar,
+#   ormc/tip_age -> sRGB kapalı (renk değil veri).
+@export_group("Ultra Texture — Kabuk")
+@export var bark_albedo_tex: Texture2D
+@export var bark_normal_tex: Texture2D
+@export var bark_ormc_tex: Texture2D          # R=AO  G=Roughness  B=Cavity
+@export var bark_height_tex: Texture2D
+@export var bark_detail_normal_tex: Texture2D
+@export var bark_variation_tex: Texture2D
+
+@export_group("Ultra Texture — Dal")
+@export var branch_albedo_tex: Texture2D
+@export var branch_normal_tex: Texture2D
+@export var branch_ormc_tex: Texture2D        # R=AO  G=Roughness  B=Cavity
+@export var branch_tip_age_tex: Texture2D     # R=tip G=age B=bend A=young
+@export var branch_detail_normal_tex: Texture2D
+
+@export_group("Ultra Texture — Ayar")
+@export_enum("Low:0", "Balanced:1", "High:2") var texture_quality: int = 1
+@export var bark_tiling: Vector2 = Vector2(2.5, 3.5)
+@export var branch_tiling: Vector2 = Vector2(1.0, 4.0)
+@export_range(0.0, 0.18, 0.005) var bark_parallax: float = 0.04
+
+const _TEX_ROOT := "res://assets/trees/pine_ultra_mobile/textures/"
 
 func _ready() -> void:
 	rebuild()
@@ -109,11 +139,19 @@ func rebuild() -> void:
 	var stems := skel.build(cfg)
 	var meshes := PineMesh.build(stems, cfg)
 
-	var wood_mi := MeshInstance3D.new()
-	wood_mi.name = "Wood"
-	wood_mi.mesh = meshes["wood"]
-	wood_mi.material_override = _wood_material()
-	add_child(wood_mi)
+	var bark_mi := MeshInstance3D.new()
+	bark_mi.name = "Bark"
+	bark_mi.mesh = meshes["bark"]
+	bark_mi.material_override = _bark_material()
+	add_child(bark_mi)
+
+	var branch_mesh = meshes.get("branch")
+	if branch_mesh != null:
+		var branch_mi := MeshInstance3D.new()
+		branch_mi.name = "Branches"
+		branch_mi.mesh = branch_mesh
+		branch_mi.material_override = _branch_material()
+		add_child(branch_mi)
 
 	var leaf_mi := MeshInstance3D.new()
 	leaf_mi.name = "Foliage"
@@ -124,18 +162,76 @@ func rebuild() -> void:
 	if generate_collision and not Engine.is_editor_hint():
 		_build_collision()
 
-func _wood_material() -> StandardMaterial3D:
+# Yuva doluysa onu, değilse verilen res:// yolunu (içe aktarılmışsa),
+# o da yoksa null döndürür -> çağıran prosedürel fallback'e düşer.
+func _tex_or(slot: Texture2D, res_path: String) -> Texture2D:
+	if slot != null:
+		return slot
+	if res_path != "" and ResourceLoader.exists(res_path):
+		return ResourceLoader.load(res_path) as Texture2D
+	return null
+
+# Ortak PBR kabuk/dal materyali. albedo yoksa eski prosedürel kabuğa düşer.
+func _pbr_wood_material(albedo: Texture2D, nrm: Texture2D, ormc: Texture2D,
+		detail_n: Texture2D, height: Texture2D, tiling: Vector2,
+		use_height: bool) -> StandardMaterial3D:
 	var m := StandardMaterial3D.new()
-	m.albedo_color = bark_color
-	m.albedo_texture = PineTextures.bark()
-	m.normal_enabled = true
-	m.normal_texture = PineTextures.bark_normal()
-	m.normal_scale = bark_normal_scale
-	# Uzun gövdede plaka esnemesin (V'de yoğunlaştır).
-	m.uv1_scale = Vector3(1.0, 1.5, 1.0)
-	m.roughness = 0.88
+	if albedo == null:
+		# Prosedürel fallback (eski davranış).
+		m.albedo_color = bark_color
+		m.albedo_texture = PineTextures.bark()
+		m.normal_enabled = true
+		m.normal_texture = PineTextures.bark_normal()
+		m.normal_scale = bark_normal_scale
+		m.uv1_scale = Vector3(1.0, 1.5, 1.0)
+		m.roughness = 0.88
+		m.specular = 0.5
+		return m
+	m.albedo_color = Color(1, 1, 1, 1)
+	m.albedo_texture = albedo
+	m.metallic = 0.0
 	m.specular = 0.5
+	m.roughness = 1.0
+	m.uv1_scale = Vector3(tiling.x, tiling.y, 1.0)
+	if nrm != null:
+		m.normal_enabled = true
+		m.normal_texture = nrm
+		m.normal_scale = bark_normal_scale
+	if ormc != null:
+		# Kanal paketi: R=AO, G=Roughness (B=Cavity kullanılmıyor).
+		m.ao_enabled = true
+		m.ao_texture = ormc
+		m.ao_texture_channel = BaseMaterial3D.TEXTURE_CHANNEL_RED
+		m.roughness_texture = ormc
+		m.roughness_texture_channel = BaseMaterial3D.TEXTURE_CHANNEL_GREEN
+	if detail_n != null and texture_quality >= 2:
+		m.detail_enabled = true
+		m.detail_normal = detail_n
+		m.detail_blend_mode = BaseMaterial3D.BLEND_MODE_MIX
+		m.detail_uv = BaseMaterial3D.DETAIL_UV_1
+	if use_height and height != null and texture_quality >= 2:
+		m.heightmap_enabled = true
+		m.heightmap_texture = height
+		m.heightmap_scale = bark_parallax * 16.0
 	return m
+
+func _bark_material() -> StandardMaterial3D:
+	return _pbr_wood_material(
+		_tex_or(bark_albedo_tex, _TEX_ROOT + "bark/pine_bark_albedo_2k.jpg"),
+		_tex_or(bark_normal_tex, ""),
+		_tex_or(bark_ormc_tex, ""),
+		_tex_or(bark_detail_normal_tex, ""),
+		_tex_or(bark_height_tex, ""),
+		bark_tiling, true)
+
+func _branch_material() -> StandardMaterial3D:
+	return _pbr_wood_material(
+		_tex_or(branch_albedo_tex, _TEX_ROOT + "branches/pine_branch_albedo_2k.png"),
+		_tex_or(branch_normal_tex, ""),
+		_tex_or(branch_ormc_tex, ""),
+		_tex_or(branch_detail_normal_tex, ""),
+		null,
+		branch_tiling, false)
 
 func _needle_material() -> Material:
 	var tex := PineTextures.needle_atlas()

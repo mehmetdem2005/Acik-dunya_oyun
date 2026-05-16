@@ -7,13 +7,17 @@ extends RefCounted
 # - İğne: sürgün boyunca DAĞITILMIŞ küçük çapraz DEMET kartları
 #   (her kart atlası tam (0..1) gösterir -> doku gerilmez, gerçek fascicle);
 #   yumuşak hacim normalleri, AO/tint vertex rengi
-# Dönüş: { "wood": ArrayMesh, "needle": ArrayMesh }
+# Dönüş: { "bark": ArrayMesh, "branch": ArrayMesh|null, "needle": ArrayMesh }
+# Gövde (level 0) ile dallar (level 1+) AYRI surface -> her biri kendi
+# materyalini (gerçek kabuk / dal texture seti) alabilir.
 
 const GOLDEN := 2.399963229728653
 
 static func build(stems: Array, cfg: Dictionary) -> Dictionary:
-	var wood := SurfaceTool.new()
-	wood.begin(Mesh.PRIMITIVE_TRIANGLES)
+	var bark := SurfaceTool.new()
+	bark.begin(Mesh.PRIMITIVE_TRIANGLES)
+	var branch := SurfaceTool.new()
+	branch.begin(Mesh.PRIMITIVE_TRIANGLES)
 	var leaf := SurfaceTool.new()
 	leaf.begin(Mesh.PRIMITIVE_TRIANGLES)
 
@@ -26,12 +30,14 @@ static func build(stems: Array, cfg: Dictionary) -> Dictionary:
 	if stems.size() > 0 and (stems[0] as Dictionary).has("whorl_h"):
 		whorls = stems[0]["whorl_h"]
 
+	var has_branch := false
 	for stem in stems:
 		var lvl: int = int(stem["level"])
 		if lvl == 0:
-			_tube(wood, stem, sides, whorls, knot_s)
+			_tube(bark, stem, sides, whorls, knot_s)
 		elif lvl == 1:
-			_tube(wood, stem, maxi(5, int(sides / 2.0)), empty, 0.0)
+			_tube(branch, stem, maxi(5, int(sides / 2.0)), empty, 0.0)
+			has_branch = true
 			# Kuru dal iğne taşımaz (yalnız odun çizilir).
 			if not bool(stem.get("dry", false)):
 				_sprigs(leaf, stem, nlen * 0.22, 1, light_bias)
@@ -40,10 +46,16 @@ static func build(stems: Array, cfg: Dictionary) -> Dictionary:
 		elif lvl == 3:
 			_sprigs(leaf, stem, nlen * 0.16, 3, light_bias)
 
-	wood.generate_normals()
-	wood.generate_tangents()
+	bark.generate_normals()
+	bark.generate_tangents()
 	var out := {}
-	out["wood"] = wood.commit()
+	out["bark"] = bark.commit()
+	if has_branch:
+		branch.generate_normals()
+		branch.generate_tangents()
+		out["branch"] = branch.commit()
+	else:
+		out["branch"] = null
 	out["needle"] = leaf.commit()
 	return out
 
