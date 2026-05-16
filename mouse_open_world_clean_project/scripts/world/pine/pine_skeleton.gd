@@ -111,7 +111,7 @@ func _spawn_level1(cfg: Dictionary, trunk: Dictionary, trunk_idx: int) -> void:
 				continue
 			var a: float = aaccum + ajit + lean * cos(aaccum - lean_ph)
 			var age := 1.0 - tf
-			var r0v: float = tr * lerp(0.13, 0.27, age) * rjit
+			var r0v: float = tr * lerp(0.20, 0.36, age) * rjit
 			# Dal GÖVDE DERİSİNDEN doğar (eksene değil) ve dibe gömülüdür:
 			# çubuk gibi delip geçmez; gövde tümseği + yaka ile kaynaşır.
 			var sp_axis := _sample(trunk, h01)
@@ -230,7 +230,7 @@ func _spawn_level2(cfg: Dictionary, parent: Dictionary, pidx: int, tf: float, ag
 		if L < 0.1:
 			continue
 		var child := _grow(sp, dir, L, int(cfg.get("shoot_segment", 7)), 0.3 + 0.45 * tf, 0.08, 0.10, wob)
-		var r0v: float = maxf(p_r1 * rmul, 0.004)
+		var r0v: float = maxf(p_r1 * rmul, 0.014)
 		child["level"] = 2
 		child["parent"] = pidx
 		child["depth01"] = tf
@@ -303,7 +303,7 @@ func _fork(cfg: Dictionary, parent_stem: Dictionary, parent_idx: int,
 	# Eksen boyunca PİNNAT yan dalcıklar: çatallanma yalnız uçta değil,
 	# orta/dipte de (gerçek çam frond'u). Uç (is_tip) -> ucuz, odun yok.
 	if depth >= 2:
-		for li in range(2):
+		for li in range(1):
 			var lu: float = 0.40 + 0.26 * float(li)        # ~0.40, 0.66
 			var lwob: float = _rng.randf_range(-1.0, 1.0)
 			var lang: float = deg_to_rad(_rng.randf_range(32.0, 55.0))

@@ -121,8 +121,8 @@ static func _tube(st: SurfaceTool, stem: Dictionary, sides: int,
 		elif lvl == 1 and not bool(stem.get("is_root", false)):
 			# Dal-gövde YAKASI: dipte yumuşak şişme + hızlı incelme ->
 			# dal gövdeye saplanmış çubuk değil, organik bağlanır.
-			rad0 += r0 * 0.6 * pow(maxf(1.0 - f0 * 5.0, 0.0), 2.0)
-			rad1 += r0 * 0.6 * pow(maxf(1.0 - f1 * 5.0, 0.0), 2.0)
+			rad0 += r0 * 1.05 * pow(maxf(1.0 - f0 * 3.0, 0.0), 1.5)
+			rad1 += r0 * 1.05 * pow(maxf(1.0 - f1 * 3.0, 0.0), 1.5)
 		# Per-side payanda lobu (yalnız govde; dipte guclu, yukari soner).
 		var lobe0: float = (flare_l * pow(maxf(1.0 - f0 * 4.0, 0.0), 2.0)) if lvl == 0 else 0.0
 		var lobe1: float = (flare_l * pow(maxf(1.0 - f1 * 4.0, 0.0), 2.0)) if lvl == 0 else 0.0
@@ -173,10 +173,10 @@ static func _tube(st: SurfaceTool, stem: Dictionary, sides: int,
 				var mic1: float = sin(ah1 * 21.0 + f1 * 27.0)
 				var hf0: float = clampf(1.0 - f0 * 0.55, 0.45, 1.0)
 				var hf1: float = clampf(1.0 - f1 * 0.55, 0.45, 1.0)
-				r00 *= 1.0 + (flu0 * 0.07 + swy0 * 0.045 + mic0 * 0.014) * hf0
-				r10 *= 1.0 + (flu1 * 0.07 + swy0 * 0.045 + mic1 * 0.014) * hf0
-				r01 *= 1.0 + (flu0 * 0.07 + swy1 * 0.045 + mic0 * 0.014) * hf1
-				r11 *= 1.0 + (flu1 * 0.07 + swy1 * 0.045 + mic1 * 0.014) * hf1
+				r00 *= 1.0 + (flu0 * 0.038 + swy0 * 0.045 + mic0 * 0.007) * hf0
+				r10 *= 1.0 + (flu1 * 0.038 + swy0 * 0.045 + mic1 * 0.007) * hf0
+				r01 *= 1.0 + (flu0 * 0.038 + swy1 * 0.045 + mic0 * 0.007) * hf1
+				r11 *= 1.0 + (flu1 * 0.038 + swy1 * 0.045 + mic1 * 0.007) * hf1
 				var bf0: float = pow(maxf(1.0 - f0 * 4.0, 0.0), 2.2)
 				var bf1: float = pow(maxf(1.0 - f1 * 4.0, 0.0), 2.2)
 				var rl0: float = 0.30 + 0.55 * maxf(sin(ah0 * 3.0 + tseed * 0.5), 0.0)
