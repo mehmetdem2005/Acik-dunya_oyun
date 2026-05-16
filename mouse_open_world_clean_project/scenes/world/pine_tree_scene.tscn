@@ -81,29 +81,29 @@ material_override = SubResource("Ground_mat")
 
 [node name="PineTree" type="Node3D" parent="."]
 script = ExtResource("1_pine")
-total_height = 8.0
-trunk_radius = 0.2
-trunk_top_ratio = 0.05
-crown_start_ratio = 0.27
-crown_radius = 2.9
-branch_count = 58
-branch_droop = 0.22
-shoots_per_branch = 8
+total_height = 9.0
+trunk_radius = 0.22
+trunk_top_ratio = 0.045
+crown_start_ratio = 0.3
+crown_radius = 2.2
+branch_count = 56
+branch_droop = 0.3
+shoots_per_branch = 7
 fine_twigs = true
 twigs_per_shoot = 2
 blades_per_branch = 3
-frond_size = 1.3
+frond_size = 1.4
 trunk_sides = 14
 seed = 20260516
 generate_collision = false
 enable_wind = true
 
 [node name="ShowcaseCamera" type="Camera3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 5, 13)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 6, 16)
 current = true
 fov = 50.0
 script = ExtResource("2_cam")
-target = Vector3(0, 3.6, 0)
-distance = 13.0
-height = 4.5
+target = Vector3(0, 4.6, 0)
+distance = 16.0
+height = 5.5
 orbit_speed = 0.18

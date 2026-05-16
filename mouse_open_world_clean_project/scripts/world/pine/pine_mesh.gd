@@ -4,9 +4,12 @@ extends RefCounted
 
 # İskelet stem'lerinden geometri üretir:
 # - Odun: gövde + ana dallar, frame halkalarıyla pürüzsüz tüp
-# - İğne: yan sürgünler boyunca KATLI (V-kesitli) çapraz şeritler;
-#   yumuşak hacim normalleri (karton görünüm yok), AO vertex rengi
+# - İğne: sürgün boyunca DAĞITILMIŞ küçük çapraz DEMET kartları
+#   (her kart atlası tam (0..1) gösterir -> doku gerilmez, gerçek fascicle);
+#   yumuşak hacim normalleri, AO/tint vertex rengi
 # Dönüş: { "wood": ArrayMesh, "needle": ArrayMesh }
+
+const GOLDEN := 2.399963229728653
 
 static func build(stems: Array, cfg: Dictionary) -> Dictionary:
 	var wood := SurfaceTool.new()
@@ -14,27 +17,21 @@ static func build(stems: Array, cfg: Dictionary) -> Dictionary:
 	var leaf := SurfaceTool.new()
 	leaf.begin(Mesh.PRIMITIVE_TRIANGLES)
 
-	var sides: int = int(cfg.get("trunk_sides", 10))
-	var planes: int = clampi(int(cfg.get("needle_planes", 3)), 2, 5)
-	var nlen: float = cfg.get("needle_size", 1.0)
+	var sides: int = int(cfg.get("trunk_sides", 12))
+	var nlen: float = cfg.get("needle_size", 1.2)
 
 	for stem in stems:
-		var lvl: int = stem["level"]
-		if lvl <= 1:
-			_tube(wood, stem, sides if lvl == 0 else maxi(5, int(sides / 2.0)))
-		if lvl == 1:
-			# Ana dalın kendisi de iğnelenir (çıplak kahverengi dal yok).
-			var bp := clampi(planes - 1, 2, 3)
-			for pj in range(bp):
-				_needle_blade(leaf, stem, TAU * float(pj) / float(bp), nlen * 1.05)
-		if lvl == 2:
-			for pi in range(planes):
-				var roll := TAU * float(pi) / float(planes)
-				_needle_blade(leaf, stem, roll, nlen)
-		if lvl == 3:
-			# İnce dallar: sadece iğne (odun çizilmez), silüet kırılımı.
-			for pk in range(2):
-				_needle_blade(leaf, stem, TAU * float(pk) / 2.0, nlen * 0.7)
+		var lvl: int = int(stem["level"])
+		if lvl == 0:
+			_tube(wood, stem, sides)
+		elif lvl == 1:
+			_tube(wood, stem, maxi(5, int(sides / 2.0)))
+			# Ana dalın yalnız DIŞ yarısı iğnelenir -> açık, çıplak-içli çam.
+			_sprigs(leaf, stem, nlen * 0.22, 0.45)
+		elif lvl == 2:
+			_sprigs(leaf, stem, nlen * 0.20, 0.0)
+		elif lvl == 3:
+			_sprigs(leaf, stem, nlen * 0.16, 0.0)
 
 	wood.generate_normals()
 	wood.generate_tangents()
@@ -52,15 +49,13 @@ static func _tube(st: SurfaceTool, stem: Dictionary, sides: int) -> void:
 	var n := pts.size()
 	var r0: float = stem["radius0"]
 	var r1: float = stem["radius1"]
-	# İnce dallarda kabuk detayını sıklaştır (dev plaka esnemesi yok).
 	var det: float = 1.0 if int(stem["level"]) == 0 else 4.5
 	for k in range(n - 1):
 		var f0 := float(k) / float(n - 1)
 		var f1 := float(k + 1) / float(n - 1)
 		var rad0: float = lerp(r0, r1, pow(f0, 0.85))
 		var rad1: float = lerp(r0, r1, pow(f1, 0.85))
-		# Tabanda kök payandası (sadece gövde, level 0).
-		if stem["level"] == 0:
+		if int(stem["level"]) == 0:
 			rad0 += r0 * 1.4 * pow(maxf(1.0 - f0 * 6.0, 0.0), 2.0)
 			rad1 += r0 * 1.4 * pow(maxf(1.0 - f1 * 6.0, 0.0), 2.0)
 		var c0: Vector3 = pts[k]
@@ -87,68 +82,70 @@ static func _tube(st: SurfaceTool, stem: Dictionary, sides: int) -> void:
 			st.set_uv(Vector2(uB, v1)); st.add_vertex(c1 + d11 * rad1)
 			st.set_uv(Vector2(uB, v0)); st.add_vertex(c0 + d10 * rad0)
 
-# --- Katlı iğne şeridi (V-kesit, yumuşak normal) ----------------------
+# --- İğne demeti kartları (sürgün boyunca dağıtılmış) -----------------
 
-static func _needle_blade(st: SurfaceTool, stem: Dictionary, roll: float, nlen: float) -> void:
+static func _sprigs(st: SurfaceTool, stem: Dictionary, size: float, start_u: float) -> void:
 	var pts: Array = stem["points"]
-	var tang: Array = stem["tangents"]
 	var norms: Array = stem["normals"]
 	var n := pts.size()
+	if n < 2:
+		return
 	var depth01: float = stem.get("depth01", 0.5)
 	var tint: float = stem.get("tint", 1.0)
-	var width := nlen * 0.16
-	var acc := 0.0
+	var step := maxf(size * 0.5, 0.035)
+	var carry := 0.0
+	var idx := 0
 	for k in range(n - 1):
 		var c0: Vector3 = pts[k]
 		var c1: Vector3 = pts[k + 1]
-		var ax: Vector3 = (c1 - c0)
-		var seg_len := ax.length()
+		var seg: Vector3 = c1 - c0
+		var seg_len := seg.length()
 		if seg_len < 1e-5:
 			continue
-		ax = ax / seg_len
+		var ax: Vector3 = seg / seg_len
 		var nm: Vector3 = norms[k]
-		var bn: Vector3 = ax.cross(nm).normalized()
-		var flat := (nm * cos(roll) + bn * sin(roll)).normalized()
-		var pn := ax.cross(flat).normalized()
-		var f0 := float(k) / float(n - 1)
-		var f1 := float(k + 1) / float(n - 1)
-		var w0 := width * _wprof(f0)
-		var w1 := width * _wprof(f1)
-		var sag0 := Vector3.DOWN * w0 * 0.5
-		var sag1 := Vector3.DOWN * w1 * 0.5
-		var L0 := c0 - flat * w0 + sag0
-		var R0 := c0 + flat * w0 + sag0
-		var L1 := c1 - flat * w1 + sag1
-		var R1 := c1 + flat * w1 + sag1
-		var M0 := c0 + pn * (w0 * 0.55)
-		var M1 := c1 + pn * (w1 * 0.55)
-		var v0 := acc
-		acc += seg_len / maxf(nlen * 0.42, 0.08)
-		var v1 := acc
-		var ao0: float = clampf((0.40 + 0.55 * f0 + 0.08 * depth01) * tint, 0.0, 1.0)
-		var ao1: float = clampf((0.40 + 0.55 * f1 + 0.08 * depth01) * tint, 0.0, 1.0)
-		# Sol yarım yüz.
-		var nLf := _soft(L0, pn - flat)
-		var nRf := _soft(R0, pn + flat)
-		_v(st, L0, Vector2(0.0, v0), ao0, nLf)
-		_v(st, L1, Vector2(0.0, v1), ao1, _soft(L1, pn - flat))
-		_v(st, M1, Vector2(0.5, v1), ao1, _soft(M1, pn))
-		_v(st, L0, Vector2(0.0, v0), ao0, nLf)
-		_v(st, M1, Vector2(0.5, v1), ao1, _soft(M1, pn))
-		_v(st, M0, Vector2(0.5, v0), ao0, _soft(M0, pn))
-		# Sağ yarım yüz.
-		_v(st, M0, Vector2(0.5, v0), ao0, _soft(M0, pn))
-		_v(st, M1, Vector2(0.5, v1), ao1, _soft(M1, pn))
-		_v(st, R1, Vector2(1.0, v1), ao1, _soft(R1, pn + flat))
-		_v(st, M0, Vector2(0.5, v0), ao0, _soft(M0, pn))
-		_v(st, R1, Vector2(1.0, v1), ao1, _soft(R1, pn + flat))
-		_v(st, R0, Vector2(1.0, v0), ao0, nRf)
+		var t := carry
+		while t < seg_len:
+			var fr: float = (float(k) + t / seg_len) / float(n - 1)
+			if fr >= start_u:
+				var c: Vector3 = c0 + ax * t
+				idx += 1
+				# İstasyon başına 2 zıt demet -> sürgünü saran fırça.
+				for s in range(2):
+					var az: float = float(idx) * GOLDEN + PI * float(s)
+					var outd: Vector3 = nm.rotated(ax, az).normalized()
+					var up: Vector3 = (outd * 0.78 + ax * 0.42 + Vector3.DOWN * 0.16).normalized()
+					var rt: Vector3 = up.cross(Vector3.UP)
+					if rt.length() < 0.02:
+						rt = up.cross(Vector3.RIGHT)
+					rt = rt.normalized()
+					var ao: float = clampf((0.46 + 0.50 * fr + 0.06 * depth01) * tint, 0.0, 1.0)
+					_card(st, c, up * size, rt * (size * 0.55), ao)
+			t += step
+		carry = t - seg_len
 
-static func _wprof(k: float) -> float:
-	return sin(clampf(k, 0.0, 1.0) * PI) * 0.65 + (1.0 - k) * 0.45 + 0.15
+# Tek demet = çapraz 2 dörtgen (X); tabandan uca yelpaze.
+static func _card(st: SurfaceTool, c: Vector3, uv_dir: Vector3, rv: Vector3, ao: float) -> void:
+	for q in range(2):
+		var rq: Vector3
+		if q == 0:
+			rq = rv
+		else:
+			rq = uv_dir.normalized().cross(rv).normalized() * rv.length()
+		var base := rq * 0.30
+		var tip := c + uv_dir
+		var fn := uv_dir.cross(rq)
+		var nA := _soft(c, fn)
+		var nT := _soft(tip, fn)
+		st.set_color(Color(ao, ao, ao, 1.0))
+		st.set_normal(nA); st.set_uv(Vector2(0.32, 1.0)); st.add_vertex(c - base)
+		st.set_normal(nA); st.set_uv(Vector2(0.68, 1.0)); st.add_vertex(c + base)
+		st.set_normal(nT); st.set_uv(Vector2(1.0, 0.0)); st.add_vertex(tip + rq)
+		st.set_normal(nA); st.set_uv(Vector2(0.32, 1.0)); st.add_vertex(c - base)
+		st.set_normal(nT); st.set_uv(Vector2(1.0, 0.0)); st.add_vertex(tip + rq)
+		st.set_normal(nT); st.set_uv(Vector2(0.0, 0.0)); st.add_vertex(tip - rq)
 
-# Geometrik kat normalini, gövdeden dışa+yukarı yumuşak hacim
-# normaliyle harmanlar -> foliage karton değil, dolgun koni gibi ışıklanır.
+# Yüz normalini gövdeden dışa+yukarı yumuşak hacim normaliyle harmanlar.
 static func _soft(p: Vector3, fold: Vector3) -> Vector3:
 	var radial := Vector3(p.x, 0.0, p.z)
 	var outward: Vector3
@@ -157,11 +154,4 @@ static func _soft(p: Vector3, fold: Vector3) -> Vector3:
 	else:
 		outward = radial.normalized()
 	var soft := (outward * 0.6 + Vector3.UP * 0.5).normalized()
-	return (fold.normalized() * 0.45 + soft * 0.75).normalized()
-
-static func _v(st: SurfaceTool, p: Vector3, uv: Vector2, ao: float, nrm: Vector3) -> void:
-	var a := clampf(ao, 0.0, 1.0)
-	st.set_color(Color(a, a, a, 1.0))
-	st.set_normal(nrm)
-	st.set_uv(uv)
-	st.add_vertex(p)
+	return (fold.normalized() * 0.4 + soft * 0.8).normalized()

@@ -55,16 +55,15 @@ func _spawn_level1(cfg: Dictionary, trunk: Dictionary, trunk_idx: int) -> void:
 	var crown_radius: float = cfg.get("crown_radius", 2.4)
 	var total: int = int(cfg.get("branch_count", 60))
 	var droop: float = cfg.get("branch_droop", 0.55)
-	var tier_count: int = clampi(int(round(height * 2.2)), 9, 20)
+	var tier_count: int = clampi(int(round(height * 1.45)), 7, 13)
 	var az := _rng.randf() * TAU
 	for ti in range(tier_count):
 		var tf := float(ti) / float(tier_count - 1)
-		var h01: float = lerp(crown_start, 0.955, tf)
-		# Klasik köknar silüeti: alt-orta en geniş, tepeye düzgün sivrilir,
-		# yalnız en dipte hafif kısalma.
-		var prof: float = pow(1.0 - tf, 0.62) * (0.55 + 0.45 * smoothstep(0.0, 0.07, tf))
+		var h01: float = lerp(crown_start, 0.95, tf)
+		# DİK KONİ: en uzun dipte, tepeye güçlü sivrilme, küçük apeks.
+		var prof: float = pow(1.0 - tf, 1.18) + 0.05
 		var blen := crown_radius * prof
-		if blen < 0.18:
+		if blen < 0.16:
 			continue
 		# Açık/seyrek çam tacı: tier başına az dal + düzensizlik jitter'ı.
 		var per := int(round(lerp(float(total) / float(tier_count) * 1.5, 3.0, tf)))
@@ -73,8 +72,8 @@ func _spawn_level1(cfg: Dictionary, trunk: Dictionary, trunk_idx: int) -> void:
 		for bi in range(per):
 			var a := az + TAU * float(bi) / float(per) + _rng.randf_range(-0.22, 0.22)
 			var sp := _sample(trunk, clampf(h01 + _rng.randf_range(-0.02, 0.02), 0.0, 1.0))
-			# Çam dalı yukarı KALKIK çıkar (ladin gibi sarkmaz).
-			var up0: float = lerp(0.55, 0.12, tf)
+			# Olgun çam: dallar neredeyse YATAY raflar (top değil katmanlı).
+			var up0: float = lerp(0.14, -0.04, tf)
 			var dir := (Vector3(cos(a), 0.0, sin(a)) + Vector3.UP * up0).normalized()
 			var L := blen * _rng.randf_range(0.82, 1.14)
 			var grav := droop * (0.4 + 0.6 * (1.0 - tf))
