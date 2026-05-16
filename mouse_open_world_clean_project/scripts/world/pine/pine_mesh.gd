@@ -64,6 +64,9 @@ static func build(stems: Array, cfg: Dictionary) -> Dictionary:
 		out["branch"] = branch.commit()
 	else:
 		out["branch"] = null
+	# İğne normalleri _card'da elle (yumuşak hacim) -> generate_normals
+	# ÇAĞIRMA. NORMAL_MAP için tangent şart: UV+normal'den üret.
+	leaf.generate_tangents()
 	out["needle"] = leaf.commit()
 	return out
 

@@ -142,7 +142,7 @@ func _spawn_level1(cfg: Dictionary, trunk: Dictionary, trunk_idx: int) -> void:
 		var awob := _rng.randf_range(-1.0, 1.0)
 		var afr := float(ai) / 8.0
 		var adir := (Vector3(cos(aa), 0, sin(aa)) * (0.08 + 0.42 * afr) + Vector3.UP * 1.35).normalized()
-		var al := crown_radius * lerp(0.62, 0.16, afr)
+		var al := crown_radius * lerpf(0.62, 0.16, afr)
 		var ac := _grow(sp, adir, maxf(al, 0.18), 4, 0.06, 0.10, 0.05, awob)
 		ac["level"] = 1
 		ac["parent"] = trunk_idx
