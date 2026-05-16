@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" path="res://scripts/terrain/terrain_runtime_loader.gd" id="1_terrain_runtime"]
 [ext_resource type="Script" path="res://scripts/world/world_runtime_spawner.gd" id="2_spawner"]
-[ext_resource type="Script" path="res://scripts/world/pine_forest.gd" id="3_forest"]
+[ext_resource type="Script" path="res://scripts/world/pine_tree.gd" id="3_pine"]
 
 [sub_resource type="Environment" id="Environment_1"]
 background_mode = 2
@@ -32,15 +32,13 @@ shadow_enabled = true
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = SubResource("Environment_1")
 
-[node name="PineForest" type="Node3D" parent="."]
-script = ExtResource("3_forest")
-tree_count = 32
-area_radius = 38.0
-min_spacing = 3.5
-forest_seed = 2026
-height_min = 4.5
-height_max = 9.0
-ground_y = 0.0
-raycast_to_ground = true
-ray_collision_mask = 1
+[node name="PineTree" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, 0, -4)
+script = ExtResource("3_pine")
+total_height = 7.5
+trunk_radius = 0.18
+crown_radius = 2.7
+branch_count = 66
+blades_per_branch = 7
+seed = 20260516
 generate_collision = true

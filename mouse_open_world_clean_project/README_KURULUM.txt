@@ -120,32 +120,31 @@ Player ve MobileUI sadece runtime'da spawn olur.
 - Eski terrain_root.gd / terrain_root0.gd bu projede kullanılmıyor.
 
 ============================================================
-5.5) GERÇEKÇİ ÇAM AĞACI SAHNESİ
+5.5) ÇAM AĞACI MODELİ
 ============================================================
 
-Gösterim sahnesi (tek başına çalışır, oynak kamera + gökyüzü + sis):
+Model gösterim sahnesi (tek ağaç, dönen kamera, gökyüzü):
 res://scenes/world/pine_tree_scene.tscn
-Bunu açıp Play (F6) deyince çam ormanını dönen kamerayla görürsün.
+F6 ile aç -> tek bir çam ağacı modelini her açıdan görürsün.
 
-Tek ağaç (başka sahneye sürükle-bırak):
+Yeniden kullanılabilir model (başka sahneye sürükle-bırak):
 res://scenes/world/pine_tree.tscn
+world.tscn içinde de spawn yakınına tek bir PineTree konuldu.
 
-Ana oyun dünyasına da otomatik orman eklendi:
-world.tscn -> PineForest node'u. Inspector'dan tree_count, area_radius,
-forest_seed, height_min/max gibi değerleri değiştirip yeniden üretebilirsin.
+Model prosedürel üretilir (harici model/doku dosyası GEREKMEZ):
+- Kök payandalı, plakalı kabuk dokulu, hafif eğimli gövde
+- Belirgin katmanlı (whorl) dal tabakaları -> net kozalak silüeti
+- Her dal ekseni etrafında çok bıçaklı yoğun iğne spreyi (sarkık)
+- Yeşil bakeli iğne dokusu + AO vertex rengi (StandardMaterial)
+- Silüeti dolduran iç koni; gövdede opsiyonel çarpışma
 
-Ağaçlar prosedürel üretilir (model dosyası gerekmez):
-- Konik, hafif eğri gövde + kabuk rengi
-- Aşağı sarkan, üst üste binen iğne yaprak katmanları
-- Rüzgarda salınan yaprak shader'ı: res://shaders/pine_wind.gdshader
-- Her ağaç farklı tohum/boy/dönüş -> klon görünmez
-- Gövdede opsiyonel silindir çarpışma (generate_collision)
+Inspector'dan ayar: total_height, crown_radius, branch_count,
+blades_per_branch, frond_size, trunk_sides, seed, renkler.
 
-Mobil performans notu: tree_count ve foliage_layers düşük tut.
-Telefonda 25-35 ağaç güvenli. PC'de 60+ rahat.
+enable_wind: varsayılan KAPALI. Açarsan minimal güvenli rüzgar
+shader'ı (res://shaders/pine_wind.gdshader) devreye girer.
 
-Zemine oturma: PineForest raycast_to_ground açıkken terrain chunk
-collision'ına (layer 1) ışın atar. Terrain yoksa ground_y'ye düşer.
+Mobil performans: branch_count ve blades_per_branch düşür.
 
 ============================================================
 6) DOSYA YAPISI
