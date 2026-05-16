@@ -83,7 +83,7 @@ func _spawn_level1(cfg: Dictionary, trunk: Dictionary, trunk_idx: int) -> void:
 		# Alt-orta tier'ler uzun -> geniş, dolgun, billur taç (referans).
 		# Alt tier'ler EN uzun (referans: uzun süpüren alt dallar),
 		# tepeye doğru hızlı kısalır -> havadar katmanlı koni.
-		var prof: float = pow(1.0 - tf, 0.50) * (1.0 - 0.55 * smoothstep(0.55, 1.0, tf))
+		var prof: float = pow(1.0 - tf, 0.62) * (1.0 - 0.72 * smoothstep(0.42, 1.0, tf))
 		var blen := crown_radius * prof * 1.42
 		if blen < 0.16:
 			continue
@@ -126,9 +126,9 @@ func _spawn_level1(cfg: Dictionary, trunk: Dictionary, trunk_idx: int) -> void:
 			if is_broken:
 				L *= brk_mul
 			# Alt tier'ler sert süpürür, üst tier'ler dik durur.
-			var grav := droop * (0.42 + 0.95 * (1.0 - tf))
+			var grav := droop * (0.50 + 1.45 * (1.0 - tf))
 			# knee=1.0 -> dal gövdeden YUKARI çıkıp sonra dışa kıvrılır.
-			var child := _grow(sp, dir, L, dal_seg, grav, 0.05, dal_yay, wob, 0.55)
+			var child := _grow(sp, dir, L, dal_seg, grav, 0.05, dal_yay, wob, 0.40)
 			whorl_az.append(h01)
 			whorl_az.append(a)
 			whorl_az.append(r0v)
