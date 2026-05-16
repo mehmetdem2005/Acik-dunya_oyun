@@ -15,27 +15,30 @@ class_name PineTree
 @export_range(0.0, 0.2, 0.005) var trunk_bend: float = 0.04
 
 @export_group("Taç / Dallar")
-@export var crown_start_ratio: float = 0.12
+@export var crown_start_ratio: float = 0.27
 @export_range(1.5, 6.0, 0.1) var crown_radius: float = 2.7
-@export_range(20, 110, 1) var branch_count: int = 70
-@export_range(0.15, 1.2, 0.02) var branch_droop: float = 0.5
+@export_range(20, 110, 1) var branch_count: int = 58
+@export_range(0.0, 1.0, 0.02) var branch_droop: float = 0.22
 @export_range(3, 12, 1) var shoots_per_branch: int = 8
+@export var fine_twigs: bool = true
+@export_range(0, 4, 1) var twigs_per_shoot: int = 2
 
 @export_group("İğne Yaprak")
 @export_range(2, 5, 1) var blades_per_branch: int = 3
-@export_range(0.4, 2.0, 0.05) var frond_size: float = 0.8
+@export_range(0.4, 2.5, 0.05) var frond_size: float = 1.2
 
 @export_group("Detay / Performans")
-@export_range(6, 14, 1) var trunk_sides: int = 10
+@export_range(8, 20, 1) var trunk_sides: int = 14
 @export var seed: int = 20260516
 @export var generate_collision: bool = true
-@export var enable_wind: bool = false
+@export var enable_wind: bool = true
 
-@export_group("Renk")
-@export var bark_color: Color = Color(0.34, 0.22, 0.15)
-@export var needle_dark: Color = Color(0.07, 0.15, 0.08)
-@export var needle_mid: Color = Color(0.14, 0.26, 0.13)
-@export var needle_lite: Color = Color(0.30, 0.42, 0.21)
+@export_group("Renk / Materyal")
+@export var bark_color: Color = Color(0.85, 0.82, 0.80)
+@export_range(0.2, 2.0, 0.05) var bark_normal_scale: float = 1.0
+@export var needle_dark: Color = Color(0.045, 0.110, 0.050)
+@export var needle_mid: Color = Color(0.110, 0.230, 0.105)
+@export var needle_lite: Color = Color(0.300, 0.420, 0.170)
 
 func _ready() -> void:
 	rebuild()
@@ -58,6 +61,8 @@ func rebuild() -> void:
 		"trunk_sides": trunk_sides,
 		"needle_planes": blades_per_branch,
 		"needle_size": frond_size,
+		"fine_twigs": fine_twigs,
+		"twigs_per_shoot": twigs_per_shoot,
 	}
 
 	var skel := PineSkeleton.new()
@@ -83,9 +88,13 @@ func _wood_material() -> StandardMaterial3D:
 	var m := StandardMaterial3D.new()
 	m.albedo_color = bark_color
 	m.albedo_texture = PineTextures.bark()
-	m.uv1_scale = Vector3(1.0, 1.0, 1.0)
-	m.roughness = 0.93
-	m.specular = 0.12
+	m.normal_enabled = true
+	m.normal_texture = PineTextures.bark_normal()
+	m.normal_scale = bark_normal_scale
+	# Uzun gövdede plaka esnemesin (V'de yoğunlaştır).
+	m.uv1_scale = Vector3(1.0, 1.5, 1.0)
+	m.roughness = 0.88
+	m.specular = 0.5
 	return m
 
 func _needle_material() -> Material:
@@ -97,22 +106,23 @@ func _needle_material() -> Material:
 			sm.shader = sh
 			sm.set_shader_parameter("needle_tex", tex)
 			sm.set_shader_parameter("tree_height", total_height)
-			sm.set_shader_parameter("tip_color", needle_lite)
+			sm.set_shader_parameter("backlight_col", needle_mid * 0.45)
 			return sm
+	# Güvenli fallback (rüzgârsız ama doğru): native backlight.
 	var m := StandardMaterial3D.new()
 	m.albedo_texture = tex
-	# Renk atlas (yeşil) * vertex AO'dan gelir; aşırı kararmayı önlemek
-	# için albedo_color beyaza yakın tutulur.
 	m.albedo_color = Color(1, 1, 1, 1)
 	m.vertex_color_use_as_albedo = true
 	m.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA_SCISSOR
-	m.alpha_scissor_threshold = 0.5
+	m.alpha_scissor_threshold = 0.33
 	m.cull_mode = BaseMaterial3D.CULL_DISABLED
-	m.roughness = 0.9
-	m.specular = 0.14
+	m.roughness = 0.65
+	m.specular = 0.5
+	m.backlight_enabled = true
+	m.backlight = needle_mid * 0.45
 	m.emission_enabled = true
 	m.emission = needle_dark
-	m.emission_energy_multiplier = 0.04
+	m.emission_energy_multiplier = 0.02
 	return m
 
 func _build_collision() -> void:

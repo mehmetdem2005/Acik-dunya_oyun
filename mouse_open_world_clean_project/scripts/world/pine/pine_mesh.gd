@@ -21,7 +21,7 @@ static func build(stems: Array, cfg: Dictionary) -> Dictionary:
 	for stem in stems:
 		var lvl: int = stem["level"]
 		if lvl <= 1:
-			_tube(wood, stem, sides if lvl == 0 else maxi(4, int(sides / 2.0)))
+			_tube(wood, stem, sides if lvl == 0 else maxi(5, int(sides / 2.0)))
 		if lvl == 1:
 			# Ana dalın kendisi de iğnelenir (çıplak kahverengi dal yok).
 			var bp := clampi(planes - 1, 2, 3)
@@ -31,6 +31,10 @@ static func build(stems: Array, cfg: Dictionary) -> Dictionary:
 			for pi in range(planes):
 				var roll := TAU * float(pi) / float(planes)
 				_needle_blade(leaf, stem, roll, nlen)
+		if lvl == 3:
+			# İnce dallar: sadece iğne (odun çizilmez), silüet kırılımı.
+			for pk in range(2):
+				_needle_blade(leaf, stem, TAU * float(pk) / 2.0, nlen * 0.7)
 
 	wood.generate_normals()
 	wood.generate_tangents()
@@ -48,6 +52,8 @@ static func _tube(st: SurfaceTool, stem: Dictionary, sides: int) -> void:
 	var n := pts.size()
 	var r0: float = stem["radius0"]
 	var r1: float = stem["radius1"]
+	# İnce dallarda kabuk detayını sıklaştır (dev plaka esnemesi yok).
+	var det: float = 1.0 if int(stem["level"]) == 0 else 4.5
 	for k in range(n - 1):
 		var f0 := float(k) / float(n - 1)
 		var f1 := float(k + 1) / float(n - 1)
@@ -72,8 +78,8 @@ static func _tube(st: SurfaceTool, stem: Dictionary, sides: int) -> void:
 			var d11 := n1 * cos(a1) + b1 * sin(a1)
 			var uA := float(si) / float(sides) * 2.0
 			var uB := float(si + 1) / float(sides) * 2.0
-			var v0 := f0 * 5.0
-			var v1 := f1 * 5.0
+			var v0 := f0 * 5.0 * det
+			var v1 := f1 * 5.0 * det
 			st.set_uv(Vector2(uA, v0)); st.add_vertex(c0 + d00 * rad0)
 			st.set_uv(Vector2(uA, v1)); st.add_vertex(c1 + d01 * rad1)
 			st.set_uv(Vector2(uB, v1)); st.add_vertex(c1 + d11 * rad1)

@@ -66,14 +66,15 @@ func _spawn_level1(cfg: Dictionary, trunk: Dictionary, trunk_idx: int) -> void:
 		var blen := crown_radius * prof
 		if blen < 0.18:
 			continue
+		# Açık/seyrek çam tacı: tier başına az dal + düzensizlik jitter'ı.
 		var per := int(round(lerp(float(total) / float(tier_count) * 1.5, 3.0, tf)))
-		per = clampi(per, 3, 10)
+		per = clampi(per + _rng.randi_range(-1, 1), 3, 9)
 		az += GOLDEN * 1.3
 		for bi in range(per):
-			var a := az + TAU * float(bi) / float(per) + _rng.randf_range(-0.16, 0.16)
-			var sp := _sample(trunk, h01 + _rng.randf_range(-0.012, 0.012))
-			# Dal: gövdeden hafif yukarı çıkışlı, uca doğru yerçekimiyle düşen.
-			var up0: float = lerp(0.32, 0.05, tf)
+			var a := az + TAU * float(bi) / float(per) + _rng.randf_range(-0.22, 0.22)
+			var sp := _sample(trunk, clampf(h01 + _rng.randf_range(-0.02, 0.02), 0.0, 1.0))
+			# Çam dalı yukarı KALKIK çıkar (ladin gibi sarkmaz).
+			var up0: float = lerp(0.55, 0.12, tf)
 			var dir := (Vector3(cos(a), 0.0, sin(a)) + Vector3.UP * up0).normalized()
 			var L := blen * _rng.randf_range(0.82, 1.14)
 			var grav := droop * (0.4 + 0.6 * (1.0 - tf))
@@ -129,6 +130,36 @@ func _spawn_level2(cfg: Dictionary, parent: Dictionary, pidx: int, tf: float) ->
 		child["tint"] = _rng.randf_range(0.80, 1.18)
 		child["radius0"] = 0.006
 		child["radius1"] = 0.002
+		stems.append(child)
+		if bool(cfg.get("fine_twigs", true)):
+			_spawn_level3(cfg, child, tf)
+
+# --- Seviye 3: ince dallar (sadece iğne, silüet kırılımı) ------------
+
+func _spawn_level3(cfg: Dictionary, parent: Dictionary, tf: float) -> void:
+	var twigs: int = int(cfg.get("twigs_per_shoot", 2))
+	if twigs <= 0:
+		return
+	var az := _rng.randf() * TAU
+	for ti in range(twigs):
+		var u: float = lerp(0.35, 0.9, float(ti) / float(maxi(twigs - 1, 1)))
+		var sp := _sample(parent, u)
+		az += GOLDEN
+		var pt := _tangent_at(parent, u)
+		var nm := _normal_at(parent, u)
+		var azdir := nm.rotated(pt, az)
+		var down := deg_to_rad(_rng.randf_range(35.0, 58.0))
+		var dir := (pt * cos(down) + azdir * sin(down)).normalized()
+		var L: float = parent["len"] * 0.35 * _rng.randf_range(0.8, 1.15)
+		if L < 0.06:
+			continue
+		var child := _grow(sp, dir, L, 3, 0.25 + 0.35 * tf, 0.06, 0.08)
+		child["level"] = 3
+		child["parent"] = -1
+		child["depth01"] = tf
+		child["tint"] = _rng.randf_range(0.80, 1.18)
+		child["radius0"] = 0.003
+		child["radius1"] = 0.0015
 		stems.append(child)
 
 # --- Büyüme entegrasyonu ----------------------------------------------
