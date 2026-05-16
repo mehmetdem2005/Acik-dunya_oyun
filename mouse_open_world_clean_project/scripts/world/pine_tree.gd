@@ -25,6 +25,16 @@ class_name PineTree
 @export var fine_twigs: bool = true
 @export_range(0, 4, 1) var twigs_per_shoot: int = 2
 
+@export_group("Gerçekçi Dal / Kök")
+@export_range(6, 16, 1) var dal_segment: int = 10          # dal kıvrım çözünürlüğü
+@export_range(0.0, 0.4, 0.01) var dal_yay: float = 0.16    # S süpürme yayı
+@export_range(0.06, 0.4, 0.01) var surgun_konik: float = 0.14  # sürgün uç incelmesi
+@export var level2_wood: bool = true                       # alt-dallar odun olarak görünsün
+@export_range(0.6, 1.4, 0.05) var tabaka_aralik: float = 1.0   # whorl katman aralığı
+@export_range(0.0, 2.0, 0.05) var govde_kok: float = 1.0       # dip kabarma gücü
+@export_range(0.0, 1.0, 0.02) var kok_payanda: float = 0.5     # payanda lob derinliği
+@export_range(0, 8, 1) var kok_sayisi: int = 5                 # zemine yayılan kök sayısı
+
 @export_group("İğne Yaprak")
 @export_range(2, 5, 1) var blades_per_branch: int = 3
 @export_range(0.4, 2.5, 0.05) var frond_size: float = 1.2
@@ -133,6 +143,16 @@ func rebuild() -> void:
 		"branch_taper_tip": branch_taper_tip,
 		"knot_strength": knot_strength,
 		"light_bias": light_bias,
+		"dal_segment": dal_segment,
+		"shoot_segment": 7,
+		"twig_segment": 4,
+		"dal_yay": dal_yay,
+		"shoot_taper": surgun_konik,
+		"level2_wood": level2_wood,
+		"whorl_gap": tabaka_aralik,
+		"flare_strength": govde_kok,
+		"flare_lobe": kok_payanda,
+		"root_count": kok_sayisi,
 	}
 
 	var skel := PineSkeleton.new()
@@ -192,7 +212,9 @@ func _pbr_wood_material(albedo: Texture2D, nrm: Texture2D, ormc: Texture2D,
 	m.metallic = 0.0
 	m.specular = 0.5
 	m.roughness = 1.0
-	m.uv1_scale = Vector3(tiling.x, tiling.y, 1.0)
+	# UV.V mesh'te yay-uzunluğundan fiziksel üretiliyor (kare hücre);
+	# .tscn'deki eski tiling override'ı sonucu BOZMASIN diye (1,1,1).
+	m.uv1_scale = Vector3.ONE
 	if nrm != null:
 		m.normal_enabled = true
 		m.normal_texture = nrm
