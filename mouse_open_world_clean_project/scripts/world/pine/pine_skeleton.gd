@@ -70,7 +70,7 @@ func _spawn_level1(cfg: Dictionary, trunk: Dictionary, trunk_idx: int) -> void:
 	var dal_seg: int = int(cfg.get("dal_segment", 10))
 	var dal_yay: float = float(cfg.get("dal_yay", 0.16))
 	# Daha seyrek, belirgin whorl katmanları (açık koni silüet).
-	var tier_count: int = clampi(int(round(height * 0.95 / whorl_gap)), 6, 10)
+	var tier_count: int = clampi(int(round(height * 0.72 / whorl_gap)), 5, 8)
 	var lean: float = _rng.randf_range(-0.12, 0.12)
 	var lean_ph: float = _rng.randf() * TAU
 	var whorl_h: PackedFloat32Array = trunk["whorl_h"]
@@ -80,8 +80,9 @@ func _spawn_level1(cfg: Dictionary, trunk: Dictionary, trunk_idx: int) -> void:
 		var tf := float(ti) / float(tier_count - 1)
 		var h01: float = clampf(lerp(crown_start, 0.95, tf) + _rng.randf_range(-0.012, 0.012), 0.0, 1.0)
 		# Koni: tepeye doğru tek-yönlü güçlü kısalma (orta şişlik yok).
-		var prof: float = pow(1.0 - tf, 0.9)
-		var blen := crown_radius * prof
+		# Alt-orta tier'ler uzun -> geniş, dolgun, billur taç (referans).
+		var prof: float = pow(1.0 - tf, 0.72) * (0.82 + 0.18 * smoothstep(0.0, 0.30, tf))
+		var blen := crown_radius * prof * 1.12
 		if blen < 0.16:
 			continue
 		whorl_h.append(h01)
@@ -123,7 +124,7 @@ func _spawn_level1(cfg: Dictionary, trunk: Dictionary, trunk_idx: int) -> void:
 			if is_broken:
 				L *= brk_mul
 			# Alt tier'ler sert süpürür, üst tier'ler dik durur.
-			var grav := droop * (0.35 + 0.5 * (1.0 - tf))
+			var grav := droop * (0.40 + 0.7 * (1.0 - tf))
 			# knee=1.0 -> dal gövdeden YUKARI çıkıp sonra dışa kıvrılır.
 			var child := _grow(sp, dir, L, dal_seg, grav, 0.05, dal_yay, wob, 1.0)
 			whorl_az.append(h01)

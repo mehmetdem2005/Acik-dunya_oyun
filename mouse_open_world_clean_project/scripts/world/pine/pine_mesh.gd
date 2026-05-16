@@ -48,12 +48,12 @@ static func build(stems: Array, cfg: Dictionary) -> Dictionary:
 				has_branch = true
 				# Kuru dal iğne taşımaz (yalnız odun çizilir).
 				if not bool(stem.get("dry", false)):
-					_sprigs(leaf, stem, nlen * 0.34, 1, light_bias)
+					_sprigs(leaf, stem, nlen * 0.42, 1, light_bias)
 		elif lvl == 2:
 			if lvl2_wood and not bool(stem.get("is_tip", false)):
 				_tube(branch, stem, maxi(3, int(sides / 4.0)), empty, 0.0, cfg)
 				has_branch = true
-			_sprigs(leaf, stem, nlen * 0.32, 2, light_bias)
+			_sprigs(leaf, stem, nlen * 0.40, 2, light_bias)
 		elif lvl == 3:
 			_sprigs(leaf, stem, nlen * 0.16, 3, light_bias)
 
@@ -187,17 +187,18 @@ static func _sprigs(st: SurfaceTool, stem: Dictionary, size: float, lvl: int,
 	var tip_full: bool = bool(stem.get("is_tip", false))
 	# İç kısım hafif çıplak, iğne dışta yoğun. Uç frond'lar TAM dolu
 	# (kel bırakma) -> taç dolgun, referans gibi.
-	var r0: float = lerp(0.28, 0.42, age)
-	var r1: float = lerp(0.55, 0.78, age)
+	# Açık/tüylü taç: iç boş, iğne dış ~%40'ta yuvarlak küme (uç=tam).
+	var r0: float = lerp(0.34, 0.50, age)
+	var r1: float = lerp(0.66, 0.86, age)
 	if lvl == 1:
-		r0 = lerp(0.24, 0.40, age)
-		r1 = lerp(0.60, 0.82, age)
+		r0 = lerp(0.40, 0.56, age)
+		r1 = lerp(0.74, 0.92, age)
 	# Seviye-bazlı rüzgâr flex'i (gövde 0 -> iğne ucu en çok).
 	var flex: float = 0.6
 	if lvl == 3:
 		flex = 1.0
 	var sun := Vector3(0.6, 0.0, 0.32).normalized()
-	var step := maxf(size * 0.42, 0.03)
+	var step := maxf(size * 0.32, 0.026)
 	var carry := 0.0
 	var idx := 0
 	for k in range(n - 1):
@@ -228,7 +229,7 @@ static func _sprigs(st: SurfaceTool, stem: Dictionary, size: float, lvl: int,
 					rt = rt.normalized()
 					# Renk: uca doğru taze açık yeşil, içte koyu/mat.
 					var shade: float = clampf(lerp(0.62, 1.14, fr) * tint, 0.48, 1.25)
-					_card(st, c, up * (size * (0.90 + 0.55 * fr)), rt * (size * (0.90 + 0.55 * fr) * 0.66), shade, flex, idx % 25)
+					_card(st, c, up * (size * (1.05 + 0.55 * fr)), rt * (size * (1.05 + 0.55 * fr) * 0.66), shade, flex, idx % 25)
 			# Uca doğru sıklaş; ışık yönüne göre asimetri.
 			var dstep := step / maxf(dens, 0.10)
 			if light_bias > 0.0:

@@ -106,10 +106,10 @@ func rebuild() -> void:
 
 	# Form ön ayarları (genç konik / olgun orman / açıkta yetişen).
 	var f_crown := crown_start_ratio
-	var f_pl := 0.30
-	var f_ph := 0.04
-	var f_dry := 0.16
-	var f_brk := 0.08
+	var f_pl := 0.12
+	var f_ph := 0.02
+	var f_dry := 0.05
+	var f_brk := 0.03
 	var f_droop := branch_droop
 	var f_el := -0.18
 	var f_eh := 0.55
