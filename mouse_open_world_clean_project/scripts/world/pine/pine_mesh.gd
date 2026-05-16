@@ -231,7 +231,7 @@ static func _sprigs(st: SurfaceTool, stem: Dictionary, size: float, lvl: int,
 	# Tek kart = KÜÇÜK iğne demeti (fascicle); çoğu üst üste
 	# binerek çam yaprak KÜMESİNİ oluşturur (büyütülmüş tek demet DEĞİL).
 	var fl: float = clampf(size * 0.32, 0.11, 0.26)
-	var step := maxf(fl * 0.33, 0.022)
+	var step := maxf(fl * 0.27, 0.02)
 	var carry := 0.0
 	var idx := 0
 	for k in range(n - 1):
@@ -262,7 +262,9 @@ static func _sprigs(st: SurfaceTool, stem: Dictionary, size: float, lvl: int,
 					rt = rt.normalized()
 					# Renk: uca doğru taze açık yeşil, içte koyu/mat.
 					var shade: float = clampf(lerp(0.62, 1.14, fr) * tint, 0.48, 1.25)
-					var ccs: float = fl * (0.80 + 0.40 * fr) * (1.2 if tip_full else 1.0)
+					var hsh: float = sin(float(idx) * 12.9898 + float(s) * 3.71) * 43758.5453
+					var vrnd: float = 0.62 + 0.76 * (hsh - floor(hsh))
+					var ccs: float = fl * (0.78 + 0.42 * fr) * vrnd * (1.25 if tip_full else 1.0)
 					_card(st, c, up * ccs, rt * (ccs * 0.60), shade, flex, idx % 25)
 			# Uca doğru sıklaş; ışık yönüne göre asimetri.
 			var dstep := step / maxf(dens, 0.10)
