@@ -47,6 +47,7 @@ func _make_trunk(cfg: Dictionary) -> Dictionary:
 	stem["radius0"] = float(cfg.get("trunk_radius", 0.16))
 	stem["radius1"] = float(cfg.get("trunk_radius", 0.16)) * float(cfg.get("trunk_top", 0.06))
 	stem["whorl_h"] = PackedFloat32Array()
+	stem["whorl_az"] = PackedFloat32Array()
 	return stem
 
 # --- Seviye 1: ana dallar (whorl tabakaları) --------------------------
@@ -73,6 +74,7 @@ func _spawn_level1(cfg: Dictionary, trunk: Dictionary, trunk_idx: int) -> void:
 	var lean: float = _rng.randf_range(-0.12, 0.12)
 	var lean_ph: float = _rng.randf() * TAU
 	var whorl_h: PackedFloat32Array = trunk["whorl_h"]
+	var whorl_az: PackedFloat32Array = trunk["whorl_az"]
 	var az := _rng.randf() * TAU
 	for ti in range(tier_count):
 		var tf := float(ti) / float(tier_count - 1)
@@ -105,7 +107,15 @@ func _spawn_level1(cfg: Dictionary, trunk: Dictionary, trunk_idx: int) -> void:
 			if miss:
 				continue
 			var a: float = aaccum + ajit + lean * cos(aaccum - lean_ph)
-			var sp := _sample(trunk, h01)
+			var age := 1.0 - tf
+			var r0v: float = tr * lerp(0.13, 0.27, age) * rjit
+			# Dal GÖVDE DERİSİNDEN doğar (eksene değil) ve dibe gömülüdür:
+			# çubuk gibi delip geçmez; gövde tümseği + yaka ile kaynaşır.
+			var sp_axis := _sample(trunk, h01)
+			var radial0 := Vector3(cos(a), 0.0, sin(a))
+			var tr_h: float = lerp(tr, tr * float(cfg.get("trunk_top", 0.06)), pow(h01, 0.85)) + tr * float(cfg.get("flare_strength", 1.0)) * 0.30 * pow(maxf(1.0 - h01 * 9.0, 0.0), 2.0)
+			var embed: float = minf(r0v, tr_h * 0.6)
+			var sp := sp_axis + radial0 * (tr_h - embed)
 			# Yükseklik-bölgeli açı: alt yatay/sarkık, üst dik (koni).
 			var up0: float = lerp(elev_low, elev_high, pow(tf, 0.7)) + up_jit
 			var dir := (Vector3(cos(a), 0.0, sin(a)) + Vector3.UP * up0).normalized()
@@ -114,9 +124,11 @@ func _spawn_level1(cfg: Dictionary, trunk: Dictionary, trunk_idx: int) -> void:
 				L *= brk_mul
 			# Alt tier'ler sert süpürür, üst tier'ler dik durur.
 			var grav := droop * (0.35 + 0.5 * (1.0 - tf))
-			var child := _grow(sp, dir, L, dal_seg, grav, 0.05, dal_yay, wob)
-			var age := 1.0 - tf
-			var r0v: float = tr * lerp(0.13, 0.27, age) * rjit
+			# knee=1.0 -> dal gövdeden YUKARI çıkıp sonra dışa kıvrılır.
+			var child := _grow(sp, dir, L, dal_seg, grav, 0.05, dal_yay, wob, 1.0)
+			whorl_az.append(h01)
+			whorl_az.append(a)
+			whorl_az.append(r0v)
 			child["level"] = 1
 			child["parent"] = trunk_idx
 			child["depth01"] = tf
@@ -131,8 +143,9 @@ func _spawn_level1(cfg: Dictionary, trunk: Dictionary, trunk_idx: int) -> void:
 			var bidx := stems.size() - 1
 			if not is_dry:
 				_spawn_level2(cfg, child, bidx, tf, age)
-	# PackedFloat32Array değer tipidir -> budak yükseklikleri geri yazılır.
+	# PackedFloat32Array değer tipidir -> geri yazılır.
 	trunk["whorl_h"] = whorl_h
+	trunk["whorl_az"] = whorl_az
 	# Apeks: merkezde uzun-kalın dik LİDER + çevresinde kısalan sürgünler
 	# -> dolgun, özenli, sivri konik tepe (referans gibi).
 	for ai in range(9):
@@ -342,11 +355,16 @@ func _fork(cfg: Dictionary, parent_stem: Dictionary, parent_idx: int,
 # --- Büyüme entegrasyonu ----------------------------------------------
 
 func _grow(start: Vector3, dir0: Vector3, length: float, segs: int,
-		grav: float, photo: float, curve: float, wob: float) -> Dictionary:
+		grav: float, photo: float, curve: float, wob: float,
+		knee: float = 0.0) -> Dictionary:
 	if segs < 2:
 		segs = 2
 	var pts: Array[Vector3] = [start]
 	var dir := dir0.normalized()
+	# Bazal DİZ: dal gövdeden yukarı doğru çıkar; kümülatif çekim (g)
+	# sonra dışa/aşağı kıvırır -> doğal dirsekli ayrılış (çubuk değil).
+	if knee > 0.0:
+		dir = (dir + Vector3.UP * 1.3 * knee).normalized()
 	var pos := start
 	var seg_len := length / float(segs)
 	var curve_ax := dir.cross(Vector3.UP).normalized()

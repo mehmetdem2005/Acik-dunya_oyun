@@ -27,15 +27,18 @@ static func build(stems: Array, cfg: Dictionary) -> Dictionary:
 	var knot_s: float = float(cfg.get("knot_strength", 0.22))
 	var empty := PackedFloat32Array()
 	var whorls: PackedFloat32Array = empty
+	var azs: PackedFloat32Array = empty
 	if stems.size() > 0 and (stems[0] as Dictionary).has("whorl_h"):
 		whorls = stems[0]["whorl_h"]
+	if stems.size() > 0 and (stems[0] as Dictionary).has("whorl_az"):
+		azs = stems[0]["whorl_az"]
 
 	var lvl2_wood: bool = bool(cfg.get("level2_wood", true))
 	var has_branch := false
 	for stem in stems:
 		var lvl: int = int(stem["level"])
 		if lvl == 0:
-			_tube(bark, stem, sides, whorls, knot_s, cfg)
+			_tube(bark, stem, sides, whorls, knot_s, cfg, azs)
 		elif lvl == 1:
 			if bool(stem.get("is_root", false)):
 				# Kök payandası gövdeyle aynı kabuk materyalini alır.
@@ -73,7 +76,8 @@ static func build(stems: Array, cfg: Dictionary) -> Dictionary:
 # --- Odun tüpü ---------------------------------------------------------
 
 static func _tube(st: SurfaceTool, stem: Dictionary, sides: int,
-		knots: PackedFloat32Array, knot_s: float, cfg: Dictionary) -> void:
+		knots: PackedFloat32Array, knot_s: float, cfg: Dictionary,
+		azs: PackedFloat32Array = PackedFloat32Array()) -> void:
 	var pts: Array = stem["points"]
 	var tang: Array = stem["tangents"]
 	var norms: Array = stem["normals"]
@@ -116,8 +120,8 @@ static func _tube(st: SurfaceTool, stem: Dictionary, sides: int,
 		elif lvl == 1 and not bool(stem.get("is_root", false)):
 			# Dal-gövde YAKASI: dipte yumuşak şişme + hızlı incelme ->
 			# dal gövdeye saplanmış çubuk değil, organik bağlanır.
-			rad0 += r0 * 0.85 * pow(maxf(1.0 - f0 * 5.0, 0.0), 1.7)
-			rad1 += r0 * 0.85 * pow(maxf(1.0 - f1 * 5.0, 0.0), 1.7)
+			rad0 += r0 * 1.5 * pow(maxf(1.0 - f0 * 4.5, 0.0), 2.4)
+			rad1 += r0 * 1.5 * pow(maxf(1.0 - f1 * 4.5, 0.0), 2.4)
 		# Per-side payanda lobu (yalnız govde; dipte guclu, yukari soner).
 		var lobe0: float = (flare_l * pow(maxf(1.0 - f0 * 4.0, 0.0), 2.0)) if lvl == 0 else 0.0
 		var lobe1: float = (flare_l * pow(maxf(1.0 - f1 * 4.0, 0.0), 2.0)) if lvl == 0 else 0.0
@@ -140,6 +144,21 @@ static func _tube(st: SurfaceTool, stem: Dictionary, sides: int,
 			var r10 := rad0 * (1.0 + lobe0 * maxf(cos(a1 * roots_n), 0.0))
 			var r01 := rad1 * (1.0 + lobe1 * maxf(cos(a0 * roots_n), 0.0))
 			var r11 := rad1 * (1.0 + lobe1 * maxf(cos(a1 * roots_n), 0.0))
+			if lvl == 0:
+					for bz in range(azs.size() / 3):
+						var bh: float = azs[bz * 3]
+						var ba: float = azs[bz * 3 + 1]
+						var br: float = azs[bz * 3 + 2]
+						var fz0: float = (f0 - bh) / 0.055
+						var fz1: float = (f1 - bh) / 0.055
+						var g0: float = exp(-fz0 * fz0) * br * 1.7
+						var g1: float = exp(-fz1 * fz1) * br * 1.7
+						var s0a: float = smoothstep(-0.15, 1.0, cos(a0 - ba))
+						var s1a: float = smoothstep(-0.15, 1.0, cos(a1 - ba))
+						r00 += g0 * s0a
+						r10 += g0 * s1a
+						r01 += g1 * s0a
+						r11 += g1 * s1a
 			var uA := float(si) / float(sides) * 2.0
 			var uB := float(si + 1) / float(sides) * 2.0
 			var fl0 := Vector2(flex0, 0.0)
