@@ -50,11 +50,16 @@ static func build(stems: Array, cfg: Dictionary) -> Dictionary:
 				if not bool(stem.get("dry", false)):
 					_sprigs(leaf, stem, nlen * 0.42, 1, light_bias)
 		elif lvl == 2:
-			if lvl2_wood and not bool(stem.get("is_tip", false)):
-				_tube(branch, stem, maxi(4, int(sides / 2.6)), empty, 0.0, cfg)
+			# is_tip uç sürgün de İNCE tüp alır -> yaprak dala
+			# yapışık görünür (havada kalan yaprak sorunu çözülür).
+			if lvl2_wood:
+				var _it: bool = bool(stem.get("is_tip", false))
+				_tube(branch, stem, (4 if _it else maxi(4, int(sides / 2.6))), empty, 0.0, cfg)
 				has_branch = true
 			_sprigs(leaf, stem, nlen * 0.40, 2, light_bias)
 		elif lvl == 3:
+			_tube(branch, stem, 3, empty, 0.0, cfg)
+			has_branch = true
 			_sprigs(leaf, stem, nlen * 0.16, 3, light_bias)
 
 	bark.generate_normals()

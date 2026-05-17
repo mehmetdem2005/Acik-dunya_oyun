@@ -1,85 +1,8 @@
-[gd_scene load_steps=10 format=3]
+[gd_scene load_steps=2 format=3]
 
 [ext_resource type="Script" path="res://scripts/world/pine_tree.gd" id="1_pine"]
-[ext_resource type="Script" path="res://scripts/world/showcase_camera.gd" id="2_cam"]
 
-[sub_resource type="ProceduralSkyMaterial" id="Sky_mat"]
-sky_top_color = Color(0.36, 0.54, 0.78, 1)
-sky_horizon_color = Color(0.74, 0.79, 0.8, 1)
-sky_curve = 0.12
-ground_bottom_color = Color(0.2, 0.22, 0.2, 1)
-ground_horizon_color = Color(0.66, 0.7, 0.7, 1)
-sun_angle_max = 28.0
-sun_curve = 0.08
-
-[sub_resource type="Sky" id="Sky_1"]
-sky_material = SubResource("Sky_mat")
-
-[sub_resource type="Environment" id="Env_1"]
-background_mode = 2
-sky = SubResource("Sky_1")
-ambient_light_source = 3
-ambient_light_color = Color(0.62, 0.68, 0.74, 1)
-ambient_light_sky_contribution = 0.55
-ambient_light_energy = 0.85
-tonemap_mode = 2
-tonemap_white = 6.0
-ssao_enabled = true
-ssao_radius = 0.8
-ssao_intensity = 1.8
-sdfgi_enabled = false
-fog_enabled = true
-fog_light_color = Color(0.66, 0.72, 0.74, 1)
-fog_density = 0.004
-fog_aerial_perspective = 0.25
-
-[sub_resource type="CylinderMesh" id="Ground_mesh"]
-top_radius = 14.0
-bottom_radius = 14.0
-height = 0.3
-radial_segments = 48
-
-[sub_resource type="FastNoiseLite" id="Ground_noise"]
-noise_type = 2
-frequency = 0.05
-
-[sub_resource type="NoiseTexture2D" id="Ground_tex"]
-width = 256
-height = 256
-seamless = true
-noise = SubResource("Ground_noise")
-
-[sub_resource type="StandardMaterial3D" id="Ground_mat"]
-albedo_color = Color(0.19, 0.26, 0.15, 1)
-albedo_texture = SubResource("Ground_tex")
-uv1_scale = Vector3(10, 10, 1)
-roughness = 0.97
-metallic = 0.0
-
-[node name="PineTreeScene" type="Node3D"]
-
-[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
-environment = SubResource("Env_1")
-
-[node name="Sun" type="DirectionalLight3D" parent="."]
-transform = Transform3D(0.766044, -0.342, 0.544639, 0, 0.846, 0.531, -0.642788, -0.406767, 0.647819, 0, 0, 0)
-light_color = Color(1, 0.95, 0.86, 1)
-light_energy = 1.4
-shadow_enabled = true
-shadow_bias = 0.03
-directional_shadow_max_distance = 60.0
-
-[node name="FillLight" type="DirectionalLight3D" parent="."]
-transform = Transform3D(-0.7071, 0.0, -0.7071, 0.0, 1.0, 0.0, 0.7071, 0.0, -0.7071, 0, 0, 0)
-light_color = Color(0.7, 0.78, 0.9, 1)
-light_energy = 0.35
-
-[node name="Ground" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.15, 0)
-mesh = SubResource("Ground_mesh")
-material_override = SubResource("Ground_mat")
-
-[node name="PineTree" type="Node3D" parent="."]
+[node name="PineTree" type="Node3D"]
 script = ExtResource("1_pine")
 total_height = 9.0
 trunk_radius = 0.22
@@ -97,13 +20,3 @@ trunk_sides = 14
 seed = 20260516
 generate_collision = false
 enable_wind = true
-
-[node name="ShowcaseCamera" type="Camera3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 6, 16)
-current = true
-fov = 50.0
-script = ExtResource("2_cam")
-target = Vector3(0, 4.6, 0)
-distance = 16.0
-height = 5.5
-orbit_speed = 0.18

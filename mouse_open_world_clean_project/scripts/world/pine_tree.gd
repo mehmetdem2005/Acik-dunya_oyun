@@ -52,6 +52,13 @@ class_name PineTree
 @export var generate_collision: bool = true
 @export var enable_wind: bool = true
 
+@export_group("Araçlar")
+# Inspector'da bu butona bas -> degisiklikler uygulanir (rebuild).
+@export_tool_button("Uygula / Yeniden Olustur") var _apply_action: Callable = rebuild
+# Yeni rastgele seed: cam FORMUNU bozmadan boyut/yas/kalinlik degisir.
+@export_tool_button("Rastgele Seed") var _seed_action: Callable = _new_seed
+@export var seed_varies_form: bool = true
+
 @export_group("Renk / Materyal")
 @export var bark_color: Color = Color(0.85, 0.82, 0.80)
 @export_range(0.2, 2.0, 0.05) var bark_normal_scale: float = 1.0
@@ -129,16 +136,32 @@ func rebuild() -> void:
 		_:
 			f_crown = 0.36
 
+	# Seed cam FORMUNU bozmadan boyut/kalinlik/yas varyasyonu uretir
+	# (ayni seed -> ayni agac; farkli seed -> farkli ama yine cam).
+	var v_h := total_height
+	var v_tr := trunk_radius
+	var v_cr := crown_radius
+	var v_bc := branch_count
+	var v_dr := f_droop
+	if seed_varies_form:
+		var _fr := RandomNumberGenerator.new()
+		_fr.seed = seed if seed != 0 else hash(name)
+		v_h *= _fr.randf_range(0.78, 1.30)
+		v_tr *= _fr.randf_range(0.80, 1.28)
+		v_cr *= _fr.randf_range(0.85, 1.18)
+		v_bc = int(round(branch_count * _fr.randf_range(0.85, 1.15)))
+		v_dr *= _fr.randf_range(0.85, 1.20)
+
 	var cfg := {
 		"seed": seed if seed != 0 else hash(name),
-		"height": total_height,
-		"trunk_radius": trunk_radius,
+		"height": v_h,
+		"trunk_radius": v_tr,
 		"trunk_top": trunk_top_ratio,
 		"trunk_bend": trunk_bend,
 		"crown_start": f_crown,
-		"crown_radius": crown_radius,
-		"branch_count": branch_count,
-		"branch_droop": f_droop,
+		"crown_radius": v_cr,
+		"branch_count": v_bc,
+		"branch_droop": v_dr,
 		"shoots_per_branch": shoots_per_branch,
 		"trunk_sides": trunk_sides,
 		"needle_planes": blades_per_branch,
@@ -217,12 +240,10 @@ func _pbr_wood_material(albedo: Texture2D, nrm: Texture2D, ormc: Texture2D,
 		m.normal_scale = bark_normal_scale
 		m.uv1_scale = Vector3(1.0, 1.5, 1.0)
 		m.roughness = 0.88
-		m.specular = 0.5
 		return m
 	m.albedo_color = Color(1, 1, 1, 1)
 	m.albedo_texture = albedo
 	m.metallic = 0.0
-	m.specular = 0.5
 	m.roughness = 1.0
 	# UV.V mesh'te yay-uzunluğundan fiziksel üretiliyor (kare hücre);
 	# .tscn'deki eski tiling override'ı sonucu BOZMASIN diye (1,1,1).
@@ -302,7 +323,6 @@ func _needle_material() -> Material:
 	# Mat iğne: düşük specular + yüksek roughness -> beyaz parlama yok
 	# (shader yolu çalışmasa bile fallback'te de garanti).
 	m.roughness = 0.9
-	m.specular = 0.15
 	m.backlight_enabled = true
 	m.backlight = needle_mid * 0.28
 	m.emission_enabled = true
@@ -321,3 +341,8 @@ func _build_collision() -> void:
 	col.shape = shape
 	col.position = Vector3(0.0, total_height * 0.5, 0.0)
 	body.add_child(col)
+
+func _new_seed() -> void:
+	seed = randi()
+	rebuild()
+	notify_property_list_changed()
