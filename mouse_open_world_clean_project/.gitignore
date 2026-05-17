@@ -12,3 +12,6 @@ _glb_check.gd
 _glb_check.gd.uid
 _forest_glb_shot.gd
 _forest_glb_shot.gd.uid
+# GLB import'un cikardigi turev dokular (pine_tree.glb'den yeniden uretilir)
+scenes/world/pine_tree_*.png
+scenes/world/pine_tree_*.png.import
