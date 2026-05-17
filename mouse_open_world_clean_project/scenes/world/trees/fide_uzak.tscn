@@ -1,0 +1,10 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/world/pine_tree.gd" id="1_pine"]
+
+[node name="PineTree" type="Node3D"]
+script = ExtResource("1_pine")
+tree_type = 0
+lod_level = 2
+seed = 10010003
+generate_collision = false
