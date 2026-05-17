@@ -348,6 +348,7 @@ func _needle_material() -> Material:
 			var n_var := _tex_or(needle_variation_tex, _TEX_ROOT + "needles/pine_needles_variation_1k.png")
 			if n_var != null:
 				sm.set_shader_parameter("needle_variation", n_var)
+				sm.set_shader_parameter("variation_amt", 0.45)
 			else:
 				sm.set_shader_parameter("variation_amt", 0.0)
 			# needle_windmask bilerek bağlanmıyor: atlas-kart iğne sisteminde

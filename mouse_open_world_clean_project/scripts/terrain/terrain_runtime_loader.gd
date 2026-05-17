@@ -76,7 +76,7 @@ func _get_player() -> Node3D:
 	_player = get_node_or_null(player_path) as Node3D
 	return _player
 
-func _update_loaded_chunks(force: bool) -> void:
+func _update_loaded_chunks(_force: bool) -> void:
 	if not _load_manifest():
 		return
 	var player: Node3D = _get_player()
@@ -88,8 +88,6 @@ func _update_loaded_chunks(force: bool) -> void:
 		if not _loaded_chunks.has(chunk_id):
 			_load_chunk(wanted_ids[chunk_id])
 	_unload_far_chunks(player_pos)
-	if force:
-		print("İlk terrain chunk runtime yüklemesi tamamlandı.")
 
 func _calculate_wanted_chunks(player_pos: Vector3) -> Dictionary:
 	var result: Dictionary = {}

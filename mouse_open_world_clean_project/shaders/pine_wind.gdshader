@@ -34,10 +34,17 @@ uniform sampler2D needle_bent : hint_normal, filter_linear_mipmap;
 uniform float use_height_tex : hint_range(0.0, 1.0) = 0.0;
 uniform float bent_amt : hint_range(0.0, 1.0) = 0.0;
 
+// Kuru/sarı iğne ucu: COLOR.a = küme-başına kuruluk (mesh'ten);
+// UV.y kart-yerel taban(1)->uç(0). Yalnız uca yakın + kuru kümede etkin.
+uniform float dry_tip_amt : hint_range(0.0, 1.0) = 0.55;
+uniform vec3 dry_tip_col : source_color = vec3(0.78, 0.60, 0.20);
+
 varying vec3 v_col;
+varying float v_dry;
 
 void vertex() {
 	v_col = COLOR.rgb;
+	v_dry = COLOR.a;
 	// Hiyerarşik rüzgâr: UV2.x = flex (gövde 0 -> iğne ucu ~1.25).
 	float flex = UV2.x;
 	float h = clamp(VERTEX.y / max(tree_height, 0.001), 0.0, 1.0);
@@ -67,6 +74,12 @@ void fragment() {
 	vec3 col = alb.rgb * v_col;
 	vec3 varc = texture(needle_variation, auv).rgb;
 	col *= mix(vec3(1.0), varc * 1.15, variation_amt);
+	// Kuru/sarı uç: uca yakın (UV.y->0) + kuru kümede sıcak tona solar;
+	// lum korunur -> koyu boşluklar koyu kalır (silüet/discard bozulmaz).
+	float tipf = 1.0 - clamp(UV.y, 0.0, 1.0);
+	float dryw = smoothstep(0.40, 1.0, tipf) * v_dry * dry_tip_amt;
+	col = mix(col, dry_tip_col * (0.55 + 0.45 * lum), dryw);
+	col = mix(col, col * vec3(1.05, 0.97, 0.70), 0.30 * v_dry);
 	vec3 orm = texture(needle_orm, auv).rgb;       // R=AO G=Rough B=Metal
 	// Yükseklik haritası ince mikro-AO (use_height_tex=0 -> etkisiz).
 	float hg = texture(needle_height, auv).r;

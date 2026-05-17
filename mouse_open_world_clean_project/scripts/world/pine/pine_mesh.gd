@@ -275,7 +275,10 @@ static func _sprigs(st: SurfaceTool, stem: Dictionary, size: float, lvl: int,
 					var vrnd: float = 0.62 + 0.76 * (hsh - floor(hsh))
 					# Küme merkezinde büyür -> yuvarlak pom-pom.
 					var ccs: float = fl * (1.05 + 1.05 * dens) * vrnd * (1.3 if tip_full else 1.0)
-					_card(st, c, up * ccs, rt * (ccs * 0.88), shade, flex, idx % 25)
+					# Kume-basina kuruluk (deterministik: dusuk tint=yasli + hash);
+					# COLOR.a ile shader'a tasinir -> kuru/sari uc + cesitlilik.
+					var dry: float = clampf((1.0 - tint) * 0.7 + (vrnd - 0.62) * 0.55, 0.0, 1.0)
+					_card(st, c, up * ccs, rt * (ccs * 0.88), shade, flex, idx % 25, dry)
 			# Uca doğru sıklaş; ışık yönüne göre asimetri.
 			var dstep := step / maxf(dens, 0.10)
 			if light_bias > 0.0:
@@ -286,7 +289,7 @@ static func _sprigs(st: SurfaceTool, stem: Dictionary, size: float, lvl: int,
 
 # Tek demet = çapraz 2 dörtgen (X); tabandan uca yelpaze.
 static func _card(st: SurfaceTool, c: Vector3, uv_dir: Vector3, rv: Vector3,
-		ao: float, flex: float, cell: int) -> void:
+		ao: float, flex: float, cell: int, dry: float = 0.0) -> void:
 	# UV2 = (flex, atlas hücresi). Shader 5x5 atlastan demeti seçer.
 	var fb := Vector2(flex, float(cell))
 	var ftp := Vector2(flex * 1.25, float(cell))
@@ -303,7 +306,7 @@ static func _card(st: SurfaceTool, c: Vector3, uv_dir: Vector3, rv: Vector3,
 		var fn := uv_dir.cross(rq)
 		var nA := _soft(c, fn)
 		var nT := _soft(tip, fn)
-		st.set_color(Color(ao, ao, ao, 1.0))
+		st.set_color(Color(ao, ao, ao, dry))
 		st.set_uv2(fb); st.set_normal(nA); st.set_uv(Vector2(0.32, 1.0)); st.add_vertex(c - base)
 		st.set_uv2(fb); st.set_normal(nA); st.set_uv(Vector2(0.68, 1.0)); st.add_vertex(c + base)
 		st.set_uv2(ftp); st.set_normal(nT); st.set_uv(Vector2(1.0, 0.0)); st.add_vertex(tip + rq)
