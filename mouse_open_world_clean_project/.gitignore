@@ -8,3 +8,7 @@ _forest_check.gd.uid
 # Bake edilmis orman mesh verisi: buyuk + _forest_bake.gd ile
 # deterministik yeniden uretilir (repoya gomulmez, diske uretilir).
 forest_data/
+_glb_check.gd
+_glb_check.gd.uid
+_forest_glb_shot.gd
+_forest_glb_shot.gd.uid

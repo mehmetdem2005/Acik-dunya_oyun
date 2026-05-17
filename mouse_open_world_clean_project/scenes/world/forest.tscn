@@ -1,33 +1,12 @@
-[gd_scene load_steps=5 format=3]
+[gd_scene load_steps=2 format=3]
 
 [ext_resource type="Script" path="res://scripts/world/forest.gd" id="1_forest"]
-
-[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_f"]
-sky_top_color = Color(0.38, 0.6, 0.86, 1)
-sky_horizon_color = Color(0.72, 0.79, 0.86, 1)
-ground_horizon_color = Color(0.66, 0.69, 0.7, 1)
-ground_bottom_color = Color(0.3, 0.31, 0.3, 1)
-
-[sub_resource type="Sky" id="Sky_f"]
-sky_material = SubResource("ProceduralSkyMaterial_f")
-
-[sub_resource type="Environment" id="Environment_f"]
-background_mode = 2
-sky = SubResource("Sky_f")
-ambient_light_source = 3
-ambient_light_energy = 1.0
-tonemap_mode = 2
 
 [node name="ForestWorld" type="Node3D"]
 
 [node name="Sun" type="DirectionalLight3D" parent="."]
 transform = Transform3D(0.766044, 0.492404, -0.413176, 0.0, 0.642788, 0.766044, 0.642788, -0.586824, 0.492404, 0, 14, 0)
-light_energy = 1.1
-shadow_enabled = true
-directional_shadow_max_distance = 120.0
-
-[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
-environment = SubResource("Environment_f")
+light_energy = 1.2
 
 [node name="Forest" type="Node3D" parent="."]
 script = ExtResource("1_forest")
