@@ -1,17 +1,3 @@
 .godot/
 _shot.gd
 _shot.gd.uid
-_shot_world.gd
-_shot_world.gd.uid
-_forest_check.gd
-_forest_check.gd.uid
-# Bake edilmis orman mesh verisi: buyuk + _forest_bake.gd ile
-# deterministik yeniden uretilir (repoya gomulmez, diske uretilir).
-forest_data/
-_glb_check.gd
-_glb_check.gd.uid
-_forest_glb_shot.gd
-_forest_glb_shot.gd.uid
-# GLB import'un cikardigi turev dokular (pine_tree.glb'den yeniden uretilir)
-scenes/world/pine_tree_*.png
-scenes/world/pine_tree_*.png.import

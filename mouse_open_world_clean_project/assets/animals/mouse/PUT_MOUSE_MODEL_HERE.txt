@@ -1,5 +1,0 @@
-Fare modelini buraya koy ve adını mouse.glb yap.
-Beklenen yol:
-res://assets/animals/mouse/mouse.glb
-
-Farklı ad kullanırsan scenes/player/player.tscn içindeki Player node'unda model_path değerini değiştir.
