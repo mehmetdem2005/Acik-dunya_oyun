@@ -14,19 +14,16 @@ uniform sampler2D bark_albedo : source_color, filter_linear_mipmap;
 uniform sampler2D bark_normal : hint_normal, filter_linear_mipmap;
 uniform sampler2D bark_ormc : hint_default_white, filter_linear_mipmap; // R=AO G=Rough
 uniform sampler2D bark_detail_normal : hint_normal, filter_linear_mipmap;
-uniform sampler2D bark_height : hint_default_white, filter_linear_mipmap;
 uniform sampler2D bark_variation : source_color, filter_linear_mipmap;
 uniform sampler2D tip_age : hint_default_white, filter_linear_mipmap;
 
 uniform vec2 uv_scale = vec2(1.0, 1.0);
-uniform float parallax : hint_range(0.0, 0.12) = 0.04;
 uniform float detail_scale : hint_range(1.0, 8.0) = 4.0;
 uniform float variation_scale : hint_range(0.01, 0.5) = 0.05;
 uniform float variation_amt : hint_range(0.0, 1.0) = 0.30;
 uniform float tip_age_amt : hint_range(0.0, 1.0) = 0.0;
 uniform float normal_depth : hint_range(0.0, 2.0) = 1.0;
 uniform float use_detail : hint_range(0.0, 1.0) = 0.0;
-uniform float use_height : hint_range(0.0, 1.0) = 0.0;
 
 varying vec3 v_wpos;
 
@@ -36,30 +33,29 @@ void vertex() {
 }
 
 void fragment() {
-	// Tek-adım parallax (loopsuz, mobil güvenli). use_height=0 -> etkisiz.
-	vec2 voff = vec2(dot(VIEW, TANGENT), dot(VIEW, BINORMAL));
-	float h0 = texture(bark_height, UV).r;
-	vec2 uv = UV + voff * (h0 - 0.5) * parallax * use_height;
+	vec2 uv = UV;
 
 	vec3 alb = texture(bark_albedo, uv).rgb;
 
-	// Düşük-frekanslı varyasyon: dünya XZ'den örneklenir -> bitişik
-	// kareler arası tile tekrarı görsel olarak kırılır (asıl "ultra" etki).
-	vec3 varc = texture(bark_variation, v_wpos.xz * variation_scale).rgb;
-	alb *= mix(vec3(1.0), varc * 1.15, variation_amt);
+	// Düşük-frekanslı varyasyon: dünya konumundan (XZ + Y karışık)
+	// örneklenir -> dikey gövdede dikey çizgi yapmadan tile tekrarını kırar.
+	vec2 vuv = vec2(v_wpos.x + v_wpos.y * 0.6, v_wpos.z - v_wpos.y * 0.6) * variation_scale;
+	vec3 varc = texture(bark_variation, vuv).rgb;
+	alb *= mix(vec3(1.0), varc * 1.25, variation_amt);
 
 	// tip_age: gövdede beyaz doku + amt=0 -> nötr; dalda ince yaş tonu.
 	vec3 ta = texture(tip_age, uv).rgb;
-	alb *= mix(1.0, 0.85 + 0.15 * ta.g, tip_age_amt);
+	alb *= mix(1.0, 0.90 + 0.10 * ta.g, tip_age_amt);
 
 	ALBEDO = alb;
 
 	vec3 orm = texture(bark_ormc, uv).rgb;   // R=AO  G=Roughness
-	AO = orm.r;
-	AO_LIGHT_AFFECT = 1.0;
-	ROUGHNESS = clamp(orm.g, 0.04, 1.0);
+	// AO yalnız ortam ışığını gölgeler (AO_LIGHT_AFFECT yazılmaz =
+	// Godot varsayılanı 0): doğrudan güneş kabuğu karartmaz.
+	AO = clamp(orm.r, 0.45, 1.0);
+	ROUGHNESS = clamp(orm.g, 0.30, 1.0);
 	METALLIC = 0.0;
-	SPECULAR = 0.4;
+	SPECULAR = 0.35;
 
 	vec3 nb = texture(bark_normal, uv).rgb;
 	vec3 nd = texture(bark_detail_normal, uv * detail_scale).rgb;

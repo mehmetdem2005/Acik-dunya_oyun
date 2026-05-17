@@ -297,14 +297,11 @@ func _bark_shader_material(extra_tip_age: Texture2D) -> Material:
 		sm.set_shader_parameter("bark_normal", nrm)
 	if ormc != null:
 		sm.set_shader_parameter("bark_ormc", ormc)
+	sm.set_shader_parameter("uv_scale", bark_tiling)
 	sm.set_shader_parameter("use_detail",
 		1.0 if (det != null and texture_quality >= 2) else 0.0)
 	if det != null:
 		sm.set_shader_parameter("bark_detail_normal", det)
-	sm.set_shader_parameter("use_height",
-		1.0 if (hgt != null and texture_quality >= 2) else 0.0)
-	if hgt != null:
-		sm.set_shader_parameter("bark_height", hgt)
 	var vart := _tex_or(bark_variation_tex, _TEX_ROOT + "bark/pine_bark_variation_1k.jpg")
 	sm.set_shader_parameter("variation_amt", 0.30 if vart != null else 0.0)
 	if vart != null:
@@ -314,7 +311,6 @@ func _bark_shader_material(extra_tip_age: Texture2D) -> Material:
 		sm.set_shader_parameter("tip_age_amt", 0.25)
 	else:
 		sm.set_shader_parameter("tip_age_amt", 0.0)
-	sm.set_shader_parameter("parallax", bark_parallax)
 	return sm
 
 func _bark_material() -> Material:
@@ -348,7 +344,7 @@ func _needle_material() -> Material:
 			var n_var := _tex_or(needle_variation_tex, _TEX_ROOT + "needles/pine_needles_variation_1k.png")
 			if n_var != null:
 				sm.set_shader_parameter("needle_variation", n_var)
-				sm.set_shader_parameter("variation_amt", 0.45)
+				sm.set_shader_parameter("variation_amt", 0.35)
 			else:
 				sm.set_shader_parameter("variation_amt", 0.0)
 			# needle_windmask bilerek bağlanmıyor: atlas-kart iğne sisteminde

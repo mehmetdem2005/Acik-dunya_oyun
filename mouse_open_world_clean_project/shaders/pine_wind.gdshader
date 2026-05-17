@@ -72,19 +72,21 @@ void fragment() {
 		discard;
 	}
 	vec3 col = alb.rgb * v_col;
+	// Varyasyon nötr-merkezli (varc/0.5 ~ 1.0) -> kümeyi karartmadan
+	// hue/parlaklık çeşitlendirir (eski varc*1.15 aşırı karartıyordu).
 	vec3 varc = texture(needle_variation, auv).rgb;
-	col *= mix(vec3(1.0), varc * 1.15, variation_amt);
+	col *= mix(vec3(1.0), varc * 2.0, variation_amt);
 	// Kuru/sarı uç: uca yakın (UV.y->0) + kuru kümede sıcak tona solar;
 	// lum korunur -> koyu boşluklar koyu kalır (silüet/discard bozulmaz).
 	float tipf = 1.0 - clamp(UV.y, 0.0, 1.0);
 	float dryw = smoothstep(0.40, 1.0, tipf) * v_dry * dry_tip_amt;
-	col = mix(col, dry_tip_col * (0.55 + 0.45 * lum), dryw);
-	col = mix(col, col * vec3(1.05, 0.97, 0.70), 0.30 * v_dry);
+	col = mix(col, dry_tip_col * (0.65 + 0.45 * lum), dryw);
+	col = mix(col, col * vec3(1.06, 0.98, 0.74), 0.25 * v_dry);
 	vec3 orm = texture(needle_orm, auv).rgb;       // R=AO G=Rough B=Metal
-	// Yükseklik haritası ince mikro-AO (use_height_tex=0 -> etkisiz).
+	// Yükseklik haritası ÇOK ince mikro-AO (use_height_tex=0 -> etkisiz).
 	float hg = texture(needle_height, auv).r;
-	col *= mix(1.0, 0.78 + 0.22 * hg, use_height_tex);
-	ALBEDO = col * mix(1.0, orm.r, 0.4) * 1.12;
+	col *= mix(1.0, 0.92 + 0.08 * hg, use_height_tex);
+	ALBEDO = col * mix(1.0, orm.r, 0.25) * 1.18;
 	ALPHA = op;
 	ALPHA_SCISSOR_THRESHOLD = alpha_cut;
 	// İğne mat: yüksek roughness + çok düşük specular -> beyaz parlama yok.
