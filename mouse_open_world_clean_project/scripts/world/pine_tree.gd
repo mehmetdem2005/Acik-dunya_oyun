@@ -233,6 +233,9 @@ func _pbr_wood_material(albedo: Texture2D, nrm: Texture2D, ormc: Texture2D,
 		detail_n: Texture2D, height: Texture2D, tiling: Vector2,
 		use_height: bool) -> StandardMaterial3D:
 	var m := StandardMaterial3D.new()
+	# Gövde girintili/oluklu -> tek-yüzlü cull'da yakın çekimde silüette
+	# arka plan sızan ince çizgi olur. Çift yüzlü: hairline imkansız.
+	m.cull_mode = BaseMaterial3D.CULL_DISABLED
 	if albedo == null:
 		# Prosedürel fallback (eski davranış).
 		m.albedo_color = bark_color

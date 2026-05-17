@@ -143,7 +143,10 @@ static func _tube(st: SurfaceTool, stem: Dictionary, sides: int,
 		var v1 := arc[k + 1] / (TAU * maxf(rn1, 1e-4))
 		for si in range(sides):
 			var a0 := TAU * float(si) / float(sides)
-			var a1 := TAU * float(si + 1) / float(sides)
+			# Son yüzde (si+1)%sides=0 -> a1 tam 0.0 (cos/sin(TAU)
+			# epsilon'u YOK): kapanış halkası başlangıçla BIT-AYNI ->
+			# konum+normal dikişsiz, "arkası görünen ince çizgi" biter.
+			var a1 := TAU * float((si + 1) % sides) / float(sides)
 			var d00 := n0 * cos(a0) + b0 * sin(a0)
 			var d10 := n0 * cos(a1) + b0 * sin(a1)
 			var d01 := n1 * cos(a0) + b1 * sin(a0)
