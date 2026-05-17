@@ -350,10 +350,9 @@ func _needle_material() -> Material:
 				sm.set_shader_parameter("needle_variation", n_var)
 			else:
 				sm.set_shader_parameter("variation_amt", 0.0)
-			var n_wm := _tex_or(needle_windmask_tex, _TEX_ROOT + "needles/pine_needles_wind_mask_1k.png")
-			sm.set_shader_parameter("use_windmask", 1.0 if n_wm != null else 0.0)
-			if n_wm != null:
-				sm.set_shader_parameter("needle_windmask", n_wm)
+			# needle_windmask bilerek bağlanmıyor: atlas-kart iğne sisteminde
+			# kart-yerel UV kartı çarpıtıp titremeye yol açıyor (sertlik
+			# zaten flex/yükseklik ile yapılıyor).
 			var n_hg := _tex_or(needle_height_tex, _TEX_ROOT + "needles/pine_needles_height_1k.png")
 			sm.set_shader_parameter("use_height_tex", 1.0 if n_hg != null else 0.0)
 			if n_hg != null:

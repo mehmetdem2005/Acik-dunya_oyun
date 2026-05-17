@@ -27,10 +27,10 @@ uniform float wind_speed : hint_range(0.0, 4.0) = 1.0;
 uniform vec2 wind_dir = vec2(1.0, 0.35);
 
 // Ek ultra haritalar (use_*/bent_amt = 0 -> nötr, eski görünüm korunur).
-uniform sampler2D needle_windmask : hint_default_white, filter_linear_mipmap;
+// NOT: needle_windmask bu atlas-kart sistemine UYMAZ (kart-yerel UV
+// kartı çarpıtır -> titreme); iğne sertliği zaten flex/h ile yapılıyor.
 uniform sampler2D needle_height : hint_default_white, filter_linear_mipmap;
 uniform sampler2D needle_bent : hint_normal, filter_linear_mipmap;
-uniform float use_windmask : hint_range(0.0, 1.0) = 0.0;
 uniform float use_height_tex : hint_range(0.0, 1.0) = 0.0;
 uniform float bent_amt : hint_range(0.0, 1.0) = 0.0;
 
@@ -42,9 +42,6 @@ void vertex() {
 	float flex = UV2.x;
 	float h = clamp(VERTEX.y / max(tree_height, 0.001), 0.0, 1.0);
 	float amp = wind_strength * mix(pow(h, 1.5) * 0.25, 1.0, clamp(flex, 0.0, 1.0));
-	// Sert/odunsu demetler daha az sallanır (windmask kanalı).
-	float wm = textureLod(needle_windmask, UV, 0.0).r;
-	amp *= mix(1.0, wm, use_windmask);
 	vec3 wp = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xyz;
 	float t = TIME * wind_speed + wp.x * 0.15 + wp.z * 0.15;
 	float gust = sin(t) * 0.7 + sin(t * 2.7) * 0.3;
