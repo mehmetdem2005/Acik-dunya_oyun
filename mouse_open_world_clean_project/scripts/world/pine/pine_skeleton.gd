@@ -124,9 +124,8 @@ func _spawn_level1(cfg: Dictionary, trunk: Dictionary, trunk_idx: int) -> void:
 			var L: float = blen * lvar
 			if is_broken:
 				L *= brk_mul
-			# Alt tier'ler süpürür ama YERE değmesin: dip çarpanı düşük
-			# (taç başlangıcı tipten yükseltildi + bu sınırlı sarkma).
-			var grav := droop * (0.50 + 0.80 * (1.0 - tf))
+			# Alt tier'ler sert süpürür, üst tier'ler dik durur.
+			var grav := droop * (0.50 + 1.45 * (1.0 - tf))
 			# knee=1.0 -> dal gövdeden YUKARI çıkıp sonra dışa kıvrılır.
 			var child := _grow(sp, dir, L, dal_seg, grav, 0.05, dal_yay, wob, 0.40)
 			whorl_az.append(h01)

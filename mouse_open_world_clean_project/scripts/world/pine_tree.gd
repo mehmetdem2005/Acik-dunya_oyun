@@ -41,19 +41,6 @@ class_name PineTree
 @export_range(0.4, 2.5, 0.05) var frond_size: float = 1.2
 
 @export_group("Form / Kusur")
-# Ağaç tipi: boyut/silüet/kovuk ön ayarını sürer (manuel Boyut/Taç
-# alanlarını EZER). 0=Genç Fide, 1=Olgun, 2=Kadim (devasa + dip kovuk).
-@export_enum("Genc Fide:0", "Olgun:1", "Kadim:2") var tree_type: int = 1:
-	set(v):
-		tree_type = v
-		if is_inside_tree(): rebuild.call_deferred()
-# LOD: uzaklığa göre poly/doku yoğunluğu. 0=Yakın (tam detay),
-# 1=Orta, 2=Uzak (çok düşük poly + prosedürel ucuz materyal).
-# LOD GEÇİŞ sistemi BURADA değil; sadece ağacın detay kademesi.
-@export_enum("Yakin:0", "Orta:1", "Uzak:2") var lod_level: int = 0:
-	set(v):
-		lod_level = v
-		if is_inside_tree(): rebuild.call_deferred()
 @export_enum("Genc Konik:0", "Olgun Orman:1", "Acikta Yetisen:2") var tree_form: int = 0
 @export_range(0.08, 0.30, 0.01) var branch_taper_tip: float = 0.18
 @export_range(0.0, 0.5, 0.01) var knot_strength: float = 0.22
@@ -117,10 +104,6 @@ class_name PineTree
 
 const _TEX_ROOT := "res://assets/trees/pine_ultra_mobile/textures/"
 
-# rebuild()'te tip+seed sonrası gerçek boyut (collision/shader için).
-var _built_h: float = 7.5
-var _built_tr: float = 0.18
-
 func _ready() -> void:
 	# Godot 4.6: instance edilen sahnede _ready sırasında add_child
 	# ("busy setting up children") yasak -> ilk yapımı bir kare ertele.
@@ -130,116 +113,63 @@ func rebuild() -> void:
 	for c in get_children():
 		c.queue_free()
 
-	# === Ağaç tipi ön ayarı (boyut / silüet / kovuk) ======================
-	# Tip; manuel Boyut/Taç alanlarını EZER -> sistem tutarlı kalır.
-	var t_h := total_height
-	var t_tr := trunk_radius
-	var t_cr := crown_radius
-	var t_cs := crown_start_ratio
-	var t_bc := branch_count
-	var t_dr := branch_droop
-	var t_bend := trunk_bend
-	var t_form := tree_form
-	var t_hollow := 0.0
-	match tree_type:
-		0:  # Genç Fide — küçük, ince, sık konik
-			t_h = 2.4; t_tr = 0.045; t_cr = 0.85; t_cs = 0.12
-			t_bc = 24; t_dr = 0.14; t_bend = 0.05; t_form = 0
-		2:  # Kadim — devasa, kalın gövde, DİPTE KOVUK (fare girer)
-			t_h = 26.0; t_tr = 1.05; t_cr = 6.4; t_cs = 0.46
-			t_bc = 82; t_dr = 0.34; t_bend = 0.06; t_form = 2
-			t_hollow = 1.0
-		_:  # Olgun — orta boy (varsayılan)
-			t_h = 10.0; t_tr = 0.22; t_cr = 2.4; t_cs = 0.26
-			t_bc = 56; t_dr = 0.26; t_bend = 0.04; t_form = 0
-
-	# === LOD ön ayarı (poly + doku yoğunluğu) =============================
-	var l_sides := trunk_sides
-	var l_dseg := dal_segment
-	var l_sseg := 7
-	var l_tseg := 4
-	var l_shoots := shoots_per_branch
-	var l_twigs := twigs_per_shoot
-	var l_fine := fine_twigs
-	var l_blades := blades_per_branch
-	var l_fork := catal_derinlik
-	var l_ndens := 1.0
-	var l_cardp := 2
-	var l_frond := frond_size
-	match lod_level:
-		1:  # Orta — yarı detay
-			l_sides = 9; l_dseg = 6; l_sseg = 5; l_tseg = 3
-			l_shoots = 7; l_twigs = 1; l_fine = true; l_blades = 2
-			l_fork = mini(catal_derinlik, 1); l_ndens = 0.58
-			l_cardp = 2; l_frond = frond_size * 1.15
-		2:  # Uzak — düşük poly: kart başına TEK düzlem + az gövde
-			# kenarı/segment (asıl tasarruf). Kanopi dolu kalsın diye
-			# yaprak yoğunluğu korunur -> uzakta hâlâ yeşil ağaç.
-			l_sides = 6; l_dseg = 4; l_sseg = 4; l_tseg = 2
-			l_shoots = 9; l_twigs = 1; l_fine = true; l_blades = 2
-			l_fork = 1; l_ndens = 0.85; l_cardp = 1
-			l_frond = frond_size * 1.4
-		_:  # Yakın — tam detay
-			pass
-
-	# === Form karakteri (budama / kuru / eğim / sarkma) ==================
+	# Form ön ayarları (genç konik / olgun orman / açıkta yetişen).
+	var f_crown := crown_start_ratio
 	var f_pl := 0.12
 	var f_ph := 0.02
 	var f_dry := 0.05
 	var f_brk := 0.03
-	var f_droop := t_dr
+	var f_droop := branch_droop
 	var f_el := -0.18
 	var f_eh := 0.55
-	match t_form:
+	match tree_form:
 		0:
+			f_crown = 0.10
 			f_pl = 0.05; f_ph = 0.02
 			f_dry = 0.05; f_brk = 0.03
-			f_droop = maxf(t_dr * 0.6, 0.10)
+			f_droop = maxf(branch_droop * 0.6, 0.10)
 			f_el = 0.05; f_eh = 0.75
 		2:
+			f_crown = 0.06
 			f_pl = 0.04; f_ph = 0.03
 			f_dry = 0.06; f_brk = 0.04
-			f_droop = maxf(t_dr * 1.05, 0.22)
-			f_el = -0.06; f_eh = 0.45
+			f_droop = maxf(branch_droop * 1.1, 0.25)
+			f_el = -0.10; f_eh = 0.45
 		_:
-			f_pl = 0.12; f_ph = 0.02
-	# Yaprak yere değmesin: taç başlangıcı TİPTEN gelir (form EZMEZ).
-	var f_crown := t_cs
+			f_crown = 0.36
 
-	# Seed FORMU bozmadan boyut/kalınlık/yaş varyasyonu (aynı seed=aynı).
-	var v_h := t_h
-	var v_tr := t_tr
-	var v_cr := t_cr
-	var v_bc := t_bc
+	# Seed cam FORMUNU bozmadan boyut/kalinlik/yas varyasyonu uretir
+	# (ayni seed -> ayni agac; farkli seed -> farkli ama yine cam).
+	var v_h := total_height
+	var v_tr := trunk_radius
+	var v_cr := crown_radius
+	var v_bc := branch_count
 	var v_dr := f_droop
 	if seed_varies_form:
 		var _fr := RandomNumberGenerator.new()
 		_fr.seed = seed if seed != 0 else hash(name)
-		v_h *= _fr.randf_range(0.88, 1.16)
-		v_tr *= _fr.randf_range(0.86, 1.18)
-		v_cr *= _fr.randf_range(0.90, 1.12)
-		v_bc = int(round(t_bc * _fr.randf_range(0.90, 1.12)))
-		v_dr *= _fr.randf_range(0.90, 1.12)
-
-	_built_h = v_h
-	_built_tr = v_tr
+		v_h *= _fr.randf_range(0.78, 1.30)
+		v_tr *= _fr.randf_range(0.80, 1.28)
+		v_cr *= _fr.randf_range(0.85, 1.18)
+		v_bc = int(round(branch_count * _fr.randf_range(0.85, 1.15)))
+		v_dr *= _fr.randf_range(0.85, 1.20)
 
 	var cfg := {
 		"seed": seed if seed != 0 else hash(name),
 		"height": v_h,
 		"trunk_radius": v_tr,
 		"trunk_top": trunk_top_ratio,
-		"trunk_bend": t_bend,
+		"trunk_bend": trunk_bend,
 		"crown_start": f_crown,
 		"crown_radius": v_cr,
 		"branch_count": v_bc,
 		"branch_droop": v_dr,
-		"shoots_per_branch": l_shoots,
-		"trunk_sides": l_sides,
-		"needle_planes": l_blades,
-		"needle_size": l_frond,
-		"fine_twigs": l_fine,
-		"twigs_per_shoot": l_twigs,
+		"shoots_per_branch": shoots_per_branch,
+		"trunk_sides": trunk_sides,
+		"needle_planes": blades_per_branch,
+		"needle_size": frond_size,
+		"fine_twigs": fine_twigs,
+		"twigs_per_shoot": twigs_per_shoot,
 		"prune_low": f_pl,
 		"prune_high": f_ph,
 		"dry_chance_low": f_dry,
@@ -249,24 +179,17 @@ func rebuild() -> void:
 		"branch_taper_tip": branch_taper_tip,
 		"knot_strength": knot_strength,
 		"light_bias": light_bias,
-		"dal_segment": l_dseg,
-		"shoot_segment": l_sseg,
-		"twig_segment": l_tseg,
+		"dal_segment": dal_segment,
+		"shoot_segment": 7,
+		"twig_segment": 4,
 		"dal_yay": dal_yay,
 		"shoot_taper": surgun_konik,
 		"level2_wood": level2_wood,
-		"fork_depth": l_fork,
+		"fork_depth": catal_derinlik,
 		"whorl_gap": tabaka_aralik,
-		"flare_strength": govde_kok if tree_type != 2 else maxf(govde_kok, 1.5),
+		"flare_strength": govde_kok,
 		"flare_lobe": kok_payanda,
-		"root_count": kok_sayisi if tree_type != 2 else maxi(kok_sayisi, 6),
-		"needle_lod": l_ndens,
-		"card_planes": l_cardp,
-		"hollow_base": t_hollow,
-		"hollow_h": 0.26,
-		"hollow_arc": 1.30,
-		"hollow_az": 0.0,
-		"hollow_inner": 0.10,
+		"root_count": kok_sayisi,
 	}
 
 	var skel := PineSkeleton.new()
@@ -361,9 +284,6 @@ func _bark_shader_material(extra_tip_age: Texture2D) -> Material:
 	var ormc := _tex_or(bark_ormc_tex, _TEX_ROOT + "bark/pine_bark_ormc_2k.jpg")
 	var det := _tex_or(bark_detail_normal_tex, _TEX_ROOT + "bark/pine_bark_detail_normal_1k.jpg")
 	var hgt := _tex_or(bark_height_tex, _TEX_ROOT + "bark/pine_bark_height_1k.jpg")
-	if lod_level >= 2:
-		# Uzak LOD: 2K foto doku yok -> prosedürel ucuz kabuk (perf).
-		return _pbr_wood_material(null, null, null, null, null, bark_tiling, false)
 	var shader_path := "res://shaders/pine_bark.gdshader"
 	var sh: Shader = null
 	if albedo != null and texture_quality >= 1 and ResourceLoader.exists(shader_path):
@@ -404,9 +324,6 @@ func _branch_material() -> Material:
 
 func _needle_material() -> Material:
 	var n_alb := _tex_or(needle_albedo_tex, _TEX_ROOT + "needles/pine_needles_albedo_alpha_2k.png")
-	# İğne shader'ı her LOD'da kalır (kanopi silüeti dolu görünsün);
-	# uzak LOD tasarrufu GEOMETRİDE (tek düzlem kart, az segment) +
-	# kabuk prosedürel. Shader ucuz; çıplak ağaç istemiyoruz.
 	if n_alb != null and enable_wind and ResourceLoader.exists("res://shaders/pine_wind.gdshader"):
 		var sh := ResourceLoader.load("res://shaders/pine_wind.gdshader") as Shader
 		if sh != null:
@@ -441,7 +358,7 @@ func _needle_material() -> Material:
 			sm.set_shader_parameter("bent_amt", 0.4 if n_bn != null else 0.0)
 			if n_bn != null:
 				sm.set_shader_parameter("needle_bent", n_bn)
-			sm.set_shader_parameter("tree_height", _built_h)
+			sm.set_shader_parameter("tree_height", total_height)
 			sm.set_shader_parameter("backlight_col", needle_mid * 0.28)
 			return sm
 	# Albedo yoksa: prosedürel atlas + güvenli StandardMaterial3D fallback.
@@ -469,16 +386,10 @@ func _build_collision() -> void:
 	add_child(body)
 	var col := CollisionShape3D.new()
 	var shape := CylinderShape3D.new()
-	# Kadim'de gövde içi KOVUK var: dar bir çekirdek silindir kullan ki
-	# kovuk girişi kapanmasın (gerçek kovuk çarpışmasını LOD/oyun
-	# sistemini kuran taraf detaylandırır; burada sadece ağaç).
-	if tree_type == 2:
-		shape.radius = maxf(_built_tr * 0.45, 0.20)
-	else:
-		shape.radius = maxf(_built_tr * 1.4, 0.18)
-	shape.height = _built_h
+	shape.radius = maxf(trunk_radius * 1.4, 0.18)
+	shape.height = total_height
 	col.shape = shape
-	col.position = Vector3(0.0, _built_h * 0.5, 0.0)
+	col.position = Vector3(0.0, total_height * 0.5, 0.0)
 	body.add_child(col)
 
 func _new_seed() -> void:

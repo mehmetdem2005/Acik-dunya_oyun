@@ -23,8 +23,6 @@ static func build(stems: Array, cfg: Dictionary) -> Dictionary:
 
 	var sides: int = int(cfg.get("trunk_sides", 12))
 	var nlen: float = cfg.get("needle_size", 1.2)
-	var ndens: float = float(cfg.get("needle_lod", 1.0))
-	var cardp: int = int(cfg.get("card_planes", 2))
 	var light_bias: float = float(cfg.get("light_bias", 0.0))
 	var knot_s: float = float(cfg.get("knot_strength", 0.22))
 	var empty := PackedFloat32Array()
@@ -50,7 +48,7 @@ static func build(stems: Array, cfg: Dictionary) -> Dictionary:
 				has_branch = true
 				# Kuru dal iğne taşımaz (yalnız odun çizilir).
 				if not bool(stem.get("dry", false)):
-					_sprigs(leaf, stem, nlen * 0.42, 1, light_bias, ndens, cardp)
+					_sprigs(leaf, stem, nlen * 0.42, 1, light_bias)
 		elif lvl == 2:
 			# is_tip uç sürgün de İNCE tüp alır -> yaprak dala
 			# yapışık görünür (havada kalan yaprak sorunu çözülür).
@@ -58,11 +56,11 @@ static func build(stems: Array, cfg: Dictionary) -> Dictionary:
 				var _it: bool = bool(stem.get("is_tip", false))
 				_tube(branch, stem, (4 if _it else maxi(4, int(sides / 2.6))), empty, 0.0, cfg)
 				has_branch = true
-			_sprigs(leaf, stem, nlen * 0.40, 2, light_bias, ndens, cardp)
+			_sprigs(leaf, stem, nlen * 0.40, 2, light_bias)
 		elif lvl == 3:
 			_tube(branch, stem, 3, empty, 0.0, cfg)
 			has_branch = true
-			_sprigs(leaf, stem, nlen * 0.16, 3, light_bias, ndens, cardp)
+			_sprigs(leaf, stem, nlen * 0.16, 3, light_bias)
 
 	bark.generate_tangents()
 	var out := {}
@@ -90,11 +88,6 @@ static func _tube(st: SurfaceTool, stem: Dictionary, sides: int,
 	if n < 2:
 		return
 	var lvl: int = int(stem["level"])
-	var hollow_on: bool = lvl == 0 and float(cfg.get("hollow_base", 0.0)) > 0.5
-	var ho_h: float = float(cfg.get("hollow_h", 0.17))
-	var ho_arc: float = float(cfg.get("hollow_arc", 0.95))
-	var ho_az: float = float(cfg.get("hollow_az", 0.0))
-	var ho_in: float = float(cfg.get("hollow_inner", 0.12))
 	var r0: float = float(stem["radius0"])
 	var r1: float = float(stem["radius1"])
 	var flare_s: float = float(cfg.get("flare_strength", 1.0))
@@ -202,9 +195,6 @@ static func _tube(st: SurfaceTool, stem: Dictionary, sides: int,
 				r10 += rad0 * bf0 * rl1
 				r01 += rad1 * bf1 * rl0
 				r11 += rad1 * bf1 * rl1
-			if hollow_on and lvl == 0 and _in_door(\
-					0.5 * (a0 + a1), 0.5 * (f0 + f1), ho_az, ho_arc, ho_h):
-				continue   # kapi: dis duvar YOK (gercek delik)
 			var uA := float(si) / float(sides) * 2.0
 			var uB := float(si + 1) / float(sides) * 2.0
 			var fl0 := Vector2(flex0, 0.0)
@@ -216,13 +206,10 @@ static func _tube(st: SurfaceTool, stem: Dictionary, sides: int,
 			st.set_normal(d11); st.set_uv2(fl1); st.set_uv(Vector2(uB, v1)); st.add_vertex(c1 + d11 * r11)
 			st.set_normal(d10); st.set_uv2(fl0); st.set_uv(Vector2(uB, v0)); st.add_vertex(c0 + d10 * r10)
 
-	if hollow_on and lvl == 0:
-		_carve_hollow(st, stem, cfg, ho_az, ho_arc, ho_h, ho_in)
-
 # --- İğne demeti kartları (sürgün boyunca dağıtılmış) -----------------
 
 static func _sprigs(st: SurfaceTool, stem: Dictionary, size: float, lvl: int,
-		light_bias: float, ndens: float = 1.0, cardp: int = 2) -> void:
+		light_bias: float) -> void:
 	if bool(stem.get("dry", false)):
 		return  # kuru dal iğne taşımaz
 	var pts: Array = stem["points"]
@@ -274,10 +261,7 @@ static func _sprigs(st: SurfaceTool, stem: Dictionary, size: float, lvl: int,
 			if dens > 0.02:
 				var c: Vector3 = c0 + ax * t
 				idx += 1
-				var nc: int = (4 if dens > 0.5 else 2)
-				if ndens < 0.4:
-					nc = 1   # Uzak LOD: kume basina tek kart (perf)
-				for s in range(nc):
+				for s in range(4 if dens > 0.5 else 2):
 					var az: float = float(idx) * GOLDEN + PI * float(s)
 					var outd: Vector3 = nm.rotated(ax, az).normalized()
 					var up: Vector3 = (outd * 0.72 + ax * 0.30 + Vector3.UP * 0.14).normalized()
@@ -294,24 +278,24 @@ static func _sprigs(st: SurfaceTool, stem: Dictionary, size: float, lvl: int,
 					# Kume-basina kuruluk (deterministik: dusuk tint=yasli + hash);
 					# COLOR.a ile shader'a tasinir -> kuru/sari uc + cesitlilik.
 					var dry: float = clampf((1.0 - tint) * 0.7 + (vrnd - 0.62) * 0.55, 0.0, 1.0)
-					_card(st, c, up * ccs, rt * (ccs * 0.88), shade, flex, idx % 25, dry, cardp)
+					_card(st, c, up * ccs, rt * (ccs * 0.88), shade, flex, idx % 25, dry)
 			# Uca doğru sıklaş; ışık yönüne göre asimetri.
 			var dstep := step / maxf(dens, 0.10)
 			if light_bias > 0.0:
 				var lb := 1.0 + light_bias * (Vector3(c0.x, 0.0, c0.z).normalized().dot(sun))
 				dstep /= clampf(lb, 0.6, 1.4)
-			t += clampf(dstep, step * 0.5, step * 6.0) / clampf(ndens, 0.06, 1.0)
+			t += clampf(dstep, step * 0.5, step * 6.0)
 		carry = t - seg_len
 
 # Tek demet = çapraz 2 dörtgen (X); tabandan uca yelpaze.
 static func _card(st: SurfaceTool, c: Vector3, uv_dir: Vector3, rv: Vector3,
-		ao: float, flex: float, cell: int, dry: float = 0.0, planes: int = 2) -> void:
+		ao: float, flex: float, cell: int, dry: float = 0.0) -> void:
 	# UV2 = (flex, atlas hücresi). Shader 5x5 atlastan demeti seçer.
 	var fb := Vector2(flex, float(cell))
 	var ftp := Vector2(flex * 1.25, float(cell))
 	# Çapraz X (2 dik dörtgen): tek düzlem yandan kenar-üstü ince
 	# dilime çöküyordu (kırık yaprak). X her açıdan hacim verir.
-	for q in range(planes):
+	for q in range(2):
 		var rq: Vector3
 		if q == 0:
 			rq = rv
@@ -331,105 +315,6 @@ static func _card(st: SurfaceTool, c: Vector3, uv_dir: Vector3, rv: Vector3,
 		st.set_uv2(ftp); st.set_normal(nT); st.set_uv(Vector2(0.0, 0.0)); st.add_vertex(tip - rq)
 
 # Yüz normalini gövdeden dışa+yukarı yumuşak hacim normaliyle harmanlar.
-# Kapi bolgesi mi? (ho_az yonu, ho_arc yari-acisi, ho_h yuks.). True
-# -> dis trunk duvari atlanir (gercek delik).
-static func _in_door(a: float, f: float, az: float, arc: float,
-		hh: float) -> bool:
-	if f >= hh * 0.82:
-		return false
-	var d: float = a - az
-	while d > PI: d -= TAU
-	while d < -PI: d += TAU
-	return absf(d) < arc * 0.80
-
-# Kadim DIP KOVUGU: kapida dis duvar atlanmistir; burada ic oda
-# duvari + yan sove + ust kemer + zemin eklenir (CULL_DISABLED).
-static func _carve_hollow(st: SurfaceTool, stem: Dictionary,
-		cfg: Dictionary, az: float, arc: float, hh: float,
-		inner: float) -> void:
-	var pts: Array = stem["points"]
-	var tang: Array = stem["tangents"]
-	var norms: Array = stem["normals"]
-	var n := pts.size()
-	if n < 3:
-		return
-	var r0: float = float(stem["radius0"])
-	var r1: float = float(stem["radius1"])
-	var flare_s: float = float(cfg.get("flare_strength", 1.0))
-	var aw: float = arc * 0.78
-	var fT: float = hh * 0.80
-	var cav: float = maxf(r0 * (1.0 + 0.30 * flare_s) * 0.55, r0 * 0.6)
-	var M := 7
-	var kmax := 2
-	for k in range(n):
-		if float(k) / float(n - 1) <= fT:
-			kmax = k
-	kmax = maxi(kmax, 2)
-	var Rout := func(ff: float) -> float:
-		return lerp(r0, r1, pow(clampf(ff, 0.0, 1.0), 0.85)) + r0 * flare_s * 0.30 * pow(maxf(1.0 - ff * 9.0, 0.0), 2.0)
-	var dir_at := func(kk: int, a: float) -> Vector3:
-		var nn: Vector3 = norms[kk]
-		var bb: Vector3 = (tang[kk] as Vector3).cross(nn).normalized()
-		return (nn * cos(a) + bb * sin(a)).normalized()
-	for k in range(kmax):
-		var c0: Vector3 = pts[k]
-		var c1: Vector3 = pts[k + 1]
-		for j in range(M):
-			var a0: float = az - aw + 2.0 * aw * float(j) / float(M)
-			var a1: float = az - aw + 2.0 * aw * float(j + 1) / float(M)
-			var d00: Vector3 = dir_at.call(k, a0)
-			var d01: Vector3 = dir_at.call(k, a1)
-			var e00: Vector3 = dir_at.call(k + 1, a0)
-			var e01: Vector3 = dir_at.call(k + 1, a1)
-			st.set_normal(-d00); st.set_uv2(Vector2.ZERO); st.set_uv(Vector2(float(j) / float(M) * 1.5, float(k) * 0.5)); st.add_vertex(c0 + d00 * cav)
-			st.set_normal(-d00); st.set_uv2(Vector2.ZERO); st.set_uv(Vector2(float(j) / float(M) * 1.5, float(k + 1) * 0.5)); st.add_vertex(c1 + e00 * cav)
-			st.set_normal(-d01); st.set_uv2(Vector2.ZERO); st.set_uv(Vector2(float(j + 1) / float(M) * 1.5, float(k + 1) * 0.5)); st.add_vertex(c1 + e01 * cav)
-			st.set_normal(-d00); st.set_uv2(Vector2.ZERO); st.set_uv(Vector2(float(j) / float(M) * 1.5, float(k) * 0.5)); st.add_vertex(c0 + d00 * cav)
-			st.set_normal(-d01); st.set_uv2(Vector2.ZERO); st.set_uv(Vector2(float(j + 1) / float(M) * 1.5, float(k + 1) * 0.5)); st.add_vertex(c1 + e01 * cav)
-			st.set_normal(-d01); st.set_uv2(Vector2.ZERO); st.set_uv(Vector2(float(j + 1) / float(M) * 1.5, float(k) * 0.5)); st.add_vertex(c0 + d01 * cav)
-	for side in [0, 1]:
-		var a: float = (az - aw) if side == 0 else (az + aw)
-		for k in range(kmax):
-			var f0: float = float(k) / float(n - 1)
-			var f1: float = float(k + 1) / float(n - 1)
-			var c0: Vector3 = pts[k]
-			var c1: Vector3 = pts[k + 1]
-			var g0: Vector3 = dir_at.call(k, a)
-			var g1: Vector3 = dir_at.call(k + 1, a)
-			var Ro0: float = Rout.call(f0)
-			var Ro1: float = Rout.call(f1)
-			st.set_normal(g0); st.set_uv2(Vector2.ZERO); st.set_uv(Vector2(0.0, f0 * 4.0)); st.add_vertex(c0 + g0 * Ro0)
-			st.set_normal(g0); st.set_uv2(Vector2.ZERO); st.set_uv(Vector2(1.0, f1 * 4.0)); st.add_vertex(c1 + g1 * Ro1)
-			st.set_normal(g0); st.set_uv2(Vector2.ZERO); st.set_uv(Vector2(0.0, f1 * 4.0)); st.add_vertex(c1 + g1 * cav)
-			st.set_normal(g0); st.set_uv2(Vector2.ZERO); st.set_uv(Vector2(0.0, f0 * 4.0)); st.add_vertex(c0 + g0 * Ro0)
-			st.set_normal(g0); st.set_uv2(Vector2.ZERO); st.set_uv(Vector2(0.0, f1 * 4.0)); st.add_vertex(c1 + g1 * cav)
-			st.set_normal(g0); st.set_uv2(Vector2.ZERO); st.set_uv(Vector2(0.0, f0 * 4.0)); st.add_vertex(c0 + g0 * cav)
-	var kt: int = clampi(kmax, 1, n - 1)
-	var cT: Vector3 = pts[kt]
-	var fTk: float = float(kt) / float(n - 1)
-	var dn := -(tang[kt] as Vector3).normalized()
-	for j in range(M):
-		var a0: float = az - aw + 2.0 * aw * float(j) / float(M)
-		var a1: float = az - aw + 2.0 * aw * float(j + 1) / float(M)
-		var h0: Vector3 = dir_at.call(kt, a0)
-		var h1: Vector3 = dir_at.call(kt, a1)
-		var Ro: float = Rout.call(fTk)
-		st.set_normal(dn); st.set_uv2(Vector2.ZERO); st.set_uv(Vector2(0.0, 0.0)); st.add_vertex(cT + h0 * Ro)
-		st.set_normal(dn); st.set_uv2(Vector2.ZERO); st.set_uv(Vector2(1.0, 0.0)); st.add_vertex(cT + h1 * Ro)
-		st.set_normal(dn); st.set_uv2(Vector2.ZERO); st.set_uv(Vector2(1.0, 1.0)); st.add_vertex(cT + h1 * cav)
-		st.set_normal(dn); st.set_uv2(Vector2.ZERO); st.set_uv(Vector2(0.0, 0.0)); st.add_vertex(cT + h0 * Ro)
-		st.set_normal(dn); st.set_uv2(Vector2.ZERO); st.set_uv(Vector2(1.0, 1.0)); st.add_vertex(cT + h1 * cav)
-		st.set_normal(dn); st.set_uv2(Vector2.ZERO); st.set_uv(Vector2(0.0, 1.0)); st.add_vertex(cT + h0 * cav)
-	var cB: Vector3 = pts[0]
-	for j in range(M):
-		var a0: float = az - aw + 2.0 * aw * float(j) / float(M)
-		var a1: float = az - aw + 2.0 * aw * float(j + 1) / float(M)
-		var p0: Vector3 = cB + dir_at.call(0, a0) * cav
-		var p1: Vector3 = cB + dir_at.call(0, a1) * cav
-		st.set_normal(Vector3.UP); st.set_uv2(Vector2.ZERO); st.set_uv(Vector2(0.5, 0.5)); st.add_vertex(cB)
-		st.set_normal(Vector3.UP); st.set_uv2(Vector2.ZERO); st.set_uv(Vector2(0.0, 1.0)); st.add_vertex(p0)
-		st.set_normal(Vector3.UP); st.set_uv2(Vector2.ZERO); st.set_uv(Vector2(1.0, 1.0)); st.add_vertex(p1)
-
 static func _soft(p: Vector3, fold: Vector3) -> Vector3:
 	var radial := Vector3(p.x, 0.0, p.z)
 	var outward: Vector3
