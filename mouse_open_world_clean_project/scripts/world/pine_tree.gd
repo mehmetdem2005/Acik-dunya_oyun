@@ -41,7 +41,7 @@ class_name PineTree
 @export_range(0.4, 2.5, 0.05) var frond_size: float = 1.2
 
 @export_group("Form / Kusur")
-@export_enum("Genc Konik:0", "Olgun Orman:1", "Acikta Yetisen:2") var tree_form: int = 1
+@export_enum("Genc Konik:0", "Olgun Orman:1", "Acikta Yetisen:2") var tree_form: int = 0
 @export_range(0.08, 0.30, 0.01) var branch_taper_tip: float = 0.18
 @export_range(0.0, 0.5, 0.01) var knot_strength: float = 0.22
 @export_range(0.0, 1.0, 0.05) var light_bias: float = 0.0

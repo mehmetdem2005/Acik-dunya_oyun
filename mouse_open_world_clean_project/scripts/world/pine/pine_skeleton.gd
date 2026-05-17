@@ -79,12 +79,11 @@ func _spawn_level1(cfg: Dictionary, trunk: Dictionary, trunk_idx: int) -> void:
 	for ti in range(tier_count):
 		var tf := float(ti) / float(tier_count - 1)
 		var h01: float = clampf(lerp(crown_start, 0.95, tf) + _rng.randf_range(-0.05, 0.05), 0.0, 1.0)
-		# Koni: tepeye doğru tek-yönlü güçlü kısalma (orta şişlik yok).
-		# Alt-orta tier'ler uzun -> geniş, dolgun, billur taç (referans).
-		# Alt tier'ler EN uzun (referans: uzun süpüren alt dallar),
-		# tepeye doğru hızlı kısalır -> havadar katmanlı koni.
-		var prof: float = pow(1.0 - tf, 0.62) * (1.0 - 0.72 * smoothstep(0.42, 1.0, tf))
-		var blen := crown_radius * prof * 1.42
+		# Klasik çam üçgeni (🌲): DİPTE en geniş, tepeye doğru DÜZ
+		# kenarlı (neredeyse doğrusal) daralma. Orta şişkinlik
+		# (smoothstep terimi) kaldırıldı -> koni/üçgen silüet.
+		var prof: float = pow(1.0 - tf, 1.15)
+		var blen := crown_radius * prof * 1.62
 		if blen < 0.16:
 			continue
 		whorl_h.append(h01)

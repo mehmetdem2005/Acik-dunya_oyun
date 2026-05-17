@@ -86,13 +86,14 @@ void fragment() {
 	// Yükseklik haritası ÇOK ince mikro-AO (use_height_tex=0 -> etkisiz).
 	float hg = texture(needle_height, auv).r;
 	col *= mix(1.0, 0.92 + 0.08 * hg, use_height_tex);
-	ALBEDO = col * mix(1.0, orm.r, 0.25) * 1.18;
+	ALBEDO = col * mix(1.0, orm.r, 0.25) * 1.05;
 	ALPHA = op;
 	ALPHA_SCISSOR_THRESHOLD = alpha_cut;
-	// İğne mat: yüksek roughness + çok düşük specular -> beyaz parlama yok.
-	ROUGHNESS = clamp(mix(0.85, orm.g, 0.45), 0.7, 1.0);
+	// İğne TAM MAT: yüksek roughness + specular 0 -> yönlü ışıkta
+	// beyaz parlama / cila yansıması yok.
+	ROUGHNESS = clamp(mix(0.90, orm.g, 0.35), 0.85, 1.0);
 	METALLIC = 0.0;
-	SPECULAR = 0.06;
+	SPECULAR = 0.0;
 	vec3 nrm = mix(vec3(0.5, 0.5, 1.0), texture(needle_normal, auv).rgb, normal_amt);
 	// Bent (eğik) normal: yumuşak/yuvarlak ışıklanma + ekstra arkadan ışık.
 	vec3 bn = texture(needle_bent, auv).rgb;

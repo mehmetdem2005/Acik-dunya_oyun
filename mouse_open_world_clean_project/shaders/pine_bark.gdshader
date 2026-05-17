@@ -53,9 +53,11 @@ void fragment() {
 	// AO yalnız ortam ışığını gölgeler (AO_LIGHT_AFFECT yazılmaz =
 	// Godot varsayılanı 0): doğrudan güneş kabuğu karartmaz.
 	AO = clamp(orm.r, 0.45, 1.0);
-	ROUGHNESS = clamp(orm.g, 0.30, 1.0);
+	// Çam kabuğu MAT: yüksek roughness tabanı + düşük specular ->
+	// yönlü ışık (DirectionalLight) altında parlama/cila YOK.
+	ROUGHNESS = clamp(orm.g, 0.72, 1.0);
 	METALLIC = 0.0;
-	SPECULAR = 0.35;
+	SPECULAR = 0.10;
 
 	vec3 nb = texture(bark_normal, uv).rgb;
 	vec3 nd = texture(bark_detail_normal, uv * detail_scale).rgb;
