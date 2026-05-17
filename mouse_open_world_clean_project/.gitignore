@@ -1,3 +1,10 @@
 .godot/
 _shot.gd
 _shot.gd.uid
+_shot_world.gd
+_shot_world.gd.uid
+_forest_check.gd
+_forest_check.gd.uid
+# Bake edilmis orman mesh verisi: buyuk + _forest_bake.gd ile
+# deterministik yeniden uretilir (repoya gomulmez, diske uretilir).
+forest_data/
