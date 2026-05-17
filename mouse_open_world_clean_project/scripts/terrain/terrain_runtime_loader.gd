@@ -6,7 +6,9 @@ extends Node3D
 @export var manifest_path: String = "res://terrains/generated_chunks/terrain_manifest.tres"
 
 @export_group("Player")
-@export var player_path: NodePath = NodePath("../Player")
+# Bos varsayilan: RuntimeSpawner calismada atar. Editorde
+# gecersiz relatif path hatasi ('../Player') olusmaz.
+@export var player_path: NodePath = NodePath("")
 
 @export_group("Chunk Loading")
 @export_range(0, 6, 1) var load_radius_chunks: int = 2

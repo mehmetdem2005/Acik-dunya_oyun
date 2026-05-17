@@ -62,12 +62,10 @@ static func build(stems: Array, cfg: Dictionary) -> Dictionary:
 			has_branch = true
 			_sprigs(leaf, stem, nlen * 0.16, 3, light_bias)
 
-	bark.generate_normals()
 	bark.generate_tangents()
 	var out := {}
 	out["bark"] = bark.commit()
 	if has_branch:
-		branch.generate_normals()
 		branch.generate_tangents()
 		out["branch"] = branch.commit()
 	else:
@@ -198,12 +196,12 @@ static func _tube(st: SurfaceTool, stem: Dictionary, sides: int,
 			var uB := float(si + 1) / float(sides) * 2.0
 			var fl0 := Vector2(flex0, 0.0)
 			var fl1 := Vector2(flex1, 0.0)
-			st.set_uv2(fl0); st.set_uv(Vector2(uA, v0)); st.add_vertex(c0 + d00 * r00)
-			st.set_uv2(fl1); st.set_uv(Vector2(uA, v1)); st.add_vertex(c1 + d01 * r01)
-			st.set_uv2(fl1); st.set_uv(Vector2(uB, v1)); st.add_vertex(c1 + d11 * r11)
-			st.set_uv2(fl0); st.set_uv(Vector2(uA, v0)); st.add_vertex(c0 + d00 * r00)
-			st.set_uv2(fl1); st.set_uv(Vector2(uB, v1)); st.add_vertex(c1 + d11 * r11)
-			st.set_uv2(fl0); st.set_uv(Vector2(uB, v0)); st.add_vertex(c0 + d10 * r10)
+			st.set_normal(d00); st.set_uv2(fl0); st.set_uv(Vector2(uA, v0)); st.add_vertex(c0 + d00 * r00)
+			st.set_normal(d01); st.set_uv2(fl1); st.set_uv(Vector2(uA, v1)); st.add_vertex(c1 + d01 * r01)
+			st.set_normal(d11); st.set_uv2(fl1); st.set_uv(Vector2(uB, v1)); st.add_vertex(c1 + d11 * r11)
+			st.set_normal(d00); st.set_uv2(fl0); st.set_uv(Vector2(uA, v0)); st.add_vertex(c0 + d00 * r00)
+			st.set_normal(d11); st.set_uv2(fl1); st.set_uv(Vector2(uB, v1)); st.add_vertex(c1 + d11 * r11)
+			st.set_normal(d10); st.set_uv2(fl0); st.set_uv(Vector2(uB, v0)); st.add_vertex(c0 + d10 * r10)
 
 # --- İğne demeti kartları (sürgün boyunca dağıtılmış) -----------------
 
