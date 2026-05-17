@@ -213,7 +213,8 @@ func _setup_fog_environment() -> void:
 		if parent_node != null:
 			_world_environment = WorldEnvironment.new()
 			_world_environment.name = "WorldEnvironment"
-			parent_node.add_child(_world_environment)
+			# Godot 4.6: _ready sırasında ebeveyne add_child yasak -> ertele.
+			parent_node.add_child.call_deferred(_world_environment)
 	if _world_environment == null:
 		return
 	if _world_environment.environment == null:

@@ -105,7 +105,9 @@ class_name PineTree
 const _TEX_ROOT := "res://assets/trees/pine_ultra_mobile/textures/"
 
 func _ready() -> void:
-	rebuild()
+	# Godot 4.6: instance edilen sahnede _ready sırasında add_child
+	# ("busy setting up children") yasak -> ilk yapımı bir kare ertele.
+	rebuild.call_deferred()
 
 func rebuild() -> void:
 	for c in get_children():

@@ -1,50 +1,21 @@
-[gd_scene load_steps=5 format=3]
+[gd_scene load_steps=4 format=3]
 
 [ext_resource type="Script" path="res://scripts/terrain/terrain_runtime_loader.gd" id="1_terrain_runtime"]
 [ext_resource type="Script" path="res://scripts/world/world_runtime_spawner.gd" id="2_spawner"]
-[ext_resource type="Script" path="res://scripts/world/pine_tree.gd" id="3_pine"]
-
-[sub_resource type="Environment" id="Environment_1"]
-background_mode = 2
-ambient_light_source = 1
-ambient_light_color = Color(0.55, 0.58, 0.62, 1)
-ambient_light_energy = 0.75
-fog_enabled = true
-fog_light_color = Color(0.58, 0.62, 0.66, 1)
-fog_density = 0.025
-fog_aerial_perspective = 0.2
+[ext_resource type="PackedScene" path="res://scenes/world/pine_tree_scene.tscn" id="3_pinescene"]
 
 [node name="World" type="Node3D"]
 
 [node name="TerrainRuntime" type="Node3D" parent="."]
 script = ExtResource("1_terrain_runtime")
+enable_fog_runtime = false
+create_world_environment_if_missing = false
 
 [node name="LoadedChunks" type="Node3D" parent="TerrainRuntime"]
 
 [node name="RuntimeSpawner" type="Node" parent="."]
 script = ExtResource("2_spawner")
 
-[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
-transform = Transform3D(0.819152, -0.40558, 0.40558, 0, 0.707107, 0.707107, -0.573576, -0.579228, 0.579228, 0, 0, 0)
-light_energy = 1.25
-shadow_enabled = true
-
-[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
-environment = SubResource("Environment_1")
-
-[node name="PineTree" type="Node3D" parent="."]
+[node name="PineTree" parent="." instance=ExtResource("3_pinescene")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, 0, -4)
-script = ExtResource("3_pine")
-total_height = 9.0
-trunk_radius = 0.22
-crown_start_ratio = 0.3
-crown_radius = 2.2
-branch_count = 56
-branch_droop = 0.3
-blades_per_branch = 3
-frond_size = 1.4
-trunk_sides = 14
-fine_twigs = true
-twigs_per_shoot = 2
-seed = 20260516
 generate_collision = true
