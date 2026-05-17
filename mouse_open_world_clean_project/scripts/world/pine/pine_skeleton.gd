@@ -79,11 +79,11 @@ func _spawn_level1(cfg: Dictionary, trunk: Dictionary, trunk_idx: int) -> void:
 	for ti in range(tier_count):
 		var tf := float(ti) / float(tier_count - 1)
 		var h01: float = clampf(lerp(crown_start, 0.95, tf) + _rng.randf_range(-0.05, 0.05), 0.0, 1.0)
-		# Klasik çam üçgeni (🌲): DİPTE en geniş, tepeye doğru DÜZ
-		# kenarlı (neredeyse doğrusal) daralma. Orta şişkinlik
-		# (smoothstep terimi) kaldırıldı -> koni/üçgen silüet.
-		var prof: float = pow(1.0 - tf, 1.15)
-		var blen := crown_radius * prof * 1.62
+		# Düz kenarlı çam üçgeni (🌲): üs ~doğrusal (0.92) -> kenarlar
+		# içe büzülmez, taban hafif dolgun; dipte en geniş, tepeye
+		# doğru düzgün daralma.
+		var prof: float = pow(1.0 - tf, 0.92)
+		var blen := crown_radius * prof * 1.70
 		if blen < 0.16:
 			continue
 		whorl_h.append(h01)
@@ -150,14 +150,16 @@ func _spawn_level1(cfg: Dictionary, trunk: Dictionary, trunk_idx: int) -> void:
 	trunk["whorl_az"] = whorl_az
 	# Apeks: merkezde uzun-kalın dik LİDER + çevresinde kısalan sürgünler
 	# -> dolgun, özenli, sivri konik tepe (referans gibi).
-	for ai in range(9):
-		var ah: float = lerp(0.86, 0.99, float(ai) / 8.0)
+	for ai in range(13):
+		var ah: float = lerp(0.80, 0.99, float(ai) / 12.0)
 		var sp := _sample(trunk, ah)
 		var aa := _rng.randf() * TAU
 		var awob := _rng.randf_range(-1.0, 1.0)
-		var afr := float(ai) / 8.0
-		var adir := (Vector3(cos(aa), 0, sin(aa)) * (0.04 + 0.55 * afr) + Vector3.UP * (2.1 if ai == 0 else 1.2)).normalized()
-		var al := (crown_radius * 0.80) if ai == 0 else (crown_radius * lerpf(0.42, 0.16, afr))
+		var afr := float(ai) / 12.0
+		# Kısa-dolgun sivri tepe: tek uzun antenimsi lider YOK; alçaktan
+		# başlayıp koniyle sürekli kaynaşan, tepeye doğru kısalan püskül.
+		var adir := (Vector3(cos(aa), 0, sin(aa)) * (0.10 + 0.62 * afr) + Vector3.UP * (1.5 if ai == 0 else 1.15)).normalized()
+		var al := (crown_radius * 0.40) if ai == 0 else (crown_radius * lerpf(0.52, 0.12, afr))
 		var ac := _grow(sp, adir, maxf(al, 0.18), 4, 0.06, 0.10, 0.05, awob)
 		ac["level"] = 1
 		ac["parent"] = trunk_idx
