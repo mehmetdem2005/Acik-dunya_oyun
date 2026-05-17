@@ -17,6 +17,12 @@ var player: Node3D
 var mobile_ui: CanvasLayer
 
 func _ready() -> void:
+	# Godot 4.6: ebeveyn çocuklarını kurarken get_parent().add_child()
+	# yasak ("Parent node is busy setting up children"). Kurulumu bir
+	# kare ertele -> ağaç hazır, add_child + global_position güvenli.
+	_deferred_setup.call_deferred()
+
+func _deferred_setup() -> void:
 	_spawn_player()
 	_spawn_mobile_ui()
 	_bind_terrain_to_player()
