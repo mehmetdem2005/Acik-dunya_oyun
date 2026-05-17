@@ -54,7 +54,8 @@ func _ready() -> void:
 	stamina = max_stamina
 
 func _physics_process(delta: float) -> void:
-	_mobile_ui = _find_mobile_ui()
+	if _mobile_ui == null or not is_instance_valid(_mobile_ui):
+		_mobile_ui = _find_mobile_ui()
 	_update_camera(delta)
 	_handle_movement(delta)
 	_update_mobile_ui_stamina()
