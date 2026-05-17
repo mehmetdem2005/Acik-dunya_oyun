@@ -293,9 +293,9 @@ static func _card(st: SurfaceTool, c: Vector3, uv_dir: Vector3, rv: Vector3,
 	# UV2 = (flex, atlas hücresi). Shader 5x5 atlastan demeti seçer.
 	var fb := Vector2(flex, float(cell))
 	var ftp := Vector2(flex * 1.25, float(cell))
-	# Tek dörtgen (çapraz X kaldırıldı) -> ~%50 daha az iğne üçgeni;
-	# atlas + normal map hacmi taşıdığı için görünüm ~korunur (mobil).
-	for q in range(1):
+	# Çapraz X (2 dik dörtgen): tek düzlem yandan kenar-üstü ince
+	# dilime çöküyordu (kırık yaprak). X her açıdan hacim verir.
+	for q in range(2):
 		var rq: Vector3
 		if q == 0:
 			rq = rv

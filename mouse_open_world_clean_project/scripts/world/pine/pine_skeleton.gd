@@ -70,7 +70,7 @@ func _spawn_level1(cfg: Dictionary, trunk: Dictionary, trunk_idx: int) -> void:
 	var dal_seg: int = int(cfg.get("dal_segment", 10))
 	var dal_yay: float = float(cfg.get("dal_yay", 0.16))
 	# Daha seyrek, belirgin whorl katmanları (açık koni silüet).
-	var tier_count: int = clampi(int(round(height * 0.80 / whorl_gap)), 7, 12)
+	var tier_count: int = clampi(int(round(height * 1.10 / whorl_gap)), 9, 14)
 	var lean: float = _rng.randf_range(-0.12, 0.12)
 	var lean_ph: float = _rng.randf() * TAU
 	var whorl_h: PackedFloat32Array = trunk["whorl_h"]
@@ -94,7 +94,7 @@ func _spawn_level1(cfg: Dictionary, trunk: Dictionary, trunk_idx: int) -> void:
 		var seg := TAU / float(per)
 		for bi in range(per):
 			# TÜM per-dal rastgele değerleri continue'dan ÖNCE (determinizm).
-			aaccum += seg * _rng.randf_range(0.45, 1.75)
+			aaccum += seg * _rng.randf_range(0.80, 1.20)
 			var ajit: float = _rng.randf_range(-0.15, 0.15)
 			var up_jit: float = _rng.randf_range(-0.10, 0.10)
 			var lvar: float = _rng.randf_range(0.75, 1.30)
@@ -108,7 +108,7 @@ func _spawn_level1(cfg: Dictionary, trunk: Dictionary, trunk_idx: int) -> void:
 			var miss: bool = _rng.randf() < lerp(prune_low, prune_high, tf)
 			if miss:
 				continue
-			var a: float = aaccum + ajit + lean * cos(aaccum - lean_ph)
+			var a: float = aaccum + ajit + 0.5 * lean * cos(aaccum - lean_ph)
 			var age := 1.0 - tf
 			var r0v: float = tr * lerp(0.20, 0.36, age) * rjit
 			# Dal GÖVDE DERİSİNDEN doğar (eksene değil) ve dibe gömülüdür:
@@ -295,8 +295,12 @@ func _fork(cfg: Dictionary, parent_stem: Dictionary, parent_idx: int,
 	var tdir: Vector3 = ptn[ptn.size() - 1]
 	var p_r1: float = float(parent_stem["radius1"])
 	var p_len: float = float(parent_stem["len"])
-	# Yelpaze düzlemi normali (tüm V'ler bu düzlemde -> yassı frond).
-	var lat: Vector3 = tdir.cross(Vector3.UP)
+	# Yelpaze düzlemi DAL'A bağlı (dünyaya kilitli DEĞİL): parent RMF
+	# normalinden türetilir -> her dal farklı yöne bakar, hiçbiri tek
+	# tip yandan kenar-üstü kalmaz. RMF normali daima iyi koşulludur.
+	var pn_arr: Array = parent_stem["normals"]
+	var lat: Vector3 = pn_arr[pn_arr.size() - 1]
+	lat = lat - tdir * lat.dot(tdir)
 	if lat.length() < 0.01:
 		lat = tdir.cross(Vector3.RIGHT)
 	lat = lat.normalized()
@@ -338,6 +342,9 @@ func _fork(cfg: Dictionary, parent_stem: Dictionary, parent_idx: int,
 		if L < 0.05:
 			continue
 		var dir: Vector3 = tdir.rotated(plane_n, ang * sgn).normalized()
+		# Düzlem-dışı eğim: yelpaze artık MÜKEMMEL düzlem değil ->
+		# yandan tamamen kaybolmaz (kenar-üstü çökme biter).
+		dir = dir.rotated(tdir, wob * 0.34).normalized()
 		var is_tip: bool = depth <= 1 or L < 0.14
 		var seg: int = 3 if is_tip else maxi(4, int(cfg.get("shoot_segment", 7)))
 		var child := _grow(tip, dir, L, seg, 0.28 + 0.40 * tf, 0.06, 0.09, wob)
