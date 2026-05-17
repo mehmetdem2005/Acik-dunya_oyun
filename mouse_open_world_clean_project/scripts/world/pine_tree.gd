@@ -275,19 +275,56 @@ func _pbr_wood_material(albedo: Texture2D, nrm: Texture2D, ormc: Texture2D,
 		m.heightmap_scale = bark_parallax * 16.0
 	return m
 
-func _bark_material() -> StandardMaterial3D:
-	return _pbr_wood_material(
-		_tex_or(bark_albedo_tex, _TEX_ROOT + "bark/pine_bark_albedo_2k.jpg"),
-		_tex_or(bark_normal_tex, _TEX_ROOT + "bark/pine_bark_normal_2k.jpg"),
-		_tex_or(bark_ormc_tex, _TEX_ROOT + "bark/pine_bark_ormc_2k.jpg"),
-		_tex_or(bark_detail_normal_tex, _TEX_ROOT + "bark/pine_bark_detail_normal_1k.jpg"),
-		_tex_or(bark_height_tex, _TEX_ROOT + "bark/pine_bark_height_1k.jpg"),
-		bark_tiling, true)
+# Kabuk: özel shader (variation + tip_age StandardMaterial3D'de YOK).
+# texture_quality<1 / shader yok / albedo yok -> eski StandardMaterial3D
+# yoluna düşer (mevcut kabul edilen görünüm, sıfır regresyon).
+func _bark_shader_material(extra_tip_age: Texture2D) -> Material:
+	var albedo := _tex_or(bark_albedo_tex, _TEX_ROOT + "bark/pine_bark_albedo_2k.jpg")
+	var nrm := _tex_or(bark_normal_tex, _TEX_ROOT + "bark/pine_bark_normal_2k.jpg")
+	var ormc := _tex_or(bark_ormc_tex, _TEX_ROOT + "bark/pine_bark_ormc_2k.jpg")
+	var det := _tex_or(bark_detail_normal_tex, _TEX_ROOT + "bark/pine_bark_detail_normal_1k.jpg")
+	var hgt := _tex_or(bark_height_tex, _TEX_ROOT + "bark/pine_bark_height_1k.jpg")
+	var shader_path := "res://shaders/pine_bark.gdshader"
+	var sh: Shader = null
+	if albedo != null and texture_quality >= 1 and ResourceLoader.exists(shader_path):
+		sh = ResourceLoader.load(shader_path) as Shader
+	if sh == null:
+		return _pbr_wood_material(albedo, nrm, ormc, det, hgt, bark_tiling, true)
+	var sm := ShaderMaterial.new()
+	sm.shader = sh
+	sm.set_shader_parameter("bark_albedo", albedo)
+	if nrm != null:
+		sm.set_shader_parameter("bark_normal", nrm)
+	if ormc != null:
+		sm.set_shader_parameter("bark_ormc", ormc)
+	sm.set_shader_parameter("use_detail",
+		1.0 if (det != null and texture_quality >= 2) else 0.0)
+	if det != null:
+		sm.set_shader_parameter("bark_detail_normal", det)
+	sm.set_shader_parameter("use_height",
+		1.0 if (hgt != null and texture_quality >= 2) else 0.0)
+	if hgt != null:
+		sm.set_shader_parameter("bark_height", hgt)
+	var vart := _tex_or(bark_variation_tex, _TEX_ROOT + "bark/pine_bark_variation_1k.jpg")
+	sm.set_shader_parameter("variation_amt", 0.30 if vart != null else 0.0)
+	if vart != null:
+		sm.set_shader_parameter("bark_variation", vart)
+	if extra_tip_age != null:
+		sm.set_shader_parameter("tip_age", extra_tip_age)
+		sm.set_shader_parameter("tip_age_amt", 0.25)
+	else:
+		sm.set_shader_parameter("tip_age_amt", 0.0)
+	sm.set_shader_parameter("parallax", bark_parallax)
+	return sm
 
-func _branch_material() -> StandardMaterial3D:
-	# Dal kabuğu = GÖVDE kabuğu (gerçek çamda aynı): texture tutarlı,
-	# dal-gövde geçişinde uyumsuzluk/bozulma olmaz.
-	return _bark_material()
+func _bark_material() -> Material:
+	return _bark_shader_material(null)
+
+func _branch_material() -> Material:
+	# Dal kabuğu = GÖVDE kabuğu (gerçek çamda aynı): albedo/normal/ormc
+	# gövdeyle AYNI -> tutarlı geçiş. Yalnız tip_age ince yaş tonu ekler.
+	return _bark_shader_material(
+		_tex_or(branch_tip_age_tex, _TEX_ROOT + "branches/pine_branch_tip_age_1k.png"))
 
 func _needle_material() -> Material:
 	var n_alb := _tex_or(needle_albedo_tex, _TEX_ROOT + "needles/pine_needles_albedo_alpha_2k.png")
@@ -313,6 +350,18 @@ func _needle_material() -> Material:
 				sm.set_shader_parameter("needle_variation", n_var)
 			else:
 				sm.set_shader_parameter("variation_amt", 0.0)
+			var n_wm := _tex_or(needle_windmask_tex, _TEX_ROOT + "needles/pine_needles_wind_mask_1k.png")
+			sm.set_shader_parameter("use_windmask", 1.0 if n_wm != null else 0.0)
+			if n_wm != null:
+				sm.set_shader_parameter("needle_windmask", n_wm)
+			var n_hg := _tex_or(needle_height_tex, _TEX_ROOT + "needles/pine_needles_height_1k.png")
+			sm.set_shader_parameter("use_height_tex", 1.0 if n_hg != null else 0.0)
+			if n_hg != null:
+				sm.set_shader_parameter("needle_height", n_hg)
+			var n_bn := _tex_or(needle_bent_tex, _TEX_ROOT + "needles/pine_needles_bent_normal_1k.png")
+			sm.set_shader_parameter("bent_amt", 0.4 if n_bn != null else 0.0)
+			if n_bn != null:
+				sm.set_shader_parameter("needle_bent", n_bn)
 			sm.set_shader_parameter("tree_height", total_height)
 			sm.set_shader_parameter("backlight_col", needle_mid * 0.28)
 			return sm

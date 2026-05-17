@@ -26,6 +26,14 @@ uniform float wind_strength : hint_range(0.0, 0.5) = 0.12;
 uniform float wind_speed : hint_range(0.0, 4.0) = 1.0;
 uniform vec2 wind_dir = vec2(1.0, 0.35);
 
+// Ek ultra haritalar (use_*/bent_amt = 0 -> nötr, eski görünüm korunur).
+uniform sampler2D needle_windmask : hint_default_white, filter_linear_mipmap;
+uniform sampler2D needle_height : hint_default_white, filter_linear_mipmap;
+uniform sampler2D needle_bent : hint_normal, filter_linear_mipmap;
+uniform float use_windmask : hint_range(0.0, 1.0) = 0.0;
+uniform float use_height_tex : hint_range(0.0, 1.0) = 0.0;
+uniform float bent_amt : hint_range(0.0, 1.0) = 0.0;
+
 varying vec3 v_col;
 
 void vertex() {
@@ -34,6 +42,9 @@ void vertex() {
 	float flex = UV2.x;
 	float h = clamp(VERTEX.y / max(tree_height, 0.001), 0.0, 1.0);
 	float amp = wind_strength * mix(pow(h, 1.5) * 0.25, 1.0, clamp(flex, 0.0, 1.0));
+	// Sert/odunsu demetler daha az sallanır (windmask kanalı).
+	float wm = textureLod(needle_windmask, UV, 0.0).r;
+	amp *= mix(1.0, wm, use_windmask);
 	vec3 wp = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xyz;
 	float t = TIME * wind_speed + wp.x * 0.15 + wp.z * 0.15;
 	float gust = sin(t) * 0.7 + sin(t * 2.7) * 0.3;
@@ -60,6 +71,9 @@ void fragment() {
 	vec3 varc = texture(needle_variation, auv).rgb;
 	col *= mix(vec3(1.0), varc * 1.15, variation_amt);
 	vec3 orm = texture(needle_orm, auv).rgb;       // R=AO G=Rough B=Metal
+	// Yükseklik haritası ince mikro-AO (use_height_tex=0 -> etkisiz).
+	float hg = texture(needle_height, auv).r;
+	col *= mix(1.0, 0.78 + 0.22 * hg, use_height_tex);
 	ALBEDO = col * mix(1.0, orm.r, 0.4) * 1.12;
 	ALPHA = op;
 	ALPHA_SCISSOR_THRESHOLD = alpha_cut;
@@ -67,7 +81,10 @@ void fragment() {
 	ROUGHNESS = clamp(mix(0.85, orm.g, 0.45), 0.7, 1.0);
 	METALLIC = 0.0;
 	SPECULAR = 0.06;
-	NORMAL_MAP = mix(vec3(0.5, 0.5, 1.0), texture(needle_normal, auv).rgb, normal_amt);
+	vec3 nrm = mix(vec3(0.5, 0.5, 1.0), texture(needle_normal, auv).rgb, normal_amt);
+	// Bent (eğik) normal: yumuşak/yuvarlak ışıklanma + ekstra arkadan ışık.
+	vec3 bn = texture(needle_bent, auv).rgb;
+	NORMAL_MAP = mix(nrm, bn, bent_amt);
 	NORMAL_MAP_DEPTH = 0.6;
-	BACKLIGHT = backlight_col * 0.5;
+	BACKLIGHT = backlight_col * 0.5 + backlight_col * bent_amt * 0.25;
 }
