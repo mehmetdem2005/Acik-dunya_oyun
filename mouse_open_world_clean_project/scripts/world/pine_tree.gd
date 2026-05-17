@@ -278,10 +278,10 @@ func _pbr_wood_material(albedo: Texture2D, nrm: Texture2D, ormc: Texture2D,
 func _bark_material() -> StandardMaterial3D:
 	return _pbr_wood_material(
 		_tex_or(bark_albedo_tex, _TEX_ROOT + "bark/pine_bark_albedo_2k.jpg"),
-		_tex_or(bark_normal_tex, ""),
-		_tex_or(bark_ormc_tex, ""),
-		_tex_or(bark_detail_normal_tex, ""),
-		_tex_or(bark_height_tex, ""),
+		_tex_or(bark_normal_tex, _TEX_ROOT + "bark/pine_bark_normal_2k.jpg"),
+		_tex_or(bark_ormc_tex, _TEX_ROOT + "bark/pine_bark_ormc_2k.jpg"),
+		_tex_or(bark_detail_normal_tex, _TEX_ROOT + "bark/pine_bark_detail_normal_1k.jpg"),
+		_tex_or(bark_height_tex, _TEX_ROOT + "bark/pine_bark_height_1k.jpg"),
 		bark_tiling, true)
 
 func _branch_material() -> StandardMaterial3D:
@@ -301,7 +301,7 @@ func _needle_material() -> Material:
 			sm.set_shader_parameter("use_opacity_tex", 1.0 if n_op != null else 0.0)
 			if n_op != null:
 				sm.set_shader_parameter("needle_opacity", n_op)
-			var n_nrm := _tex_or(needle_normal_tex, "")
+			var n_nrm := _tex_or(needle_normal_tex, _TEX_ROOT + "needles/pine_needles_normal_2k.png")
 			sm.set_shader_parameter("normal_amt", 1.0 if n_nrm != null else 0.0)
 			if n_nrm != null:
 				sm.set_shader_parameter("needle_normal", n_nrm)
