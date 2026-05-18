@@ -254,7 +254,7 @@ static func _sprigs(st: SurfaceTool, stem: Dictionary, size: float, lvl: int,
 			var fr: float = (float(k) + t / seg_len) / float(n - 1)
 			# UCA-TOPLU TÜY: yalnız sürgün UCUNDA yuvarlak küme; iç/orta
 			# çıplak odun -> açık katmanlı taç (sürekli kılıf/blob DEĞİL).
-			var tail: float = 0.42 if tip_full else (0.66 if lvl == 1 else 0.56)
+			var tail: float = 0.46 if tip_full else (0.72 if lvl == 1 else 0.62)
 			var dens: float = smoothstep(tail, 1.0, fr)
 			if broken and fr > 0.85:
 				dens = 0.0

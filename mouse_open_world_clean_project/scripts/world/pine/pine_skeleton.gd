@@ -72,7 +72,7 @@ func _spawn_level1(cfg: Dictionary, trunk: Dictionary, trunk_idx: int) -> void:
 	# Daha seyrek, belirgin whorl katmanları (açık koni silüet).
 	# Belirgin KATMANLI (kesik kesik) silüet: az + aralikli whorl kati.
 	# Daha AYRIK katlar: kat sayisi seyrek -> katlar arasi genis hava.
-	var tier_count: int = clampi(int(round(height * 0.55 / whorl_gap)), 5, 7)
+	var tier_count: int = clampi(int(round(height * 0.45 / whorl_gap)), 4, 6)
 	var lean: float = _rng.randf_range(-0.12, 0.12)
 	var lean_ph: float = _rng.randf() * TAU
 	var whorl_h: PackedFloat32Array = trunk["whorl_h"]
@@ -240,7 +240,7 @@ func _spawn_level2(cfg: Dictionary, parent: Dictionary, pidx: int, tf: float, ag
 		var upb := 0.13 + 0.09 * tf
 		var jit := _rng.randf_range(-0.055, 0.055)
 		var dir := (pt * cos(th) + lat * (sgn * sin(th)) + pn * (upb + jit)).normalized()
-		var L: float = p_len * lerp(0.46, 0.18, u) * _rng.randf_range(0.8, 1.12)
+		var L: float = p_len * lerp(0.40, 0.16, u) * _rng.randf_range(0.82, 1.10)
 		var wob: float = _rng.randf_range(-1.0, 1.0)
 		var rmul: float = _rng.randf_range(0.7, 1.0)
 		if L < 0.1:
