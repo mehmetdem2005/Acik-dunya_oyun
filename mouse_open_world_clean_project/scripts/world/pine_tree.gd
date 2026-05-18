@@ -42,7 +42,7 @@ class_name PineTree
 
 @export_group("Kozalak")
 @export var add_cones: bool = true
-@export_range(0, 80, 1) var cone_count: int = 22
+@export_range(0, 80, 1) var cone_count: int = 10
 @export_range(0.03, 0.6, 0.005) var cone_size: float = 0.24
 # Boşsa otomatik res yolundan yüklenir (GLB import edilmişse).
 @export var cone_scene: PackedScene
@@ -277,18 +277,17 @@ func _build_cones(stems: Array) -> void:
 		var st: Dictionary = picks[int(i * stepf) % picks.size()]
 		var pts: Array = st["points"]
 		# Dal UCUNDA (yaprak kenarı) -> foliage'a gömülmez, görünür.
-		var b: Vector3 = pts[pts.size() - 1]
-		var pa: Vector3 = pts[maxi(pts.size() - 2, 0)]
-		var outd: Vector3 = (b - pa).normalized()
-		# Plaka kenarının ALTINA sarkıt -> foliage'a gömülmez, havadar
-		# katlar arasında net görünür.
-		var base: Vector3 = b + outd * (cone_size * 0.5) + Vector3.DOWN * (cone_size * 1.15)
-		# Aşağı sarkık: kozalak +Y'si dünya -Y'ye; rastgele yaw + hafif eğim.
+		# Dal UCUNA yakın GERÇEK bir noktaya bağla (foliage içinde)
+		# -> havada kalmaz. Pivot merkezde (y -0.5..+0.5); tepe
+		# bag noktasına gelsin diye 0.5*sc aşağı.
+		var n2: int = pts.size()
+		var anchor: Vector3 = (pts[int(n2 * 0.80)] as Vector3).lerp(pts[n2 - 1], 0.5)
 		var yaw: float = rng.randf() * TAU
-		var tilt: float = rng.randf_range(-0.35, 0.35)
+		var tilt: float = rng.randf_range(-0.30, 0.30)
 		var bz := Basis(Vector3.RIGHT, PI + tilt) * Basis(Vector3.UP, yaw)
 		var sc: float = cone_size * rng.randf_range(0.82, 1.18)
-		var t := Transform3D(bz.scaled(Vector3(sc, sc, sc)), base + Vector3(0, -sc * 0.5, 0))
+		var base: Vector3 = anchor + Vector3.DOWN * (sc * 0.5)
+		var t := Transform3D(bz.scaled(Vector3(sc, sc, sc)), base)
 		mm.set_instance_transform(i, t)
 	var mmi := MultiMeshInstance3D.new()
 	mmi.name = "Cones"

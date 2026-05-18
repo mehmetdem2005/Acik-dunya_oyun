@@ -44,7 +44,7 @@ static func build(stems: Array, cfg: Dictionary) -> Dictionary:
 				# Kök payandası gövdeyle aynı kabuk materyalini alır.
 				_tube(bark, stem, maxi(6, int(sides * 0.7)), empty, 0.0, cfg)
 			else:
-				_tube(branch, stem, maxi(5, int(sides / 2.0)), empty, 0.0, cfg)
+				_tube(branch, stem, maxi(4, int(sides / 3.2)), empty, 0.0, cfg)
 				has_branch = true
 				# Kuru dal iğne taşımaz (yalnız odun çizilir).
 				if not bool(stem.get("dry", false)):
@@ -54,7 +54,7 @@ static func build(stems: Array, cfg: Dictionary) -> Dictionary:
 			# yapışık görünür (havada kalan yaprak sorunu çözülür).
 			if lvl2_wood:
 				var _it: bool = bool(stem.get("is_tip", false))
-				_tube(branch, stem, (4 if _it else maxi(4, int(sides / 2.6))), empty, 0.0, cfg)
+				_tube(branch, stem, (3 if _it else maxi(3, int(sides / 3.6))), empty, 0.0, cfg)
 				has_branch = true
 			_sprigs(leaf, stem, nlen * 0.40, 2, light_bias)
 		elif lvl == 3:
