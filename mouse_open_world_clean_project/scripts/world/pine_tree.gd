@@ -42,7 +42,7 @@ class_name PineTree
 
 @export_group("Kozalak")
 @export var add_cones: bool = true
-@export_range(0, 80, 1) var cone_count: int = 12
+@export_range(0, 80, 1) var cone_count: int = 10
 @export_range(0.03, 0.6, 0.005) var cone_size: float = 0.24
 # Boşsa otomatik res yolundan yüklenir (GLB import edilmişse).
 @export var cone_scene: PackedScene
