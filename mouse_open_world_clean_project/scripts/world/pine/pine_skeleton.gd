@@ -70,7 +70,8 @@ func _spawn_level1(cfg: Dictionary, trunk: Dictionary, trunk_idx: int) -> void:
 	var dal_seg: int = int(cfg.get("dal_segment", 10))
 	var dal_yay: float = float(cfg.get("dal_yay", 0.16))
 	# Daha seyrek, belirgin whorl katmanları (açık koni silüet).
-	var tier_count: int = clampi(int(round(height * 1.10 / whorl_gap)), 9, 14)
+	# Belirgin KATMANLI (kesik kesik) silüet: az + aralikli whorl kati.
+	var tier_count: int = clampi(int(round(height * 0.72 / whorl_gap)), 6, 9)
 	var lean: float = _rng.randf_range(-0.12, 0.12)
 	var lean_ph: float = _rng.randf() * TAU
 	var whorl_h: PackedFloat32Array = trunk["whorl_h"]
@@ -125,9 +126,10 @@ func _spawn_level1(cfg: Dictionary, trunk: Dictionary, trunk_idx: int) -> void:
 			if is_broken:
 				L *= brk_mul
 			# Alt tier'ler sert süpürür, üst tier'ler dik durur.
-			var grav := droop * (0.50 + 1.45 * (1.0 - tf))
+			var grav := droop * (0.50 + 0.85 * (1.0 - tf))
 			# knee=1.0 -> dal gövdeden YUKARI çıkıp sonra dışa kıvrılır.
-			var child := _grow(sp, dir, L, dal_seg, grav, 0.05, dal_yay, wob, 0.40)
+			# photo=0.20 -> uclar yukari kalkar (referans: kalkik plakalar).
+			var child := _grow(sp, dir, L, dal_seg, grav, 0.20, dal_yay, wob, 0.40)
 			whorl_az.append(h01)
 			whorl_az.append(a)
 			whorl_az.append(r0v)

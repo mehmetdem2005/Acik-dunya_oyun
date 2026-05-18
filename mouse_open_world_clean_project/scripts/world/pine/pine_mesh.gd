@@ -254,7 +254,7 @@ static func _sprigs(st: SurfaceTool, stem: Dictionary, size: float, lvl: int,
 			var fr: float = (float(k) + t / seg_len) / float(n - 1)
 			# UCA-TOPLU TÜY: yalnız sürgün UCUNDA yuvarlak küme; iç/orta
 			# çıplak odun -> açık katmanlı taç (sürekli kılıf/blob DEĞİL).
-			var tail: float = 0.34 if tip_full else (0.50 if lvl == 1 else 0.42)
+			var tail: float = 0.42 if tip_full else (0.66 if lvl == 1 else 0.56)
 			var dens: float = smoothstep(tail, 1.0, fr)
 			if broken and fr > 0.85:
 				dens = 0.0
@@ -274,7 +274,7 @@ static func _sprigs(st: SurfaceTool, stem: Dictionary, size: float, lvl: int,
 					var hsh: float = sin(float(idx) * 12.9898 + float(s) * 3.71) * 43758.5453
 					var vrnd: float = 0.62 + 0.76 * (hsh - floor(hsh))
 					# Küme merkezinde büyür -> yuvarlak pom-pom.
-					var ccs: float = fl * (1.20 + 1.12 * dens) * vrnd * (1.3 if tip_full else 1.0)
+					var ccs: float = fl * (1.06 + 1.05 * dens) * vrnd * (1.3 if tip_full else 1.0)
 					# Kume-basina kuruluk (deterministik: dusuk tint=yasli + hash);
 					# COLOR.a ile shader'a tasinir -> kuru/sari uc + cesitlilik.
 					var dry: float = clampf((1.0 - tint) * 0.7 + (vrnd - 0.62) * 0.55, 0.0, 1.0)
