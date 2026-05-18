@@ -126,7 +126,9 @@ func _spawn_level1(cfg: Dictionary, trunk: Dictionary, trunk_idx: int) -> void:
 			if is_broken:
 				L *= brk_mul
 			# Alt tier'ler sert süpürür, üst tier'ler dik durur.
-			var grav := droop * (0.50 + 0.85 * (1.0 - tf))
+			# Plakalar ayrik kalsin: sarkma dusuk (asagi sarkan dal
+			# kat bosluklarini kapatir -> blob). ~yatay/hafif kalkik.
+			var grav := droop * (0.28 + 0.42 * (1.0 - tf))
 			# knee=1.0 -> dal gövdeden YUKARI çıkıp sonra dışa kıvrılır.
 			# photo=0.20 -> uclar yukari kalkar (referans: kalkik plakalar).
 			var child := _grow(sp, dir, L, dal_seg, grav, 0.20, dal_yay, wob, 0.40)
@@ -217,16 +219,25 @@ func _spawn_level2(cfg: Dictionary, parent: Dictionary, pidx: int, tf: float, ag
 	# Sürgünler ana dalın DIŞ kısmına yoğunlaşır (iç çıplak kalır).
 	var p_r1: float = float(parent["radius1"])
 	var p_len: float = float(parent["len"])
-	var az := _rng.randf() * TAU
 	for si in range(shoots):
 		var u: float = lerp(0.10, 0.96, float(si) / float(maxi(shoots - 1, 1)))
 		var sp := _sample(parent, u)
-		az += GOLDEN
 		var pt := _tangent_at(parent, u)
-		var nm := _normal_at(parent, u)
-		var azdir := nm.rotated(pt, az)
-		var down := deg_to_rad(_rng.randf_range(40.0, 62.0))
-		var dir := (pt * cos(down) + azdir * sin(down)).normalized()
+		# MIMARI: surgunler dalin etrafina 360 SPREY ediliyordu ->
+		# her dal silindirik foliage bulutu -> whorl'lar kaynasip
+		# blob oluyordu. Dogru yapi: surgunler dalin YATAY PLAKA
+		# duzleminde iki yana pinnat, hafif YUKARI -> ince kalkik
+		# tabak -> katlar arasi hava (kesik kesik siluet).
+		var lat := pt.cross(Vector3.UP)
+		if lat.length() < 0.05:
+			lat = pt.cross(Vector3.RIGHT)
+		lat = lat.normalized()
+		var pn := pt.cross(lat).normalized()
+		var sgn := 1.0 if (si % 2) == 0 else -1.0
+		var th := deg_to_rad(_rng.randf_range(26.0, 72.0))
+		var upb := 0.18 + 0.12 * tf
+		var jit := _rng.randf_range(-0.12, 0.12)
+		var dir := (pt * cos(th) + lat * (sgn * sin(th)) + pn * (upb + jit)).normalized()
 		var L: float = p_len * lerp(0.55, 0.22, u) * _rng.randf_range(0.8, 1.15)
 		var wob: float = _rng.randf_range(-1.0, 1.0)
 		var rmul: float = _rng.randf_range(0.7, 1.0)
