@@ -1,0 +1,50 @@
+[gd_scene load_steps=16 format=3]
+
+[ext_resource type="Script" path="res://scripts/world/pine_tree.gd" id="1_pine"]
+[ext_resource type="Texture2D" uid="uid://bv76odfvls3xk" path="res://assets/trees/pine_ultra_mobile/textures/bark/pine_bark_albedo_2k.jpg" id="2_balb"]
+[ext_resource type="Texture2D" uid="uid://bjqm522476keg" path="res://assets/trees/pine_ultra_mobile/textures/bark/pine_bark_normal_2k.jpg" id="3_bnrm"]
+[ext_resource type="Texture2D" uid="uid://w7eogomtcb8g" path="res://assets/trees/pine_ultra_mobile/textures/bark/pine_bark_ormc_2k.jpg" id="4_bormc"]
+[ext_resource type="Texture2D" uid="uid://dvxyiu4lxfmag" path="res://assets/trees/pine_ultra_mobile/textures/bark/pine_bark_height_1k.jpg" id="5_bhgt"]
+[ext_resource type="Texture2D" uid="uid://7kxyyos0tesv" path="res://assets/trees/pine_ultra_mobile/textures/bark/pine_bark_detail_normal_1k.jpg" id="6_bdet"]
+[ext_resource type="Texture2D" uid="uid://w6hyc5mdcqp7" path="res://assets/trees/pine_ultra_mobile/textures/bark/pine_bark_variation_1k.jpg" id="7_bvar"]
+[ext_resource type="Texture2D" uid="uid://dmja028ky7leu" path="res://assets/trees/pine_ultra_mobile/textures/branches/pine_branch_tip_age_1k.png" id="8_btip"]
+[ext_resource type="Texture2D" uid="uid://codr8ydwy77pc" path="res://assets/trees/pine_ultra_mobile/textures/needles/pine_needles_albedo_alpha_2k.png" id="9_nalb"]
+[ext_resource type="Texture2D" uid="uid://c7mmq6qihnu70" path="res://assets/trees/pine_ultra_mobile/textures/needles/pine_needles_opacity_1k.png" id="10_nop"]
+[ext_resource type="Texture2D" uid="uid://cvxo7kukukh1m" path="res://assets/trees/pine_ultra_mobile/textures/needles/pine_needles_normal_2k.png" id="11_nnrm"]
+[ext_resource type="Texture2D" uid="uid://dvvyvysjnt76b" path="res://assets/trees/pine_ultra_mobile/textures/needles/pine_needles_orm_2k.png" id="12_norm"]
+[ext_resource type="Texture2D" uid="uid://bpaivrkg8v7h5" path="res://assets/trees/pine_ultra_mobile/textures/needles/pine_needles_variation_1k.png" id="13_nvar"]
+[ext_resource type="Texture2D" uid="uid://b8hgel14044x3" path="res://assets/trees/pine_ultra_mobile/textures/needles/pine_needles_height_1k.png" id="15_nhgt"]
+[ext_resource type="Texture2D" uid="uid://q50yoylm6rtk" path="res://assets/trees/pine_ultra_mobile/textures/needles/pine_needles_bent_normal_1k.png" id="16_nbnt"]
+
+[node name="PineTree" type="Node3D"]
+script = ExtResource("1_pine")
+total_height = 9.0
+trunk_radius = 0.22
+trunk_top_ratio = 0.045
+crown_start_ratio = 0.3
+crown_radius = 2.2
+branch_count = 56
+branch_droop = 0.3
+shoots_per_branch = 11
+fine_twigs = true
+twigs_per_shoot = 2
+blades_per_branch = 3
+frond_size = 1.4
+trunk_sides = 14
+seed = 20260516
+generate_collision = false
+enable_wind = true
+bark_albedo_tex = ExtResource("2_balb")
+bark_normal_tex = ExtResource("3_bnrm")
+bark_ormc_tex = ExtResource("4_bormc")
+bark_height_tex = ExtResource("5_bhgt")
+bark_detail_normal_tex = ExtResource("6_bdet")
+bark_variation_tex = ExtResource("7_bvar")
+branch_tip_age_tex = ExtResource("8_btip")
+needle_albedo_tex = ExtResource("9_nalb")
+needle_opacity_tex = ExtResource("10_nop")
+needle_normal_tex = ExtResource("11_nnrm")
+needle_orm_tex = ExtResource("12_norm")
+needle_variation_tex = ExtResource("13_nvar")
+needle_height_tex = ExtResource("15_nhgt")
+needle_bent_tex = ExtResource("16_nbnt")

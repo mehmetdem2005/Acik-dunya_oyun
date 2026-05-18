@@ -1,0 +1,22 @@
+; Godot 4.x project file
+; Açık Dünya Fare Simülasyonu - temiz chunk tabanlı proje iskeleti
+
+config_version=5
+
+[application]
+config/name="Mouse Open World Clean"
+run/main_scene="res://scenes/world/pine_tree_scene.tscn"
+config/features=PackedStringArray("4.6", "Mobile")
+config/icon="res://icon.svg"
+
+[display]
+window/size/viewport_width=1280
+window/size/viewport_height=720
+window/stretch/mode="canvas_items"
+window/stretch/aspect="expand"
+window/handheld/orientation="sensor_landscape"
+
+[rendering]
+renderer/rendering_method="mobile"
+renderer/rendering_method.mobile="mobile"
+textures/vram_compression/import_etc2_astc=true
