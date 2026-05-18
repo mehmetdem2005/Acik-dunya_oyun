@@ -40,6 +40,13 @@ class_name PineTree
 @export_range(2, 5, 1) var blades_per_branch: int = 3
 @export_range(0.4, 2.5, 0.05) var frond_size: float = 1.2
 
+@export_group("Kozalak")
+@export var add_cones: bool = true
+@export_range(0, 80, 1) var cone_count: int = 22
+@export_range(0.03, 0.6, 0.005) var cone_size: float = 0.24
+# Boşsa otomatik res yolundan yüklenir (GLB import edilmişse).
+@export var cone_scene: PackedScene
+
 @export_group("Form / Kusur")
 @export_enum("Genc Konik:0", "Olgun Orman:1", "Acikta Yetisen:2") var tree_form: int = 0
 @export_range(0.08, 0.30, 0.01) var branch_taper_tip: float = 0.18
@@ -103,6 +110,7 @@ class_name PineTree
 @export_range(0.0, 0.18, 0.005) var bark_parallax: float = 0.04
 
 const _TEX_ROOT := "res://assets/trees/pine_ultra_mobile/textures/"
+const _CONE_GLB := "res://assets/trees/pine_ultra_mobile/cone/kozalak.glb"
 
 func _ready() -> void:
 	# Godot 4.6: instance edilen sahnede _ready sırasında add_child
@@ -216,8 +224,79 @@ func rebuild() -> void:
 	leaf_mi.material_override = _needle_material()
 	add_child(leaf_mi)
 
+	if add_cones:
+		_build_cones(stems)
+
 	if generate_collision and not Engine.is_editor_hint():
 		_build_collision()
+
+# Kozalak: GLB mesh'i MultiMesh ile üst-orta dal uçlarına AŞAĞI
+# sarkık yerleştir (gerçek çamda kozalak üst dallarda, uca yakın,
+# aşağı sarkar). Tek draw-call -> ucuz.
+func _build_cones(stems: Array) -> void:
+	if cone_count <= 0:
+		return
+	var cscene: PackedScene = cone_scene
+	if cscene_null(cscene) and ResourceLoader.exists(_CONE_GLB):
+		cscene = ResourceLoader.load(_CONE_GLB) as PackedScene
+	if cscene_null(cscene):
+		return
+	var probe := cscene.instantiate()
+	var cone_mesh: Mesh = null
+	for c in probe.find_children("*", "MeshInstance3D", true, false):
+		cone_mesh = (c as MeshInstance3D).mesh
+		break
+	probe.queue_free()
+	if cone_mesh == null:
+		return
+	# Uygun dallar: ana dal (lvl1), kuru/kök değil, üst-orta taç.
+	var picks: Array = []
+	for st in stems:
+		var lv: int = int(st.get("level", -1))
+		if lv != 1 and lv != 2:
+			continue
+		if bool(st.get("is_root", false)) or bool(st.get("dry", false)) or bool(st.get("broken", false)):
+			continue
+		var d01: float = float(st.get("depth01", 0.0))
+		if d01 < 0.28 or d01 >= 0.99:
+			continue   # apeks (1.0) ve en alt kat hariç -> tüm taça yay
+		if float(st.get("len", 0.0)) < 0.22:
+			continue
+		picks.append(st)
+	if picks.is_empty():
+		return
+	var mm := MultiMesh.new()
+	mm.transform_format = MultiMesh.TRANSFORM_3D
+	mm.mesh = cone_mesh
+	var rng := RandomNumberGenerator.new()
+	rng.seed = seed if seed != 0 else hash(name)
+	var want: int = mini(cone_count, picks.size())
+	mm.instance_count = want
+	var stepf: float = float(picks.size()) / float(want)
+	for i in range(want):
+		var st: Dictionary = picks[int(i * stepf) % picks.size()]
+		var pts: Array = st["points"]
+		# Dal UCUNDA (yaprak kenarı) -> foliage'a gömülmez, görünür.
+		var b: Vector3 = pts[pts.size() - 1]
+		var pa: Vector3 = pts[maxi(pts.size() - 2, 0)]
+		var outd: Vector3 = (b - pa).normalized()
+		# Plaka kenarının ALTINA sarkıt -> foliage'a gömülmez, havadar
+		# katlar arasında net görünür.
+		var base: Vector3 = b + outd * (cone_size * 0.5) + Vector3.DOWN * (cone_size * 1.15)
+		# Aşağı sarkık: kozalak +Y'si dünya -Y'ye; rastgele yaw + hafif eğim.
+		var yaw: float = rng.randf() * TAU
+		var tilt: float = rng.randf_range(-0.35, 0.35)
+		var bz := Basis(Vector3.RIGHT, PI + tilt) * Basis(Vector3.UP, yaw)
+		var sc: float = cone_size * rng.randf_range(0.82, 1.18)
+		var t := Transform3D(bz.scaled(Vector3(sc, sc, sc)), base + Vector3(0, -sc * 0.5, 0))
+		mm.set_instance_transform(i, t)
+	var mmi := MultiMeshInstance3D.new()
+	mmi.name = "Cones"
+	mmi.multimesh = mm
+	add_child(mmi)
+
+func cscene_null(s: PackedScene) -> bool:
+	return s == null
 
 # Yuva doluysa onu, değilse verilen res:// yolunu (içe aktarılmışsa),
 # o da yoksa null döndürür -> çağıran prosedürel fallback'e düşer.
