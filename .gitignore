@@ -1,0 +1,6 @@
+# Blender uretilen ara dosyalar (jenerator kaynaklari izlenir, ciktilar HAYIR)
+*.blend
+*.blend1
+tools/blender_apple/__pycache__/
+tools/blender_apple/_gen/
+mouse_open_world_clean_project/.godot/
