@@ -74,6 +74,7 @@ def build_rig():
     arm, bones_meta, limb_data, tn, tc = rig_module.build_armature_from_tripo(tripo_bones, A)
     rig_module.setup_pose_constraints(arm, limb_data, tn, tc, A)
     rig_module.skin_with_corrective_smooth(mesh, arm)
+    rig_module.targeted_weight_refinement(mesh, A)
     rig_module.smart_orphan_adoption(mesh, arm)
     return arm, mesh, A
 

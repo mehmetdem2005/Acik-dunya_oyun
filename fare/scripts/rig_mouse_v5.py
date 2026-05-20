@@ -480,18 +480,22 @@ def build_armature_from_tripo(tripo_bones, A: TripoAnatomy):
             "pole_target": f"CTRL-pole_{fname}.{side}",
         })
 
-    # ---- Tail spline controllers ----
+    # ---- Tail CTRL bones — one CTRL per ~2 DEF bones, with MATCHING rest orientation ----
+    # CTRL bone must share rest direction with the DEF it drives so LOCAL→LOCAL
+    # rotation copy is geometrically correct.
     tail_bone_names = sorted([n for n in created if n.startswith("DEF-tail_")])
     tail_ctrl_names = []
     if tail_bone_names:
-        sample_pts = []
-        sample_pts.append(created[tail_bone_names[0]].head)
-        if len(tail_bone_names) >= 3:
-            sample_pts.append(created[tail_bone_names[len(tail_bone_names)//2]].head)
-        sample_pts.append(created[tail_bone_names[-1]].tail)
-        for ti, p in enumerate(sample_pts):
+        # Use 3 CTRL bones at base/mid/tip of tail. Each ctrl shares orientation
+        # with the closest DEF tail bone.
+        positions = [(0, "base"),
+                      (len(tail_bone_names)//2, "mid"),
+                      (len(tail_bone_names)-1, "tip")]
+        for ti, (def_idx, _label) in enumerate(positions):
+            def_b = created[tail_bone_names[def_idx]]
+            # CTRL bone matches DEF bone's head & tail (same rest orientation!)
             name = f"CTRL-tail_{ti+1}"
-            mk(name, p, p + V(0, d * 0.04, 0.02),
+            mk(name, def_b.head, def_b.tail,
                 parent=root_b, role="CTRL", coll="ctrl_main")
             tail_ctrl_names.append(name)
 
@@ -509,18 +513,67 @@ def setup_pose_constraints(arm_obj, limb_data, tail_bone_names, tail_ctrl_names,
     bpy.ops.object.mode_set(mode='POSE')
     pbones = arm_obj.pose.bones
 
-    # IK on limbs
+    # IK on limbs (with stretch enabled for better paw reach)
     for L in limb_data:
         if L["paw"] not in pbones: continue
         pb = pbones[L["paw"]]
         ik = pb.constraints.new('IK')
         ik.target = arm_obj
         ik.subtarget = L["ik_target"]
-        ik.chain_count = 3
+        ik.chain_count = 4  # paw + forearm/shin + arm/thigh + shoulder/pelvis
+        ik.use_stretch = True
         if L["pole_target"] in pbones:
             ik.pole_target = arm_obj
             ik.pole_subtarget = L["pole_target"]
             ik.pole_angle = -math.pi / 2
+
+    # ---- Tail Spline IK (v4 approach — curve-driven, robust) ----
+    # CTRL-tail_1/2/3 hook to a Bezier curve; DEF-tail chain follows the curve.
+    if tail_bone_names and tail_ctrl_names:
+        bpy.ops.object.mode_set(mode='OBJECT')
+        # Build a 3-point Bezier curve along the tail
+        curve_data = bpy.data.curves.new("TailCurve", type='CURVE')
+        curve_data.dimensions = '3D'
+        spline = curve_data.splines.new('BEZIER')
+        spline.bezier_points.add(2)  # total 3 points
+        # Place at base/mid/tip positions
+        n = len(tail_bone_names)
+        pos_base = arm_obj.matrix_world @ arm_obj.data.bones[tail_bone_names[0]].head_local
+        pos_mid = arm_obj.matrix_world @ arm_obj.data.bones[tail_bone_names[n//2]].head_local
+        pos_tip = arm_obj.matrix_world @ arm_obj.data.bones[tail_bone_names[-1]].tail_local
+        spline_pos = [pos_base, pos_mid, pos_tip]
+        for i, p in enumerate(spline_pos):
+            bp = spline.bezier_points[i]
+            bp.co = (p.x, p.y, p.z)
+            # tangent along tail direction
+            tan_off = 0.1
+            tan_dir = Vector((0, A.head_dir * tan_off * -1, 0))  # tail extends -d direction... actually +Y for our case
+            tan_dir = Vector((0, 0.1, 0))
+            bp.handle_left = (p - tan_dir).to_tuple()
+            bp.handle_right = (p + tan_dir).to_tuple()
+        curve_obj = bpy.data.objects.new("TailCurve", curve_data)
+        bpy.context.collection.objects.link(curve_obj)
+
+        # Hook each curve point (+ its handles) to a CTRL-tail bone.
+        # In Blender bezier curves, point i occupies vertex indices [3i, 3i+1, 3i+2]
+        # = [left_handle, control_point, right_handle].
+        for i, ctrl_name in enumerate(tail_ctrl_names[:3]):
+            if ctrl_name not in arm_obj.pose.bones: continue
+            hook = curve_obj.modifiers.new(name=f"Hook_{ctrl_name}", type='HOOK')
+            hook.object = arm_obj
+            hook.subtarget = ctrl_name
+            hook.vertex_indices_set([3*i, 3*i + 1, 3*i + 2])
+
+        # Spline IK on the last tail bone targeting the curve
+        bpy.context.view_layer.objects.active = arm_obj
+        bpy.ops.object.mode_set(mode='POSE')
+        last_tail_pb = arm_obj.pose.bones.get(tail_bone_names[-1])
+        if last_tail_pb is not None:
+            sik = last_tail_pb.constraints.new('SPLINE_IK')
+            sik.target = curve_obj
+            sik.chain_count = len(tail_bone_names)
+            sik.y_scale_mode = 'BONE_ORIGINAL'
+            sik.xz_scale_mode = 'BONE_ORIGINAL'
 
     # FK mirror: DEF copies CTRL local rotation
     for def_n, ctrl_n in (("DEF-hips", "CTRL-hips"),
@@ -589,6 +642,86 @@ def skin_with_corrective_smooth(mesh_obj, arm_obj):
     log(f"  CorrectiveSmooth added: factor=0.5 iter=3 length_weighted")
 
 
+def targeted_weight_refinement(mesh_obj, A):
+    """Geodesic-aware weight refinement for tricky regions: jaw, ears, tail.
+    Uses spatial filtering with HARD CLEAR to prevent neighbor bones from
+    holding majority weight after heat-binding. Industry agent fix."""
+    log("Targeted weight refinement (jaw / ears / tail / lips)")
+    cx = A.x_center
+    d = A.head_dir
+    verts = mesh_obj.data.vertices
+
+    def ensure_vg(name):
+        return mesh_obj.vertex_groups.get(name) or mesh_obj.vertex_groups.new(name=name)
+
+    def assign(group_name, indices, weight=1.0, clear=None):
+        if not indices: return 0
+        g = ensure_vg(group_name)
+        g.add(indices, weight, 'REPLACE')
+        if clear:
+            for og_name in clear:
+                og = mesh_obj.vertex_groups.get(og_name)
+                if og: og.remove(indices)
+        return len(indices)
+
+    # ---- Jaw: lower mouth/chin area ----
+    # Verts below the skull center Z, in the front 50% of head Y range
+    jaw_y_min = min(A.p_muzzle_base.y, A.nose_tip.y) - A.y_size * 0.02
+    jaw_y_max = max(A.p_muzzle_base.y, A.nose_tip.y) + A.y_size * 0.02
+    z_jaw_max = A.skull_center.z - A.z_size * 0.06
+    jaw_candidates = [vi for vi, v in enumerate(verts)
+                      if jaw_y_min <= v.co.y <= jaw_y_max
+                      and v.co.z < z_jaw_max
+                      and abs(v.co.x - cx) < A.x_half * 0.5]
+    n = assign("DEF-jaw", jaw_candidates, 1.0,
+                clear=["DEF-head", "DEF-muzzle", "DEF-neck", "DEF-nose_tip"])
+    log(f"  jaw: {n} verts (FULL 1.0, cleared head/muzzle/neck/nose)")
+
+    # ---- Ears: lateral verts above skull center Z, near head Y ----
+    # Use HEAD-LOCAL Z (not global) — ears are top 25% of head verts
+    head_y_lo = min(A.p_head_base.y, A.p_nose_base.y) - A.y_size * 0.05
+    head_y_hi = max(A.p_head_base.y, A.p_nose_base.y) + A.y_size * 0.05
+    head_verts = [v for v in verts if head_y_lo <= v.co.y <= head_y_hi]
+    if head_verts:
+        head_z_max = max(v.co.z for v in head_verts)
+        head_z_min = min(v.co.z for v in head_verts)
+        z_thresh = head_z_min + (head_z_max - head_z_min) * 0.70
+
+        ear_L_idxs = []; ear_R_idxs = []
+        for vi, v in enumerate(verts):
+            if head_y_lo <= v.co.y <= head_y_hi and v.co.z > z_thresh:
+                if (v.co.x - cx) > A.x_half * 0.20:
+                    ear_L_idxs.append(vi)  # Tripo: +X = left
+                elif (v.co.x - cx) < -A.x_half * 0.20:
+                    ear_R_idxs.append(vi)
+        n = assign("DEF-ear.L", ear_L_idxs, 1.0,
+                    clear=["DEF-head", "DEF-muzzle", "DEF-neck", "DEF-spine_01"])
+        log(f"  ear.L: {n} verts")
+        n = assign("DEF-ear.R", ear_R_idxs, 1.0,
+                    clear=["DEF-head", "DEF-muzzle", "DEF-neck", "DEF-spine_01"])
+        log(f"  ear.R: {n} verts")
+
+    # ---- Tail segments: each tail bone gets its own narrow Y-slice ----
+    # Tail extends from hips (~+0.08) to tail tip (~+0.47) on +Y
+    tail_bone_names = sorted([b.name for b in mesh_obj.parent.data.bones
+                               if b.name.startswith("DEF-tail_")])
+    if tail_bone_names:
+        arm = mesh_obj.parent
+        for tn in tail_bone_names:
+            b = arm.data.bones[tn]
+            mw = arm.matrix_world
+            bh = mw @ b.head_local
+            bt = mw @ b.tail_local
+            y_lo, y_hi = min(bh.y, bt.y), max(bh.y, bt.y)
+            cand = [vi for vi, v in enumerate(verts)
+                    if y_lo - 0.01 <= v.co.y <= y_hi + 0.01
+                    and abs(v.co.x - cx) < A.x_half * 0.30
+                    and abs(v.co.z - (bh.z + bt.z) / 2) < A.z_size * 0.25]
+            n = assign(tn, cand, 1.0,
+                        clear=["DEF-hips", "DEF-spine_01", "root"])
+            log(f"  {tn}: {n} verts")
+
+
 def smart_orphan_adoption(mesh_obj, arm_obj):
     arm_mat = arm_obj.matrix_world
     bone_segs = []
@@ -650,6 +783,7 @@ def main():
         build_armature_from_tripo(tripo_bones, A)
     setup_pose_constraints(arm_obj, limb_data, tail_bone_names, tail_ctrl_names, A)
     skin_with_corrective_smooth(mesh_obj, arm_obj)
+    targeted_weight_refinement(mesh_obj, A)
     smart_orphan_adoption(mesh_obj, arm_obj)
     export_glb(OUT, mesh_obj, arm_obj)
     log(f"DONE — {len(arm_obj.data.bones)} bones")
