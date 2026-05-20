@@ -875,17 +875,25 @@ def manual_weight_overrides(mesh_obj, A: Anatomy):
                    clear=["DEF-hips","DEF-spine_01","DEF-spine_02","root"])
         log(f"  tail_{i+1:02d}: {n} verts")
 
-    # Jaw: lower-front of head
+    # Jaw: lower-front of head (Skinning Agent fix #1).
+    # Lower-lip / chin: z<eyes-0.05, |x|<0.4*x_half (narrow), front 40% of head.
+    # Assign 1.0 REPLACE + clear DEF-head & DEF-neck so jaw rotation actually moves the chin.
     d = A.head_dir
-    if d > 0: ylo, yhi = A.y_head, A.y_nose
-    else: ylo, yhi = A.y_nose, A.y_head
-    ylo, yhi = min(ylo, yhi), max(ylo, yhi)
+    if d > 0:
+        ylo, yhi = A.y_head, A.y_nose
+        # Front 40%: closer to nose end
+        y_front_lo = ylo + (yhi - ylo) * 0.20
+    else:
+        ylo, yhi = A.y_nose, A.y_head
+        ylo, yhi = min(ylo, yhi), max(ylo, yhi)
+        y_front_lo = ylo
     jaw_cand = [vi for vi, p in enumerate(pos)
-                if ylo <= p.y <= yhi
+                if y_front_lo <= p.y <= yhi
                 and p.z < A.z_eyes - A.z_size * 0.05
-                and abs(p.x - cx) < A.x_half * 0.55]
-    n = assign("DEF-jaw", jaw_cand, 0.55)
-    log(f"  jaw: {n} verts (partial 0.55)")
+                and abs(p.x - cx) < A.x_half * 0.40]
+    n = assign("DEF-jaw", jaw_cand, 1.0,
+                clear=["DEF-head", "DEF-neck", "DEF-muzzle"])
+    log(f"  jaw: {n} verts (FULL 1.0, cleared head/neck/muzzle)")
 
 
 def smooth_weights(mesh_obj, iterations=2):

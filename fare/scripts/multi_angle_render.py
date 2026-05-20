@@ -27,7 +27,7 @@ OUT = os.path.join(ROOT, "out", "previews")
 os.makedirs(OUT, exist_ok=True)
 
 sys.path.insert(0, SCRIPTS_DIR)
-import rig_mouse_v3 as rig_module
+import rig_mouse_v4 as rig_module
 import rig_mouse as rig_constraints
 
 
@@ -66,7 +66,7 @@ def add_camera(name, loc, look_at, lens=50):
 
 
 def build_rig():
-    log("Building v3 rig in-session (no GLB roundtrip)")
+    log("Building v4 rig in-session (no GLB roundtrip)")
     rig_module.reset_scene()
     rig_module.import_glb(rig_module.SRC)
     mesh = rig_module.cleanup_and_merge()
@@ -77,10 +77,19 @@ def build_rig():
     s.head_dir = A.head_dir; s.x_center = A.x_center
     s.y_size = A.y_size; s.z_size = A.z_size; s.x_half = A.x_half
     s.z_spine = A.p_hips.z; s.y_hips = A.p_hips.y; s.y_tail_tip = A.p_tail_tip.y
+    s.x_min = A.x_min; s.x_max = A.x_max
+    s.y_min = A.y_min; s.y_max = A.y_max
+    s.z_min = A.z_min; s.z_max = A.z_max
+    s.verts = A.verts; s.mesh = A.mesh
+    s.y_head = A.skull_center.y; s.y_nose = A.nose_tip.y
+    s.y_neck = A.p_neck.y; s.y_jaw = A.p_jaw.y
+    s.z_eyes = A.skull_center.z; s.z_head = A.skull_center.z
+    s.z_floor = A.z_floor; s.z_belly = A.z_belly
     rig_constraints.setup_constraints(arm, limb_data, tn, tc, s)
     rig_constraints.organize_collections(arm, bones_meta)
     rig_constraints.parent_with_auto_weights(mesh, arm)
-    rig_constraints.smooth_weights(mesh, iterations=2)
+    rig_constraints.manual_weight_overrides(mesh, s)
+    rig_constraints.smooth_weights(mesh, iterations=1)
     rig_constraints.clamp_normalize(mesh, max_inf=4)
     rig_constraints.ensure_all_weighted(mesh, arm)
     return arm, mesh, A
