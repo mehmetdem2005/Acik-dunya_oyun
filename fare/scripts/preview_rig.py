@@ -20,9 +20,11 @@ SCRIPTS_DIR = os.path.join(ROOT, "scripts")
 OUT = os.path.join(ROOT, "out", "previews")
 os.makedirs(OUT, exist_ok=True)
 
-# Make rig_mouse.py importable
+# Make rig_mouse modules importable
 sys.path.insert(0, SCRIPTS_DIR)
-import rig_mouse  # noqa: E402
+# v2 has medial-axis bone placement; v1 had AABB-based which broke on curved poses.
+import rig_mouse_v2 as rig_module  # noqa: E402
+import rig_mouse  # noqa: E402  (still needed for setup_constraints, etc.)
 
 
 def log(m): print(f"[preview] {m}", flush=True)
@@ -32,15 +34,26 @@ def log(m): print(f"[preview] {m}", flush=True)
 # Rig setup (reuse rig_mouse.py pipeline up to and including weight binding)
 # ============================================================================
 def build_rig():
-    log("Running full rig pipeline (no GLB roundtrip)")
-    rig_mouse.reset_scene()
-    rig_mouse.import_glb(rig_mouse.SRC)
-    mesh_obj = rig_mouse.cleanup_and_merge()
-    A = rig_mouse.Anatomy(mesh_obj)
-    arm_obj, bones_meta, limb_data, tail_bone_names, tail_ctrl_names = rig_mouse.build_armature(A)
-    rig_mouse.setup_constraints(arm_obj, limb_data, tail_bone_names, tail_ctrl_names, A)
+    log("Running v2 rig pipeline (medial-axis, no GLB roundtrip)")
+    rig_module.reset_scene()
+    rig_module.import_glb(rig_module.SRC)
+    mesh_obj = rig_module.cleanup_and_merge()
+    A = rig_module.Anatomy(mesh_obj)
+    arm_obj, bones_meta, limb_data, tail_bone_names, tail_ctrl_names = rig_module.build_armature(A)
+
+    # Shim for setup_constraints (which uses some flat fields)
+    class S: pass
+    s = S()
+    s.head_dir = A.head_dir
+    s.x_center = A.x_center
+    s.y_size = A.y_size
+    s.z_size = A.z_size
+    s.x_half = A.x_half
+    s.z_spine = A.p_hips.z
+    s.y_hips = A.p_hips.y
+    s.y_tail_tip = A.p_tail_tip.y
+    rig_mouse.setup_constraints(arm_obj, limb_data, tail_bone_names, tail_ctrl_names, s)
     rig_mouse.organize_collections(arm_obj, bones_meta)
-    # Skip widgets / weight refinement for preview (faster)
     rig_mouse.parent_with_auto_weights(mesh_obj, arm_obj)
     return arm_obj, mesh_obj, A
 
@@ -69,14 +82,22 @@ def setup_render(res=1280):
 
 
 def add_camera(name, loc, look_at, lens=50):
+    """Camera with a TRACK_TO constraint so up_axis stays aligned with world +Z
+    (correct for our Z-up scene). to_track_quat with 'Y' interpreted Y as the
+    world up, which is wrong when world is Z-up — produces tilted/rolled views.
+    """
     cam_data = bpy.data.cameras.new(name)
     cam_data.lens = lens
     cam = bpy.data.objects.new(name, cam_data)
     cam.location = loc
     bpy.context.collection.objects.link(cam)
-    direction = (Vector(look_at) - Vector(loc)).normalized()
-    rot_quat = direction.to_track_quat('-Z', 'Y')
-    cam.rotation_euler = rot_quat.to_euler()
+    target = bpy.data.objects.new(f"{name}_TGT", None)
+    target.location = look_at
+    bpy.context.collection.objects.link(target)
+    c = cam.constraints.new('TRACK_TO')
+    c.target = target
+    c.track_axis = 'TRACK_NEGATIVE_Z'
+    c.up_axis = 'UP_Y'  # camera local Y stays aligned with world +Z
     return cam
 
 
@@ -199,13 +220,11 @@ def main():
         "front":  add_camera("Cam_front",  (cx, cy + d, cz + size*0.05), center),
         "top":    add_camera("Cam_top",    (cx, cy, cz + d),             center, lens=45),
         "persp":  add_camera("Cam_persp",  (cx + d*0.7, cy + d*0.7, cz + size*0.45), center),
-        # Head close-up: aim at actual nose tip (the snout, detected vertex-wise).
-        # The model has a "sniffing" pose with the snout lowered toward the ground,
-        # so we look at nose_tip directly from 3/4 forward angle.
+        # Head close-up: aim at actual nose tip
         "head":   add_camera("Cam_head",
                               (A.nose_tip.x + size*0.35, A.nose_tip.y + size*0.30, A.nose_tip.z + size*0.30),
                               (A.nose_tip.x,             A.nose_tip.y,             A.nose_tip.z), lens=45),
-        # Front-left paw close-up: aim at detected front paw
+        # Front-left paw close-up
         "paw":    add_camera("Cam_paw",
                               (A.paws["paw_F_L"].x - size*0.30, A.paws["paw_F_L"].y + size*0.30, A.paws["paw_F_L"].z + size*0.30),
                               (A.paws["paw_F_L"].x,             A.paws["paw_F_L"].y,             A.paws["paw_F_L"].z + size*0.05), lens=45),
