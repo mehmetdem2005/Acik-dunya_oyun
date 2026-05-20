@@ -1,0 +1,33 @@
+=== STAGE 3 v12 BONE AUDIT ===
+
+Total bones: 384
+DEF bones audited: 121
+
+OK: 100
+PROTRUSION: 21
+CHAIN_GAP: 0
+
+--- PROTRUSION ---
+  tail_02: tail  at (-0.026,+0.327,+0.068)
+  tail_03: head mid  at (-0.020,+0.346,+0.056)
+  nose_L: head outside  at (+0.005,-0.452,+0.223)
+  ear_L_mid: head outside  at (+0.080,-0.264,+0.397)
+  ear_L_tip: head outside  at (+0.111,-0.265,+0.424)
+  ear_R_mid: head outside  at (-0.150,-0.269,+0.397)
+  ear_R_tip: head outside  at (-0.180,-0.271,+0.425)
+  front_paw_L: mid tail  at (+0.068,-0.260,+0.033)
+  front_toes_L_01: head outside  at (+0.062,-0.288,+0.004)
+  front_toes_L_02: head outside  at (+0.062,-0.288,+0.004)
+  front_toes_L_03: head outside  at (+0.062,-0.288,+0.004)
+  front_toes_L_04: head outside  at (+0.062,-0.288,+0.004)
+  front_toes_L_05: head outside  at (+0.062,-0.288,+0.004)
+  front_paw_R: tail  at (-0.151,-0.260,+0.027)
+  front_toes_R_01: head outside  at (-0.153,-0.291,+0.004)
+  front_toes_R_02: head outside  at (-0.153,-0.291,+0.004)
+  front_toes_R_03: head outside  at (-0.153,-0.291,+0.004)
+  front_toes_R_04: head outside  at (-0.153,-0.291,+0.004)
+  front_toes_R_05: head outside  at (-0.153,-0.291,+0.004)
+  back_paw_L: mid  at (+0.108,+0.091,+0.030)
+  back_paw_R: mid  at (-0.183,+0.089,+0.031)
+
+--- CHAIN_GAP ---
