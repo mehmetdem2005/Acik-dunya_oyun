@@ -79,7 +79,7 @@ SECONDARY_RADIAL_SEGS = 5        # reduced
 SECONDARY_START_FRAC = 0.18
 
 # Tertiaries / twigs
-TWIGS_PER_SECONDARY_RANGE = (2, 4)
+TWIGS_PER_SECONDARY_RANGE = (3, 4)   # ↑ from (2,4) Round 25 — daha cok lateral
 TWIG_LENGTH_RANGE = (0.14, 0.38)
 TWIG_ANGLE_RANGE_DEG = (35.0, 65.0)
 TWIG_R_FACTOR = 0.55
@@ -87,6 +87,15 @@ TWIG_TIP_R_FACTOR = 0.30
 TWIG_SEGMENTS = 2
 TWIG_RADIAL_SEGS = 4
 TWIG_START_FRAC = 0.18
+
+# Round 25 — Sub-twigs: yeni dallanma seviyesi (twig'in kendi alt-twig'leri)
+SUBTWIGS_PER_TWIG_RANGE = (1, 2)
+SUBTWIG_T_POINTS = (0.32, 0.60, 0.85)   # parent twig boyunca yerlesim noktalari
+SUBTWIG_LENGTH_FACTOR = (0.50, 0.70)    # parent uzunlugun %50-70'i
+SUBTWIG_R_FACTOR = 0.70                 # parent yaricapin %70'i
+SUBTWIG_ANGLE_RANGE_DEG = (45.0, 80.0)  # parent'tan ayrilis acisi
+SUBTWIG_SEGMENTS = 2
+SUBTWIG_RADIAL_SEGS = 3                 # ince dal — 3 yan yeterli
 
 # Spurs
 SPURS_PER_SECONDARY_AVG = 5
@@ -109,9 +118,11 @@ LEAVES_PER_ATLAS_CELL = 6        # silhouettes baked into each cell
 
 # Foliage volume placement — clusters at twig tips form spherical bouquets
 # Round 24 — Botanist panel: along-twig parametric placement (kills floating bouquets)
-CARDS_PER_TWIG_ALONG = 7         # cards along long shoot (t=0.15..0.90)
-CARDS_PER_TWIG_TERMINAL = 4      # cards at twig tip (juvenile slowdown cluster)
-CLUSTERS_PER_SPUR = 4            # rosette on each spur
+CARDS_PER_TWIG_ALONG = 5         # ↓ from 7 — sub-twiglere yer ac
+CARDS_PER_TWIG_TERMINAL = 3      # ↓ from 4
+CARDS_PER_SUBTWIG_ALONG = 2      # sub-twig: hafif yapraklanma
+CARDS_PER_SUBTWIG_TERMINAL = 2
+CLUSTERS_PER_SPUR = 3            # ↓ from 4 — bütçe için
 LEAF_ALONG_T_START = 0.18        # skip basal 18% (sparse basal in reality)
 LEAF_ALONG_T_END = 0.92          # skip absolute tip (terminal handles that)
 LEAF_PETIOLE_LEN = 0.025         # 2.5 cm petiole — leaves attached visibly
@@ -872,10 +883,55 @@ class TreeBuilder:
             curve = branch_curve(pos + radial * (r_parent * 0.4), base_dir, length, base_r, tip_r,
                                  TWIG_SEGMENTS, droop, lateral_jitter=0.03, rng=self.rng)
             build_tube(self.bm_wood, curve, TWIG_RADIAL_SEGS, 0, self.wood_faces, tier=3)
-            self.twigs.append({"curve": curve, "depth": depth, "parent_curve": parent_curve})
+            self.twigs.append({
+                "curve": curve, "depth": depth, "parent_curve": parent_curve,
+                "cards_along": CARDS_PER_TWIG_ALONG,
+                "cards_terminal": CARDS_PER_TWIG_TERMINAL,
+            })
+            # Round 25: Sub-twigs (fraktal dallanma) — twig'in kendi alt-twig'leri
+            self._build_subtwigs(curve, depth=depth + 1)
             # occasional spurs on twigs (mostly long shoots have leaves, no spurs)
             if self.rng.random() < SPURS_PER_TWIG_AVG:
                 self._sprinkle_spurs_on_branch(curve, count=1)
+
+    def _build_subtwigs(self, parent_twig_curve, depth):
+        """Round 25 — yeni dallanma seviyesi: twig'lerin kendi alt-twig'leri.
+
+        Parent twig boyunca SUBTWIG_T_POINTS noktalarinda 1-2 sub-twig olusur.
+        Sub-twig'ler de yapraklanir (cards_along/cards_terminal daha az).
+        """
+        n_sub = self.rng.randint(*SUBTWIGS_PER_TWIG_RANGE)
+        if n_sub <= 0:
+            return
+        # Pick random subset of T points
+        t_pool = list(SUBTWIG_T_POINTS)
+        self.rng.shuffle(t_pool)
+        for i in range(min(n_sub, len(t_pool))):
+            frac = t_pool[i] + self.rng.uniform(-0.04, 0.04)
+            pos, r_parent, tan = self._sample_branch_curve(parent_twig_curve, frac)
+            if r_parent < 0.0035:   # parent too thin already, skip
+                continue
+            azimuth = self.rng.uniform(0, 2 * math.pi)
+            up = Vector((0, 0, 1))
+            side = tan.cross(up).normalized() if abs(tan.z) < 0.95 else Vector((1, 0, 0))
+            forward = tan.cross(side).normalized()
+            radial = math.cos(azimuth) * side + math.sin(azimuth) * forward
+            ang = math.radians(self.rng.uniform(*SUBTWIG_ANGLE_RANGE_DEG))
+            base_dir = (math.cos(ang) * tan + math.sin(ang) * radial).normalized()
+            # Parent twig length unknown directly; estimate from curve span
+            parent_len = (parent_twig_curve[-1][0] - parent_twig_curve[0][0]).length
+            length = parent_len * self.rng.uniform(*SUBTWIG_LENGTH_FACTOR)
+            base_r = r_parent * SUBTWIG_R_FACTOR
+            tip_r = base_r * 0.35
+            droop = 0.02 * FRUIT_LOAD
+            curve = branch_curve(pos + radial * (r_parent * 0.4), base_dir, length, base_r, tip_r,
+                                 SUBTWIG_SEGMENTS, droop, lateral_jitter=0.02, rng=self.rng)
+            build_tube(self.bm_wood, curve, SUBTWIG_RADIAL_SEGS, 0, self.wood_faces, tier=3)
+            self.twigs.append({
+                "curve": curve, "depth": depth, "parent_curve": parent_twig_curve,
+                "cards_along": CARDS_PER_SUBTWIG_ALONG,
+                "cards_terminal": CARDS_PER_SUBTWIG_TERMINAL,
+            })
 
     def _sprinkle_spurs_on_branch(self, parent_curve, count):
         for _ in range(count):
@@ -1093,10 +1149,12 @@ class TreeBuilder:
         self.canopy_radius = self._compute_canopy_radius()
         placed = 0
 
-        # ----- LONG SHOOTS (twigs): along-curve placement -----
+        # ----- LONG SHOOTS + SUB-TWIGS (Round 25 fraktal) -----
         for twig in self.twigs:
             curve = twig["curve"]
-            placed += self._place_along_twig(curve, CARDS_PER_TWIG_ALONG, CARDS_PER_TWIG_TERMINAL)
+            n_along = twig.get("cards_along", CARDS_PER_TWIG_ALONG)
+            n_terminal = twig.get("cards_terminal", CARDS_PER_TWIG_TERMINAL)
+            placed += self._place_along_twig(curve, n_along, n_terminal)
 
         # ----- SPURS: tight rosette (compressed internode biology) -----
         for spur in self.spurs:
