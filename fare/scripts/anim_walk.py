@@ -29,7 +29,7 @@ import sys
 from mathutils import Vector
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-IN_BLEND = os.path.join(ROOT, "out", "mouse_v14.blend")
+IN_BLEND = os.path.join(ROOT, "out", "mouse_v15.blend")
 OUT_BLEND = os.path.join(ROOT, "out", "mouse_walk.blend")
 OUT_GLB = os.path.join(ROOT, "out", "mouse_walk.glb")
 
@@ -124,36 +124,32 @@ def main():
         kf(lower_bone, stance_mid, rot_xyz=(knee_axis * knee_bend_deg * 0.05, 0, 0))
 
     # Phase windows (1-indexed-ish but Blender frames work fine starting 1)
-    # FL leg: front-left
+    # FL: front-left — subtle amplitudes to avoid mesh distortion
     animate_leg("upper_arm_L", "forearm_L", swing_start=1,  swing_end=7,
-                 swing_axis_upper=+1, knee_axis=+1, stance_amp_deg=18, knee_bend_deg=40)
+                 swing_axis_upper=+1, knee_axis=+1, stance_amp_deg=8, knee_bend_deg=22)
     # BL: back-left
     animate_leg("thigh_L", "shin_L", swing_start=7, swing_end=13,
-                 swing_axis_upper=+1, knee_axis=-1, stance_amp_deg=20, knee_bend_deg=45)
+                 swing_axis_upper=+1, knee_axis=-1, stance_amp_deg=10, knee_bend_deg=25)
     # FR: front-right
     animate_leg("upper_arm_R", "forearm_R", swing_start=13, swing_end=19,
-                 swing_axis_upper=+1, knee_axis=+1, stance_amp_deg=18, knee_bend_deg=40)
+                 swing_axis_upper=+1, knee_axis=+1, stance_amp_deg=8, knee_bend_deg=22)
     # BR: back-right
     animate_leg("thigh_R", "shin_R", swing_start=19, swing_end=25,
-                 swing_axis_upper=+1, knee_axis=-1, stance_amp_deg=20, knee_bend_deg=45)
+                 swing_axis_upper=+1, knee_axis=-1, stance_amp_deg=10, knee_bend_deg=25)
 
-    # ===== Body sway =====
-    # Hips Z rotation: subtle 2-3 deg side-to-side (twice per cycle)
-    for f, ry in [(1, 0), (7, +3), (13, 0), (19, -3), (25, 0)]:
+    # ===== Body sway (very subtle now) =====
+    for f, ry in [(1, 0), (7, +1.5), (13, 0), (19, -1.5), (25, 0)]:
         kf("hips", f, rot_xyz=(0, ry, 0))
-    # Spine counter-sway (chest)
-    for f, ry in [(1, 0), (7, -1.5), (13, 0), (19, +1.5), (25, 0)]:
+    for f, ry in [(1, 0), (7, -0.7), (13, 0), (19, +0.7), (25, 0)]:
         kf("chest", f, rot_xyz=(0, ry, 0))
-    # Head subtle bob (counter-balance) — Z rotation small
-    for f, rz in [(1, 0), (7, +1), (13, 0), (19, -1), (25, 0)]:
+    for f, rz in [(1, 0), (7, +0.5), (13, 0), (19, -0.5), (25, 0)]:
         kf("head", f, rot_xyz=(0, 0, rz))
 
-    # ===== Tail sway (lazy follow) =====
-    # Tail Z rotation cascading delay
+    # ===== Tail sway (subtle lazy follow) =====
     for i, base in enumerate(["tail_01", "tail_03", "tail_05", "tail_07"]):
-        delay = i * 2  # propagate down chain
-        for f, rz in [(1 + delay, +5), (7 + delay, -5), (13 + delay, +5),
-                       (19 + delay, -5), (25 + delay, +5)]:
+        delay = i * 2
+        for f, rz in [(1 + delay, +2.5), (7 + delay, -2.5), (13 + delay, +2.5),
+                       (19 + delay, -2.5), (25 + delay, +2.5)]:
             f_mod = ((f - 1) % FRAMES) + 1
             kf(base, f_mod, rot_xyz=(0, 0, rz))
 
@@ -173,17 +169,16 @@ def main():
         for f, rx in [(1, 0), (12, sign * 4), (24, 0)]:
             kf(bn, f, rot_xyz=(rx, 0, 0))
 
-    # ===== Whisker idle twitch =====
-    # Random tiny rotations on each whisker
+    # ===== Whisker idle twitch (smaller) =====
     import random
     random.seed(0)
     for side in ("L", "R"):
         for i in range(1, 5):
             bn = f"whisker_{side}_{i}"
             for f in (1, 6, 13, 18, 24):
-                kf(bn, f, rot_xyz=(random.uniform(-3, 3),
-                                    random.uniform(-3, 3),
-                                    random.uniform(-3, 3)))
+                kf(bn, f, rot_xyz=(random.uniform(-1.5, 1.5),
+                                    random.uniform(-1.5, 1.5),
+                                    random.uniform(-1.5, 1.5)))
 
     # Set interpolation to BEZIER for smooth motion
     if arm.animation_data and arm.animation_data.action:
