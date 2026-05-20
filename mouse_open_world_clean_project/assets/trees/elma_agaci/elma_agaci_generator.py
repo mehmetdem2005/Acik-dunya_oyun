@@ -35,10 +35,41 @@ TRUNK_GEOM_TOP_FRAC = 0.72       # trunk continues higher (taper to point inside
 TRUNK_BASE_R = 0.14
 TRUNK_FORK_R = 0.10
 TRUNK_TOP_R = 0.025              # taper to near-point inside canopy
-ROOT_FLARE_FACTOR = 1.55         # ↓ less balloon-like
-ROOT_FLARE_HEIGHT = 0.28
-BUTTRESS_LOBES = 4
-BUTTRESS_AMP = 0.22              # ↓ subtler, organic-looking lobes
+ROOT_FLARE_FACTOR = 2.50         # Round 26 AAA: agresif kök yatağı (eskiden 1.55)
+ROOT_FLARE_HEIGHT = 0.55         # Round 26 AAA: flare bölgesi genişletildi (eskiden 0.28)
+BUTTRESS_LOBES = 5               # Round 26: 5-lobe (asymmetric, AAA standart)
+BUTTRESS_AMP = 0.32              # Round 26: lobes daha belirgin (eskiden 0.22)
+
+# Round 26 — Surface roots (yer üstü görünür kök buttress'leri)
+N_SURFACE_ROOTS = 5
+ROOT_LENGTH_RANGE = (0.45, 0.75)
+ROOT_BASE_R = 0.055
+ROOT_TIP_R = 0.012
+ROOT_PITCH_RANGE_DEG = (-38.0, -22.0)   # toprağa doğru iniş açısı
+ROOT_AZIMUTH_JITTER_DEG = 18            # ±18° (72° spacing'den sapma)
+ROOT_SEGMENTS = 4
+ROOT_RADIAL_SEGS = 5
+ROOT_GRAVITY_K = -0.18                  # ters S-curve (uca doğru yere gömül)
+ROOT_DARKEN = 0.85                      # bark vcolor ×0.85 (toprağa yakın koyulaşma)
+
+# Round 26 — Gravimorphism (gravity sag) coefficients per tier
+GRAVITY_K_SCAFFOLD = 0.22
+GRAVITY_K_SECONDARY = 0.18
+GRAVITY_K_TWIG = 0.10
+GRAVITY_K_SUBTWIG = 0.05
+
+# Round 26 — Branch collar swelling at junction (ilk ring radius bulge)
+COLLAR_BULGE_FACTOR = 0.55       # ilk ring radius × (1 + 0.55 × exp(-i/2))
+COLLAR_BULGE_RINGS = 2           # kaç ring etkilenir
+
+# Round 26 — Dead snags (kırık kuru dal güdükleri)
+N_DEAD_SNAGS_RANGE = (2, 4)
+DEAD_SNAG_LENGTH_RANGE = (0.08, 0.18)
+DEAD_SNAG_BASE_R = 0.016
+DEAD_SNAG_TIP_R = 0.004
+DEAD_SNAG_SEGMENTS = 3
+DEAD_SNAG_RADIAL_SEGS = 4
+DEAD_SNAG_DARKEN = 0.65          # kuru kabuk daha koyu
 TRUNK_GNARL_AMP = 0.18           # ↑ stronger
 TRUNK_GNARL_FREQ_Z = 6.5
 TRUNK_GNARL_FREQ_THETA = 4.0
@@ -112,17 +143,42 @@ SPUR_SEGMENTS = 1                # single segment is enough at this scale
 LEAF_CARD_W = 0.22               # cluster card width (m) — covers 5-7 leaves in texture
 LEAF_CARD_H = 0.20
 USE_CROSS_QUAD = True            # X-pattern: 2 perpendicular quads = 4 tri/cluster
-ATLAS_GRID = 2                   # 2×2 = 4 cluster variants in atlas
-ATLAS_RES = 512                  # atlas resolution
+ATLAS_GRID = 3                   # Round 26: 3×3 = 9 cluster variants (tint variation AAA)
+ATLAS_RES = 768                  # ↑ 512 → 768 for 3×3 (256px/cell aynı)
 LEAVES_PER_ATLAS_CELL = 6        # silhouettes baked into each cell
 
 # Foliage volume placement — clusters at twig tips form spherical bouquets
 # Round 24 — Botanist panel: along-twig parametric placement (kills floating bouquets)
-CARDS_PER_TWIG_ALONG = 5         # ↓ from 7 — sub-twiglere yer ac
-CARDS_PER_TWIG_TERMINAL = 3      # ↓ from 4
+CARDS_PER_TWIG_ALONG = 5         # outer shell — along twig curve
+CARDS_PER_TWIG_TERMINAL = 3      # outer shell — twig tip juvenile
 CARDS_PER_SUBTWIG_ALONG = 2      # sub-twig: hafif yapraklanma
 CARDS_PER_SUBTWIG_TERMINAL = 2
-CLUSTERS_PER_SPUR = 3            # ↓ from 4 — bütçe için
+CLUSTERS_PER_SPUR = 3            # spur rosette
+
+# Round 26 — Multi-shell foliage (AAA dolgunluk)
+# Hollow-core INVERTED: sadece trunk axis çevresinde skip (broadleaf canopy dense-cored)
+INNER_FILL_CARDS_PER_SECONDARY = 4   # her secondary boyunca interior fill cards
+INNER_FILL_CARD_W = 0.15             # küçük boy (interior shadow)
+INNER_FILL_CARD_H = 0.13
+INNER_FILL_CROSS_QUAD = False        # single quad (2 tri, fill için derinlik gereksiz)
+
+FORK_PUFFS_PER_SCAFFOLD = 1          # her scaffold base'inde 1 puff
+FORK_PUFF_CARDS = 35                 # puff başına card sayısı
+FORK_PUFF_RADIUS = 0.40              # puff sphere radius
+FORK_PUFF_OFFSET = 0.30              # scaffold base'inden radial dışa
+FORK_PUFF_CARD_W = 0.20
+FORK_PUFF_CARD_H = 0.18
+FORK_PUFF_CROSS_QUAD = False         # fill, single quad
+
+GROUND_LITTER_CARDS = 80             # trunk tabanında dağılmış yaprak hint
+GROUND_LITTER_RADIUS = 0.85          # trunk merkezinden max yarıçap
+GROUND_LITTER_HEIGHT = 0.08          # zemine yakın hover
+GROUND_LITTER_CARD_W = 0.10
+GROUND_LITTER_CARD_H = 0.09
+
+# Inverted hollow core: trunk axis yakın küçük gerçek hollow
+TRUNK_AXIS_HOLLOW_RADIUS = 0.30      # bu yarıçap içindeki cards skip edilir
+TRUNK_AXIS_HOLLOW_SKIP_PROB = 0.65
 LEAF_ALONG_T_START = 0.18        # skip basal 18% (sparse basal in reality)
 LEAF_ALONG_T_END = 0.92          # skip absolute tip (terminal handles that)
 LEAF_PETIOLE_LEN = 0.025         # 2.5 cm petiole — leaves attached visibly
@@ -344,8 +400,13 @@ def trunk_curve(rng):
     return pts
 
 
-def branch_curve(base_pos, base_dir, length, base_r, tip_r, segments, droop_m, lateral_jitter, rng):
-    """Generate ascending-then-arching branch curve.
+def branch_curve(base_pos, base_dir, length, base_r, tip_r, segments, droop_m,
+                 lateral_jitter, rng, gravity_k=0.0):
+    """Generate ascending-then-arching branch curve with optional gravimorphism.
+
+    Round 26 AAA: gravity_k > 0 adds weight-sag S-curve along branch with
+    apical recovery near tip (real branches sag in middle, lift slightly at tip).
+    Negative gravity_k inverts curve (used for surface roots: dive then level off).
 
     Returns list of (pos, radius, tangent, radial_mod or None) tuples.
     """
@@ -369,6 +430,11 @@ def branch_curve(base_pos, base_dir, length, base_r, tip_r, segments, droop_m, l
     for i in range(n):
         t = i / (n - 1)
         pos = smooth_bezier3(p0, p1, p2, p3, t)
+        # Round 26: Gravimorphism — z-offset(t) = -k * length² * t^1.5 * (1 - 0.3*t)
+        # Apical recovery: tip kalkar (1 - 0.3*t çarpanı tip'te etkiyi azaltır)
+        if abs(gravity_k) > 1e-5:
+            sag = -gravity_k * (length ** 2) * (t ** 1.5) * (1.0 - 0.3 * t)
+            pos = pos + Vector((0, 0, sag))
         r = base_r + (tip_r - base_r) * (t ** 0.85)
         r *= 1.0 + 0.04 * rng.uniform(-1, 1)
         tangent = smooth_bezier3_tangent(p0, p1, p2, p3, t)
@@ -382,12 +448,16 @@ def branch_curve(base_pos, base_dir, length, base_r, tip_r, segments, droop_m, l
 # MESH BUILDERS
 # ------------------------------------------------------------------
 
-def build_tube(bm, curve_pts, radial_segs, mat_index, face_index_track, tier=0):
+def build_tube(bm, curve_pts, radial_segs, mat_index, face_index_track, tier=0,
+               collar_bulge=0.0):
     """Build a tube along the curve and record face indices for material assignment.
 
     curve_pts: list of (pos, radius, tangent, radial_mod_or_None).
     `tier` (0=trunk, 1=scaffold, 2=secondary, 3=twig) stamped on every vert
     along with `branch_t` (0=base..1=tip) for later vcolor gradient.
+
+    Round 26 AAA: `collar_bulge` > 0 → ilk COLLAR_BULGE_RINGS halkaları
+    radius × (1 + collar_bulge × exp(-i)) bulge (junction shoulder swelling).
     """
     tier_layer = bm.verts.layers.int.get('tier') or bm.verts.layers.int.new('tier')
     t_layer = bm.verts.layers.float.get('branch_t') or bm.verts.layers.float.new('branch_t')
@@ -396,6 +466,9 @@ def build_tube(bm, curve_pts, radial_segs, mat_index, face_index_track, tier=0):
     for i, pt in enumerate(curve_pts):
         pos, r, tangent = pt[0], pt[1], pt[2]
         radial_mod = pt[3] if len(pt) > 3 else None
+        # Round 26: Collar bulge at branch base (first 1-2 rings)
+        if collar_bulge > 0 and i < COLLAR_BULGE_RINGS:
+            r = r * (1.0 + collar_bulge * math.exp(-i))
         ring = cap_disk(bm, pos, tangent, r, radial_segs, radial_mod=radial_mod)
         t_val = i / max(n_pts - 1, 1)
         for v in ring:
@@ -758,6 +831,10 @@ class TreeBuilder:
         # Track leaf/apple attachment points for placement bias
         self.twigs = []         # list of dicts {curve_pts, parent_secondary, depth}
         self.spurs = []         # list of dicts {pos, normal, parent}
+        self.scaffolds = []     # Round 26: {curve, base_pos, tip_pos, base_r, is_co_leader} for fork puffs + snags
+        self.secondaries = []   # Round 26: {curve, depth} for inner-fill foliage
+        self.surface_roots = [] # Round 26: {curve, base_pos} for vcolor darken
+        self.dead_snags = []    # Round 26: {curve} for vcolor darken
         # Canopy center: where leaves cluster vertically (above scaffold zone)
         self.canopy_center = Vector((0, 0, TOTAL_HEIGHT * 0.55))
         self.canopy_radius = 2.6   # estimated; refined after branch build
@@ -768,6 +845,9 @@ class TreeBuilder:
     def build_trunk_and_branches(self):
         trunk_pts = trunk_curve(self.rng)
         build_tube(self.bm_wood, trunk_pts, TRUNK_RADIAL_SEGS, 0, self.wood_faces, tier=0)
+        # Round 26 AAA — surface roots (köklenme): trunk base'inden 5 buttress root
+        trunk_base_r = trunk_pts[0][1] * ROOT_FLARE_FACTOR  # flared radius at z=0
+        self._build_surface_roots(trunk_base_r)
 
         geom_top = TOTAL_HEIGHT * TRUNK_GEOM_TOP_FRAC
 
@@ -803,8 +883,15 @@ class TreeBuilder:
             tip_r = base_r * SCAFFOLD_TIP_R_FACTOR
             droop = SCAFFOLD_DROOP_TIP_M * FRUIT_LOAD * (0.7 if is_co_leader else 1.0)
             curve = branch_curve(t_pos + out_dir * (t_r * 0.6), base_dir, length, base_r, tip_r,
-                                 SCAFFOLD_SEGMENTS, droop, lateral_jitter=0.10, rng=self.rng)
-            build_tube(self.bm_wood, curve, SCAFFOLD_RADIAL_SEGS, 0, self.wood_faces, tier=1)
+                                 SCAFFOLD_SEGMENTS, droop, lateral_jitter=0.10, rng=self.rng,
+                                 gravity_k=GRAVITY_K_SCAFFOLD)
+            build_tube(self.bm_wood, curve, SCAFFOLD_RADIAL_SEGS, 0, self.wood_faces, tier=1,
+                       collar_bulge=COLLAR_BULGE_FACTOR)
+            # Round 26: store scaffold info for fork puffs + dead snags
+            self.scaffolds.append({
+                "curve": curve, "base_pos": t_pos, "tip_pos": curve[-1][0],
+                "base_r": base_r, "is_co_leader": is_co_leader,
+            })
             self._build_secondaries(curve, depth=1)
 
         # UPPER CROWN BRANCHES: near trunk top, more upright, fill crown above scaffolds.
@@ -827,9 +914,14 @@ class TreeBuilder:
             tip_r = base_r * 0.25
             droop = SECONDARY_DROOP_TIP_M * FRUIT_LOAD * 0.6
             curve = branch_curve(t_pos + out_dir * (t_r * 0.5), base_dir, length, base_r, tip_r,
-                                 SCAFFOLD_SEGMENTS - 1, droop, lateral_jitter=0.06, rng=self.rng)
-            build_tube(self.bm_wood, curve, SCAFFOLD_RADIAL_SEGS - 2, 0, self.wood_faces, tier=1)
+                                 SCAFFOLD_SEGMENTS - 1, droop, lateral_jitter=0.06, rng=self.rng,
+                                 gravity_k=GRAVITY_K_SCAFFOLD * 0.7)
+            build_tube(self.bm_wood, curve, SCAFFOLD_RADIAL_SEGS - 2, 0, self.wood_faces, tier=1,
+                       collar_bulge=COLLAR_BULGE_FACTOR * 0.8)
             self._build_secondaries(curve, depth=1, count_override=(2, 4))
+
+        # Round 26 AAA — dead snags: scaffold+secondary üzerinde 2-4 kırık güdük
+        self._build_dead_snags()
 
     def _build_secondaries(self, parent_curve, depth, count_override=None):
         count_range = count_override or SECONDARIES_PER_SCAFFOLD_RANGE
@@ -856,8 +948,12 @@ class TreeBuilder:
             tip_r = base_r * SECONDARY_TIP_R_FACTOR
             droop = SECONDARY_DROOP_TIP_M * FRUIT_LOAD * (1.0 + 0.2 * depth)
             curve = branch_curve(pos + radial * (r_parent * 0.5), base_dir, length, base_r, tip_r,
-                                 SECONDARY_SEGMENTS, droop, lateral_jitter=0.06, rng=self.rng)
-            build_tube(self.bm_wood, curve, SECONDARY_RADIAL_SEGS, 0, self.wood_faces, tier=2)
+                                 SECONDARY_SEGMENTS, droop, lateral_jitter=0.06, rng=self.rng,
+                                 gravity_k=GRAVITY_K_SECONDARY)
+            build_tube(self.bm_wood, curve, SECONDARY_RADIAL_SEGS, 0, self.wood_faces, tier=2,
+                       collar_bulge=COLLAR_BULGE_FACTOR * 0.85)
+            # Round 26: store secondaries for inner-fill foliage
+            self.secondaries.append({"curve": curve, "depth": depth})
             # twigs
             self._build_twigs(curve, depth=depth + 1)
             # spurs on this secondary
@@ -881,8 +977,10 @@ class TreeBuilder:
             tip_r = base_r * TWIG_TIP_R_FACTOR
             droop = 0.03 * FRUIT_LOAD
             curve = branch_curve(pos + radial * (r_parent * 0.4), base_dir, length, base_r, tip_r,
-                                 TWIG_SEGMENTS, droop, lateral_jitter=0.03, rng=self.rng)
-            build_tube(self.bm_wood, curve, TWIG_RADIAL_SEGS, 0, self.wood_faces, tier=3)
+                                 TWIG_SEGMENTS, droop, lateral_jitter=0.03, rng=self.rng,
+                                 gravity_k=GRAVITY_K_TWIG)
+            build_tube(self.bm_wood, curve, TWIG_RADIAL_SEGS, 0, self.wood_faces, tier=3,
+                       collar_bulge=COLLAR_BULGE_FACTOR * 0.6)
             self.twigs.append({
                 "curve": curve, "depth": depth, "parent_curve": parent_curve,
                 "cards_along": CARDS_PER_TWIG_ALONG,
@@ -925,8 +1023,10 @@ class TreeBuilder:
             tip_r = base_r * 0.35
             droop = 0.02 * FRUIT_LOAD
             curve = branch_curve(pos + radial * (r_parent * 0.4), base_dir, length, base_r, tip_r,
-                                 SUBTWIG_SEGMENTS, droop, lateral_jitter=0.02, rng=self.rng)
-            build_tube(self.bm_wood, curve, SUBTWIG_RADIAL_SEGS, 0, self.wood_faces, tier=3)
+                                 SUBTWIG_SEGMENTS, droop, lateral_jitter=0.02, rng=self.rng,
+                                 gravity_k=GRAVITY_K_SUBTWIG)
+            build_tube(self.bm_wood, curve, SUBTWIG_RADIAL_SEGS, 0, self.wood_faces, tier=3,
+                       collar_bulge=COLLAR_BULGE_FACTOR * 0.4)
             self.twigs.append({
                 "curve": curve, "depth": depth, "parent_curve": parent_twig_curve,
                 "cards_along": CARDS_PER_SUBTWIG_ALONG,
@@ -954,6 +1054,119 @@ class TreeBuilder:
             tip = curve[-1]
             self.spurs.append({"pos": tip[0], "tangent": tip[2], "parent_curve": parent_curve,
                                "dir": spur_dir})
+
+    def _stamp_wood_kind(self, face_start, face_end, kind):
+        """Round 26: Tag wood faces' verts with a custom 'wood_kind' int layer.
+
+        Used by _apply_bark_vcolor() to apply special darken to surface roots
+        (kind=1) and dead snags (kind=2). kind=0 = normal wood.
+        """
+        bm = self.bm_wood
+        wood_kind_layer = (bm.verts.layers.int.get('wood_kind')
+                           or bm.verts.layers.int.new('wood_kind'))
+        bm.faces.ensure_lookup_table()
+        for fi in range(face_start, face_end):
+            if fi >= len(bm.faces):
+                continue
+            for loop in bm.faces[fi].loops:
+                loop.vert[wood_kind_layer] = kind
+
+    # ----- ROUND 26: SURFACE ROOTS (köklenme) -----
+    def _build_surface_roots(self, trunk_base_r):
+        """5 buttress root branches from trunk base, fanning outward into ground.
+
+        Round 26 AAA — visible root protrusions for "rooted" tree feel.
+        Each root: tapered cylinder, ROOT_SEGMENTS long, S-curve diving downward.
+        Bark vcolor will darken these post-build (DEAD_SNAG_DARKEN style).
+        """
+        # 5 prime-step azimuths with jitter (avoid symmetric look)
+        base_step = 2 * math.pi / N_SURFACE_ROOTS
+        jitter_max = math.radians(ROOT_AZIMUTH_JITTER_DEG)
+        # Trunk attach point — slightly above ground so root emerges visibly
+        trunk_attach_z = 0.05  # 5cm above ground
+        for i in range(N_SURFACE_ROOTS):
+            azimuth = i * base_step + self.rng.uniform(-jitter_max, jitter_max)
+            out_dir = Vector((math.cos(azimuth), math.sin(azimuth), 0))
+            pitch = math.radians(self.rng.uniform(*ROOT_PITCH_RANGE_DEG))
+            # Direction: mostly outward + downward pitch
+            base_dir = (out_dir * math.cos(pitch) + Vector((0, 0, math.sin(pitch)))).normalized()
+            length = self.rng.uniform(*ROOT_LENGTH_RANGE)
+            base_r = ROOT_BASE_R * self.rng.uniform(0.85, 1.15)
+            tip_r = ROOT_TIP_R
+            # Attach inside flared trunk base (offset radial slightly into trunk surface)
+            attach_pos = Vector((0, 0, trunk_attach_z)) + out_dir * (trunk_base_r * 0.85)
+            # Surface root uses negative gravity_k for "dive then level" curve
+            curve = branch_curve(attach_pos, base_dir, length, base_r, tip_r,
+                                 ROOT_SEGMENTS, droop_m=0.0, lateral_jitter=0.02,
+                                 rng=self.rng, gravity_k=ROOT_GRAVITY_K)
+            # Clamp z to ground (root cannot float above)
+            clamped_curve = []
+            for pt in curve:
+                pos = pt[0]
+                # Last 30% of root sinks into ground
+                if pos.z < -0.02:
+                    pos = Vector((pos.x, pos.y, -0.02))
+                clamped_curve.append((pos, pt[1], pt[2], pt[3] if len(pt) > 3 else None))
+            face_start = len(self.bm_wood.faces)
+            build_tube(self.bm_wood, clamped_curve, ROOT_RADIAL_SEGS, 0, self.wood_faces,
+                       tier=0, collar_bulge=COLLAR_BULGE_FACTOR * 1.3)
+            face_end = len(self.bm_wood.faces)
+            self._stamp_wood_kind(face_start, face_end, kind=1)   # surface_root
+            self.surface_roots.append({"curve": clamped_curve, "base_pos": attach_pos})
+
+    # ----- ROUND 26: DEAD SNAGS (kırık kuru dal güdükleri) -----
+    def _build_dead_snags(self):
+        """2-4 short broken stubs at random scaffold/secondary fork sites.
+
+        Round 26 AAA — "mature tree history" cue. Dark vcolor, jagged tip (last
+        ring has slight radius bumpout suggesting break point).
+        """
+        n_snags = self.rng.randint(*N_DEAD_SNAGS_RANGE)
+        if not self.scaffolds and not self.secondaries:
+            return
+        # Pick parent curves: prefer scaffolds (more visible), some secondaries
+        candidates = []
+        for s in self.scaffolds:
+            candidates.append(("scaffold", s["curve"]))
+        for s in self.secondaries:
+            candidates.append(("secondary", s["curve"]))
+        if not candidates:
+            return
+        for _ in range(n_snags):
+            kind, parent_curve = self.rng.choice(candidates)
+            # Place at upper half of parent (more visible against sky)
+            frac = self.rng.uniform(0.30, 0.85)
+            pos, r_parent, tan = self._sample_branch_curve(parent_curve, frac)
+            if r_parent < 0.012:  # parent too thin
+                continue
+            # Random direction perpendicular to parent + slight upward
+            azimuth = self.rng.uniform(0, 2 * math.pi)
+            up = Vector((0, 0, 1))
+            side = tan.cross(up).normalized() if abs(tan.z) < 0.95 else Vector((1, 0, 0))
+            forward = tan.cross(side).normalized()
+            radial = math.cos(azimuth) * side + math.sin(azimuth) * forward
+            ang = math.radians(self.rng.uniform(40, 75))
+            snag_dir = (math.cos(ang) * tan + math.sin(ang) * radial).normalized()
+            # Bias upward (snags reach toward sky)
+            snag_dir = (snag_dir + Vector((0, 0, 0.15))).normalized()
+            length = self.rng.uniform(*DEAD_SNAG_LENGTH_RANGE)
+            base_r = DEAD_SNAG_BASE_R
+            tip_r = DEAD_SNAG_TIP_R
+            attach_pos = pos + radial * (r_parent * 0.5)
+            curve = branch_curve(attach_pos, snag_dir, length, base_r, tip_r,
+                                 DEAD_SNAG_SEGMENTS, droop_m=0.01, lateral_jitter=0.01,
+                                 rng=self.rng, gravity_k=0.0)
+            # Jagged tip: last ring radius slightly larger (break point ridge)
+            if len(curve) >= 2:
+                last_pt = curve[-1]
+                jagged_r = last_pt[1] * 1.4   # 40% bigger at break tip
+                curve[-1] = (last_pt[0], jagged_r, last_pt[2],
+                             last_pt[3] if len(last_pt) > 3 else None)
+            face_start = len(self.bm_wood.faces)
+            build_tube(self.bm_wood, curve, DEAD_SNAG_RADIAL_SEGS, 0, self.wood_faces, tier=3)
+            face_end = len(self.bm_wood.faces)
+            self._stamp_wood_kind(face_start, face_end, kind=2)   # dead_snag
+            self.dead_snags.append({"curve": curve})
 
     def _sample_curve(self, curve_pts, target_z):
         """Sample a curve point closest to target_z. Returns (pos, r, tan)."""
@@ -993,17 +1206,17 @@ class TreeBuilder:
         return max(max_r, 1.5)
 
     def _hollow_core_skip(self, pos):
-        """Returns True if leaf is too deep inside canopy (LAI gradient — sparse interior).
+        """Round 26 INVERTED: deciduous canopies are DENSE-cored.
 
-        Outer shell (within HOLLOW_CORE_THRESHOLD meters of shell) = always keep.
-        Deeper = probabilistic skip per LEAF_HOLLOW_SKIP_PROB.
+        Only skip near the trunk axis itself (within TRUNK_AXIS_HOLLOW_RADIUS).
+        Everything else (interior + outer shell) is kept. This matches SpeedTree's
+        ~70% volume-fill default for broadleaves like apple.
         """
         dx = pos.x - self.canopy_center.x
         dy = pos.y - self.canopy_center.y
         horiz_dist = math.hypot(dx, dy)
-        shell_depth = max(0.0, self.canopy_radius - horiz_dist)
-        if shell_depth > LEAF_HOLLOW_CORE_THRESHOLD:
-            return self.rng.random() < LEAF_HOLLOW_SKIP_PROB
+        if horiz_dist < TRUNK_AXIS_HOLLOW_RADIUS:
+            return self.rng.random() < TRUNK_AXIS_HOLLOW_SKIP_PROB
         return False
 
     def _leaf_vcolor(self, pos):
@@ -1039,16 +1252,17 @@ class TreeBuilder:
         # Vertex color RGB normalized 0..1, used as multiplicative tint
         return (r * 2.0, g * 2.0, b * 2.0, ao)  # ×2 to allow shader brightening if needed
 
-    def _place_card_at(self, pos, twig_axis, scale_mul=1.0, cell_idx=0):
-        """Place one cross-quad cluster card at given position.
+    def _place_card_at(self, pos, twig_axis, scale_mul=1.0, cell_idx=0,
+                       card_w=None, card_h=None, cross_quad=None, skip_check=True):
+        """Place one cluster card at given position.
 
+        Round 26: opsiyonel card_w/h ve cross_quad override (multi-shell için).
         twig_axis: tangent of the parent twig (card normal points radially outward + jitter).
         Returns 1 if placed, 0 if skipped (hollow-core).
         """
-        if self._hollow_core_skip(pos):
+        if skip_check and self._hollow_core_skip(pos):
             return 0
         # Card normal: radial outward from twig axis + ±20° jitter (SpeedTree sweet spot)
-        # Build a radial direction perpendicular to twig_axis
         up = Vector((0, 0, 1))
         radial_seed = self.rng.uniform(0, 2 * math.pi)
         side = twig_axis.cross(up).normalized() if abs(twig_axis.z) < 0.95 else Vector((1, 0, 0))
@@ -1063,15 +1277,16 @@ class TreeBuilder:
         n = Quaternion(jitter_ax, jit) @ radial
         roll = math.radians(self.rng.uniform(-LEAF_CARD_ROLL_JITTER_DEG, LEAF_CARD_ROLL_JITTER_DEG))
         scale = self.rng.uniform(*LEAF_CARD_SIZE_JITTER) * scale_mul
-        w = LEAF_CARD_W * scale
-        h = LEAF_CARD_H * scale
+        w = (card_w if card_w is not None else LEAF_CARD_W) * scale
+        h = (card_h if card_h is not None else LEAF_CARD_H) * scale
+        cq = cross_quad if cross_quad is not None else USE_CROSS_QUAD
         uv_cell = (cell_idx % ATLAS_GRID, (cell_idx // ATLAS_GRID) % ATLAS_GRID)
         vcolor = self._leaf_vcolor(pos)
         make_cluster_card(self.bm_leaf, pos, n, w, h, 0, self.leaf_faces,
                           uv_cell=uv_cell, atlas_grid=ATLAS_GRID,
                           color_layer=self.leaf_color_layer,
                           vcolor=vcolor, roll=roll,
-                          cross_quad=USE_CROSS_QUAD, rng=self.rng)
+                          cross_quad=cq, rng=self.rng)
         return 1
 
     def _place_along_twig(self, curve, n_cards_along, n_cards_terminal):
@@ -1136,32 +1351,147 @@ class TreeBuilder:
                                           cell_idx=i + 1)
         return placed
 
-    def build_leaves(self):
-        """Cluster cards placed ALONG twigs (parametric t) + terminal + spur rosette.
+    # ----- ROUND 26: Multi-shell foliage placement methods -----
 
-        Round 24 — Botanist panel (Agent 3) spec:
-        - Long shoots: 6 cards distributed t=0.15..0.90 + 2-3 terminal cluster
-        - Spurs: tight 2-3 card rosette
-        - Petiole radial offset 2.5cm — leaves visibly attached to twig
-        - Heliotropic upward tilt 15-25°
-        - Golden-angle azimuth spiral
+    def _place_inner_fill_along_secondary(self, sec_curve):
+        """Inner-fill cards along secondary curve (interior canopy density).
+
+        Smaller cards, single-quad (2 tri), shadow tint. Fills the canopy core
+        that the outer-shell along-twig misses.
+        """
+        placed = 0
+        for i in range(INNER_FILL_CARDS_PER_SECONDARY):
+            t_frac = 0.30 + (0.85 - 0.30) * (i / max(INNER_FILL_CARDS_PER_SECONDARY - 1, 1))
+            t_frac += self.rng.uniform(-0.06, 0.06)
+            pos, r_branch, tan = self._sample_branch_curve(sec_curve, t_frac)
+            azimuth = i * GOLDEN_ANGLE + self.rng.uniform(-0.3, 0.3)
+            up = Vector((0, 0, 1))
+            side = tan.cross(up).normalized() if abs(tan.z) < 0.95 else Vector((1, 0, 0))
+            fwd = tan.cross(side).normalized()
+            radial = (math.cos(azimuth) * side + math.sin(azimuth) * fwd).normalized()
+            # Inner fill offset: smaller than petiole (closer to branch surface)
+            attach_pos = pos + radial * (r_branch + 0.04)
+            cell_idx = (i + int(t_frac * 11)) % (ATLAS_GRID * ATLAS_GRID)
+            placed += self._place_card_at(attach_pos, tan, scale_mul=1.0,
+                                          cell_idx=cell_idx,
+                                          card_w=INNER_FILL_CARD_W,
+                                          card_h=INNER_FILL_CARD_H,
+                                          cross_quad=INNER_FILL_CROSS_QUAD,
+                                          skip_check=False)
+        return placed
+
+    def _place_fork_puff(self, scaffold_info):
+        """Cluster of cards at scaffold-trunk junction (AAA tree silhouette punctuation).
+
+        Witcher 3 hero-tree trick: dense foliage clump at major branch joints
+        smooths the silhouette between trunk and canopy.
+        """
+        placed = 0
+        base = scaffold_info["base_pos"]
+        # Scaffold direction (first curve segment)
+        curve = scaffold_info["curve"]
+        if len(curve) < 2:
+            return 0
+        scaffold_dir = (curve[1][0] - curve[0][0]).normalized() if (curve[1][0] - curve[0][0]).length > 1e-5 else Vector((0, 0, 1))
+        # Puff center: scaffold base + offset radial along scaffold dir
+        puff_center = base + scaffold_dir * FORK_PUFF_OFFSET
+        for i in range(FORK_PUFF_CARDS):
+            # Spherical scatter in puff volume
+            theta = self.rng.uniform(0, 2 * math.pi)
+            phi = math.acos(self.rng.uniform(-1, 1))
+            r = FORK_PUFF_RADIUS * (self.rng.random() ** 0.6)
+            offset = Vector((
+                r * math.sin(phi) * math.cos(theta),
+                r * math.sin(phi) * math.sin(theta),
+                r * math.cos(phi) * 0.85,
+            ))
+            pos = puff_center + offset
+            cell_idx = (i + int(theta * 3)) % (ATLAS_GRID * ATLAS_GRID)
+            placed += self._place_card_at(pos, scaffold_dir, scale_mul=1.0,
+                                          cell_idx=cell_idx,
+                                          card_w=FORK_PUFF_CARD_W,
+                                          card_h=FORK_PUFF_CARD_H,
+                                          cross_quad=FORK_PUFF_CROSS_QUAD,
+                                          skip_check=False)
+        return placed
+
+    def _place_ground_litter(self):
+        """Scattered horizontal leaf cards near root flare base (mature tree ground hint).
+
+        Small flat-tilted cards on/near ground around trunk. Single-quad (2 tri).
+        Slight brown-green tint (decaying leaves).
+        """
+        placed = 0
+        for i in range(GROUND_LITTER_CARDS):
+            ang = self.rng.uniform(0, 2 * math.pi)
+            # Bias away from trunk axis (outer ring of root flare)
+            r = self.rng.uniform(0.35, GROUND_LITTER_RADIUS)
+            pos = Vector((
+                r * math.cos(ang),
+                r * math.sin(ang),
+                self.rng.uniform(0.01, GROUND_LITTER_HEIGHT),
+            ))
+            # Tilted flat (normal mostly +Z with slight jitter)
+            tilt_ax = Vector((math.cos(ang), math.sin(ang), 0))
+            jit = math.radians(self.rng.uniform(-25, 25))
+            n = Quaternion(tilt_ax, jit) @ Vector((0, 0, 1))
+            roll = math.radians(self.rng.uniform(-180, 180))
+            scale = self.rng.uniform(0.75, 1.15)
+            w = GROUND_LITTER_CARD_W * scale
+            h = GROUND_LITTER_CARD_H * scale
+            cell_idx = i % (ATLAS_GRID * ATLAS_GRID)
+            uv_cell = (cell_idx % ATLAS_GRID, (cell_idx // ATLAS_GRID) % ATLAS_GRID)
+            # Decay tint: dimmer + slightly brown
+            vcolor = (0.55, 0.42, 0.18, 0.85)
+            make_cluster_card(self.bm_leaf, pos, n, w, h, 0, self.leaf_faces,
+                              uv_cell=uv_cell, atlas_grid=ATLAS_GRID,
+                              color_layer=self.leaf_color_layer,
+                              vcolor=vcolor, roll=roll,
+                              cross_quad=False, rng=self.rng)
+            placed += 1
+        return placed
+
+    def build_leaves(self):
+        """Round 26 AAA Multi-shell foliage:
+        1. Outer shell — long shoots + sub-twigs (along-twig + terminal)
+        2. Spur rosettes
+        3. Inner fill — along secondaries (small, single-quad)
+        4. Fork puffs — at scaffold-trunk junctions
+        5. Ground litter — near root flare base
         """
         self.canopy_radius = self._compute_canopy_radius()
-        placed = 0
+        outer = 0
+        spur_n = 0
+        inner = 0
+        puff = 0
+        litter = 0
 
-        # ----- LONG SHOOTS + SUB-TWIGS (Round 25 fraktal) -----
+        # 1. Outer shell: twigs + sub-twigs along + terminal
         for twig in self.twigs:
             curve = twig["curve"]
             n_along = twig.get("cards_along", CARDS_PER_TWIG_ALONG)
             n_terminal = twig.get("cards_terminal", CARDS_PER_TWIG_TERMINAL)
-            placed += self._place_along_twig(curve, n_along, n_terminal)
+            outer += self._place_along_twig(curve, n_along, n_terminal)
 
-        # ----- SPURS: tight rosette (compressed internode biology) -----
+        # 2. Spur rosettes
         for spur in self.spurs:
-            placed += self._place_spur_rosette(spur)
+            spur_n += self._place_spur_rosette(spur)
 
-        print(f"LEAVES: placed={placed} clusters (atlas grid {ATLAS_GRID}×{ATLAS_GRID}, "
-              f"{LEAF_CARD_W*100:.0f}×{LEAF_CARD_H*100:.0f}cm cards, cross_quad={USE_CROSS_QUAD})")
+        # 3. Inner fill: along secondaries (Round 26 AAA)
+        for sec in self.secondaries:
+            inner += self._place_inner_fill_along_secondary(sec["curve"])
+
+        # 4. Fork puffs at scaffold-trunk junctions (Round 26 AAA)
+        for scaffold in self.scaffolds:
+            puff += self._place_fork_puff(scaffold)
+
+        # 5. Ground litter near root flare base (Round 26 AAA)
+        litter += self._place_ground_litter()
+
+        total = outer + spur_n + inner + puff + litter
+        print(f"LEAVES Round 26 AAA multi-shell: outer={outer} spur={spur_n} "
+              f"inner={inner} puff={puff} litter={litter} TOTAL={total} "
+              f"(atlas {ATLAS_GRID}×{ATLAS_GRID})")
 
     # ----- APPLES -----
     def build_apples(self):
@@ -1228,12 +1558,15 @@ class TreeBuilder:
         bm = self.bm_wood
         tier_layer = bm.verts.layers.int.get('tier')
         t_layer = bm.verts.layers.float.get('branch_t')
+        wood_kind_layer = bm.verts.layers.int.get('wood_kind')   # Round 26
         if tier_layer is None or t_layer is None:
             print("WARN: bark vcolor — tier/t layers missing, skipping")
             return
         color_layer = bm.loops.layers.color.new("bark")
         bm.faces.ensure_lookup_table()
         n_crack = 0
+        n_root_darken = 0
+        n_snag_darken = 0
         for face in bm.faces:
             for loop in face.loops:
                 v = loop.vert
@@ -1250,8 +1583,22 @@ class TreeBuilder:
                     if n_val < BARK_CRACK_THRESHOLD:
                         col = [c * BARK_CRACK_DARKEN for c in col]
                         n_crack += 1
+                # Round 26: Surface roots (kind=1) — moss-tint darken near ground
+                # Round 26: Dead snags (kind=2) — dry bark darken
+                if wood_kind_layer is not None:
+                    kind = v[wood_kind_layer]
+                    if kind == 1:   # surface root
+                        # Darken + hafif yeşilimsi (toprak/yosun hint)
+                        moss_t = max(0, 1.0 - (max(v.co.z, 0) / 0.30)) * 0.20
+                        col = [c * ROOT_DARKEN for c in col]
+                        col[1] = col[1] * (1 - moss_t) + 0.18 * moss_t   # G hafif yeşil
+                        n_root_darken += 1
+                    elif kind == 2:   # dead snag
+                        col = [c * DEAD_SNAG_DARKEN for c in col]
+                        n_snag_darken += 1
                 loop[color_layer] = (col[0], col[1], col[2], 1.0)
-        print(f"BARK: vcolor applied — {n_crack} crack loops")
+        print(f"BARK: vcolor applied — {n_crack} crack, {n_root_darken} root_dark, "
+              f"{n_snag_darken} snag_dark loops")
 
     # ----- ASSEMBLE OBJECTS -----
     def assemble(self):
@@ -1747,7 +2094,8 @@ def verify_tree(wood_obj, leaf_obj, apple_obj):
     print("=" * 50)
     print(f"VERIFY: wood={wood_tri} leaf={leaf_tri} apple={apple_tri} total={total}")
     print(f"VERIFY: bbox W={bbox[0]:.2f} D={bbox[1]:.2f} H={bbox[2]:.2f}")
-    print(f"VERIFY: target 13500-16500 tris -> {'OK' if 13500 <= total <= 16500 else 'OUT OF RANGE'}")
+    # Round 26: AAA esnek bütçe (mobile mid-high + PC)
+    print(f"VERIFY: target 17000-22000 tris -> {'OK' if 17000 <= total <= 22000 else 'OUT OF RANGE'}")
     print("=" * 50)
     return {"wood": wood_tri, "leaf": leaf_tri, "apple": apple_tri, "total": total, "bbox": bbox}
 
