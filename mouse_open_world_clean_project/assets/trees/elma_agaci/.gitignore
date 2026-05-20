@@ -1,0 +1,26 @@
+# Blender auto-backup
+*.blend1
+*.blend2
+
+# Eski iterasyon önizlemeleri (Round 1-21) — sadece son round commit edilir
+preview_round_1_*.png
+preview_round_2_*.png
+preview_round_3_*.png
+preview_round_4_*.png
+preview_round_5_*.png
+preview_round_6_*.png
+preview_round_7_*.png
+preview_round_8_*.png
+preview_round_9_*.png
+preview_round_10_*.png
+preview_round_11_*.png
+preview_round_12_*.png
+preview_round_13_*.png
+preview_round_14_*.png
+preview_round_15_*.png
+preview_round_16_*.png
+preview_round_17_*.png
+preview_round_18_*.png
+preview_round_19_*.png
+preview_round_20_*.png
+preview_round_21_*.png
