@@ -35,22 +35,26 @@ TRUNK_GEOM_TOP_FRAC = 0.68       # ↓ from 0.72 — trunk top daha kısa, canop
 TRUNK_BASE_R = 0.14
 TRUNK_FORK_R = 0.10
 TRUNK_TOP_R = 0.025              # taper to near-point inside canopy
-ROOT_FLARE_FACTOR = 2.50         # Round 26 AAA: agresif kök yatağı (eskiden 1.55)
-ROOT_FLARE_HEIGHT = 0.55         # Round 26 AAA: flare bölgesi genişletildi (eskiden 0.28)
+ROOT_FLARE_FACTOR = 1.85         # Round 29: 2.50→1.85 (mantar şapka değil, doğal flare)
+ROOT_FLARE_HEIGHT = 0.40         # Round 29: 0.55→0.40 (daha lokal flare)
 BUTTRESS_LOBES = 5               # Round 26: 5-lobe (asymmetric, AAA standart)
-BUTTRESS_AMP = 0.32              # Round 26: lobes daha belirgin (eskiden 0.22)
+BUTTRESS_AMP = 0.28              # Round 29: 0.32→0.28 (daha subtle lob)
 
 # Round 26 — Surface roots (yer üstü görünür kök buttress'leri)
-N_SURFACE_ROOTS = 5
-ROOT_LENGTH_RANGE = (0.45, 0.75)
-ROOT_BASE_R = 0.055
-ROOT_TIP_R = 0.012
-ROOT_PITCH_RANGE_DEG = (-38.0, -22.0)   # toprağa doğru iniş açısı
-ROOT_AZIMUTH_JITTER_DEG = 18            # ±18° (72° spacing'den sapma)
-ROOT_SEGMENTS = 4
+# Round 29: kök rework — buttress-thick, varyasyonlu, trunk'a blend
+N_SURFACE_ROOTS = 6              # Round 29: 5→6 (1 küçük yardımcı ekler)
+ROOT_LENGTH_RANGE = (0.35, 0.85)  # Round 29: daha geniş varyasyon
+ROOT_BASE_R = 0.085              # Round 29: 0.055→0.085 — buttress-thick start
+ROOT_MID_R = 0.035               # Round 29: yeni — 30% mesafede ince
+ROOT_TIP_R = 0.006               # Round 29: 0.012→0.006 — toprağa giriş daha incelir
+ROOT_PITCH_RANGE_DEG = (-42.0, -18.0)  # Round 29: pitch varyasyonu artırıldı
+ROOT_AZIMUTH_JITTER_DEG = 22     # Round 29: 18→22 daha asimetrik dağılım
+ROOT_SEGMENTS = 5                # Round 29: 4→5 daha smooth taper
 ROOT_RADIAL_SEGS = 5
-ROOT_GRAVITY_K = -0.18                  # ters S-curve (uca doğru yere gömül)
-ROOT_DARKEN = 0.85                      # bark vcolor ×0.85 (toprağa yakın koyulaşma)
+ROOT_GRAVITY_K = -0.22           # Round 29: -0.18→-0.22 daha agresif dalış
+ROOT_DARKEN = 1.00               # Round 29: 0.92→1.00 (artık tier 1 base, ayrıca darken yok)
+ROOT_MOSS_TINT_MAX = 0.10        # Round 29: 0.20→0.10 (less green tint)
+ROOT_ATTACH_INSET = 0.45         # Round 29: 0.85→0.45 — attach point trunk içine (seam hide)
 
 # Round 26 — Gravimorphism (gravity sag) coefficients per tier
 GRAVITY_K_SCAFFOLD = 0.22
@@ -177,7 +181,7 @@ CROWN_APEX_CARD_W = 0.22
 CROWN_APEX_CARD_H = 0.20
 CROWN_APEX_Z_OFFSET = 0.15           # trunk top'tan ne kadar yukarı
 
-GROUND_LITTER_CARDS = 80             # trunk tabanında dağılmış yaprak hint
+GROUND_LITTER_CARDS = 40             # Round 29: 80→40 (less dark patches at base)
 GROUND_LITTER_RADIUS = 0.85          # trunk merkezinden max yarıçap
 GROUND_LITTER_HEIGHT = 0.08          # zemine yakın hover
 GROUND_LITTER_CARD_W = 0.10
@@ -228,10 +232,11 @@ SECONDARY_DROOP_TIP_M = 0.22
 COLOR_BARK   = (0.26, 0.21, 0.17)   # fallback (used if vcolor missing)
 # Round 24 — Botanist panel: cool grey-brown bark by branch order (linear-RGB)
 COLOR_BARK_TIERS = [
-    (0.18, 0.15, 0.13),    # 0 trunk: dark grey-brown, fissured plates
-    (0.26, 0.21, 0.17),    # 1 scaffold: mid grey-brown, lenticels
-    (0.34, 0.26, 0.19),    # 2 secondary: warmer smooth brown, no fissures
-    (0.42, 0.22, 0.16),    # 3 twig: reddish-mahogany current-year shoot
+    # Round 29: lightened (R28 linear-RGB read almost black in sRGB)
+    (0.30, 0.24, 0.18),    # 0 trunk: warm dark grey-brown
+    (0.38, 0.30, 0.22),    # 1 scaffold: mid grey-brown, lenticels
+    (0.44, 0.34, 0.24),    # 2 secondary: warmer smooth brown
+    (0.50, 0.28, 0.18),    # 3 twig: reddish-mahogany current-year shoot
 ]
 # Crack/fissure parameters (procedural vertex color, trunk + scaffold only)
 BARK_CRACK_SCALE_Z = 8.0       # stretches noise vertically → vertical fissures
@@ -407,13 +412,48 @@ def trunk_curve(rng):
     return pts
 
 
+def make_branch_radial_mod(seed, knot_positions=None, knot_amp=0.18, noise_amp=0.08,
+                           noise_freq_z=4.0, noise_freq_theta=3.0):
+    """Round 29: Branch radial_mod factory — kills "pipe" look on scaffolds/secondaries.
+
+    Returns a function (angle) → multiplier with:
+    - Gentle noise perturbation (organic surface)
+    - Optional "knot" bumps at specified t positions (old bud scars)
+    """
+    knots = knot_positions or []
+
+    def radial_mod(angle, z=0.0, t_along=0.5):
+        mod = 1.0
+        # Surface noise (organic perturbation)
+        n_val = _hash_noise(z * noise_freq_z,
+                            angle * noise_freq_theta / (2 * math.pi),
+                            seed)
+        mod += noise_amp * n_val
+        # Knot bumps at specific t along branch
+        for kt, kaz, ksigma in knots:
+            dist_t = abs(t_along - kt)
+            if dist_t < ksigma:
+                falloff = 1.0 - (dist_t / ksigma)
+                # Azimuth bias for knot
+                az_dist = abs(math.cos(angle - kaz))
+                if az_dist > 0.3:
+                    mod += knot_amp * falloff * (az_dist - 0.3) / 0.7
+        return max(0.80, mod)
+    return radial_mod
+
+
 def branch_curve(base_pos, base_dir, length, base_r, tip_r, segments, droop_m,
-                 lateral_jitter, rng, gravity_k=0.0):
+                 lateral_jitter, rng, gravity_k=0.0, surface_noise=False,
+                 n_knots=0):
     """Generate ascending-then-arching branch curve with optional gravimorphism.
 
     Round 26 AAA: gravity_k > 0 adds weight-sag S-curve along branch with
     apical recovery near tip (real branches sag in middle, lift slightly at tip).
     Negative gravity_k inverts curve (used for surface roots: dive then level off).
+
+    Round 29: `surface_noise` (bool) + `n_knots` (int) — non-uniform branch
+    surface to kill "pipe" look. radial_mod attached per-segment with t-aware
+    knot bumps and noise perturbation.
 
     Returns list of (pos, radius, tangent, radial_mod or None) tuples.
     """
@@ -432,13 +472,25 @@ def branch_curve(base_pos, base_dir, length, base_r, tip_r, segments, droop_m,
     p2 += side * lateral_jitter * rng.uniform(-1, 1)
     p3 += side * lateral_jitter * 0.5 * rng.uniform(-1, 1)
 
+    # Round 29: pre-pick knot positions (t along branch, azimuth, sigma)
+    knot_positions = []
+    if n_knots > 0:
+        for _ in range(n_knots):
+            kt = rng.uniform(0.20, 0.85)
+            kaz = rng.uniform(0, 2 * math.pi)
+            ksigma = rng.uniform(0.08, 0.14)
+            knot_positions.append((kt, kaz, ksigma))
+    noise_seed = rng.uniform(0, 1000)
+    branch_mod = None
+    if surface_noise or n_knots > 0:
+        branch_mod = make_branch_radial_mod(noise_seed, knot_positions=knot_positions)
+
     pts = []
     n = segments + 1
     for i in range(n):
         t = i / (n - 1)
         pos = smooth_bezier3(p0, p1, p2, p3, t)
         # Round 26: Gravimorphism — z-offset(t) = -k * length² * t^1.5 * (1 - 0.3*t)
-        # Apical recovery: tip kalkar (1 - 0.3*t çarpanı tip'te etkiyi azaltır)
         if abs(gravity_k) > 1e-5:
             sag = -gravity_k * (length ** 2) * (t ** 1.5) * (1.0 - 0.3 * t)
             pos = pos + Vector((0, 0, sag))
@@ -447,7 +499,16 @@ def branch_curve(base_pos, base_dir, length, base_r, tip_r, segments, droop_m,
         tangent = smooth_bezier3_tangent(p0, p1, p2, p3, t)
         if tangent.length < 1e-6:
             tangent = base_dir
-        pts.append((pos, r, tangent.normalized(), None))
+        # Round 29: per-segment radial_mod that knows t-position
+        rmod = None
+        if branch_mod is not None:
+            t_along = t
+            def make_local_mod(_branch_mod=branch_mod, _t=t_along, _z=pos.z):
+                def local(angle):
+                    return _branch_mod(angle, z=_z, t_along=_t)
+                return local
+            rmod = make_local_mod()
+        pts.append((pos, r, tangent.normalized(), rmod))
     return pts
 
 
@@ -891,7 +952,8 @@ class TreeBuilder:
             droop = SCAFFOLD_DROOP_TIP_M * FRUIT_LOAD * (0.7 if is_co_leader else 1.0)
             curve = branch_curve(t_pos + out_dir * (t_r * 0.6), base_dir, length, base_r, tip_r,
                                  SCAFFOLD_SEGMENTS, droop, lateral_jitter=0.10, rng=self.rng,
-                                 gravity_k=GRAVITY_K_SCAFFOLD)
+                                 gravity_k=GRAVITY_K_SCAFFOLD,
+                                 surface_noise=True, n_knots=2)   # Round 29 naturalize
             build_tube(self.bm_wood, curve, SCAFFOLD_RADIAL_SEGS, 0, self.wood_faces, tier=1,
                        collar_bulge=COLLAR_BULGE_FACTOR)
             # Round 26: store scaffold info for fork puffs + dead snags
@@ -922,7 +984,8 @@ class TreeBuilder:
             droop = SECONDARY_DROOP_TIP_M * FRUIT_LOAD * 0.6
             curve = branch_curve(t_pos + out_dir * (t_r * 0.5), base_dir, length, base_r, tip_r,
                                  SCAFFOLD_SEGMENTS - 1, droop, lateral_jitter=0.06, rng=self.rng,
-                                 gravity_k=GRAVITY_K_SCAFFOLD * 0.7)
+                                 gravity_k=GRAVITY_K_SCAFFOLD * 0.7,
+                                 surface_noise=True, n_knots=1)   # Round 29 naturalize
             build_tube(self.bm_wood, curve, SCAFFOLD_RADIAL_SEGS - 2, 0, self.wood_faces, tier=1,
                        collar_bulge=COLLAR_BULGE_FACTOR * 0.8)
             self._build_secondaries(curve, depth=1, count_override=(2, 4))
@@ -956,7 +1019,8 @@ class TreeBuilder:
             droop = SECONDARY_DROOP_TIP_M * FRUIT_LOAD * (1.0 + 0.2 * depth)
             curve = branch_curve(pos + radial * (r_parent * 0.5), base_dir, length, base_r, tip_r,
                                  SECONDARY_SEGMENTS, droop, lateral_jitter=0.06, rng=self.rng,
-                                 gravity_k=GRAVITY_K_SECONDARY)
+                                 gravity_k=GRAVITY_K_SECONDARY,
+                                 surface_noise=True, n_knots=1)   # Round 29 naturalize
             build_tube(self.bm_wood, curve, SECONDARY_RADIAL_SEGS, 0, self.wood_faces, tier=2,
                        collar_bulge=COLLAR_BULGE_FACTOR * 0.85)
             # Round 26: store secondaries for inner-fill foliage
@@ -1080,45 +1144,88 @@ class TreeBuilder:
 
     # ----- ROUND 26: SURFACE ROOTS (köklenme) -----
     def _build_surface_roots(self, trunk_base_r):
-        """5 buttress root branches from trunk base, fanning outward into ground.
+        """Round 29 REWORK: buttress-thick surface roots blended into trunk base.
 
-        Round 26 AAA — visible root protrusions for "rooted" tree feel.
-        Each root: tapered cylinder, ROOT_SEGMENTS long, S-curve diving downward.
-        Bark vcolor will darken these post-build (DEAD_SNAG_DARKEN style).
+        Real apple roots emerge from trunk as WIDE BUTTRESS FINS (not thin tubes).
+        Fix from Round 26-28:
+          - Wider base radius (0.085) → root reads as buttress not spike
+          - 3-stage taper: base (thick) → mid 30% (medium) → tip (thin)
+          - Attach inset 45% of trunk_base (was 85%) → first ring HIDDEN inside
+            trunk volume → no visible seam where root meets trunk
+          - More length+pitch+thickness variation per root (no twin roots)
+          - Reduced darken (0.92, was 0.85) — no more "almost black" look
+          - Reduced moss tint (0.10, was 0.20)
+          - Mild radial noise on rings (rougher organic surface)
         """
-        # 5 prime-step azimuths with jitter (avoid symmetric look)
         base_step = 2 * math.pi / N_SURFACE_ROOTS
         jitter_max = math.radians(ROOT_AZIMUTH_JITTER_DEG)
-        # Trunk attach point — slightly above ground so root emerges visibly
-        trunk_attach_z = 0.05  # 5cm above ground
+        trunk_attach_z = 0.04   # 4cm above ground
+
         for i in range(N_SURFACE_ROOTS):
             azimuth = i * base_step + self.rng.uniform(-jitter_max, jitter_max)
             out_dir = Vector((math.cos(azimuth), math.sin(azimuth), 0))
             pitch = math.radians(self.rng.uniform(*ROOT_PITCH_RANGE_DEG))
-            # Direction: mostly outward + downward pitch
             base_dir = (out_dir * math.cos(pitch) + Vector((0, 0, math.sin(pitch)))).normalized()
+            # Strong per-root variation — no twins
             length = self.rng.uniform(*ROOT_LENGTH_RANGE)
-            base_r = ROOT_BASE_R * self.rng.uniform(0.85, 1.15)
+            thickness_var = self.rng.uniform(0.75, 1.25)
+            base_r = ROOT_BASE_R * thickness_var
+            mid_r = ROOT_MID_R * thickness_var
             tip_r = ROOT_TIP_R
-            # Attach inside flared trunk base (offset radial slightly into trunk surface)
-            attach_pos = Vector((0, 0, trunk_attach_z)) + out_dir * (trunk_base_r * 0.85)
-            # Surface root uses negative gravity_k for "dive then level" curve
-            curve = branch_curve(attach_pos, base_dir, length, base_r, tip_r,
-                                 ROOT_SEGMENTS, droop_m=0.0, lateral_jitter=0.02,
-                                 rng=self.rng, gravity_k=ROOT_GRAVITY_K)
-            # Clamp z to ground (root cannot float above)
+            # Round 29 KEY FIX: attach point INSIDE trunk (45% of trunk base radius)
+            # → first ring buried inside trunk volume → no seam visible
+            attach_pos = Vector((0, 0, trunk_attach_z)) + out_dir * (trunk_base_r * ROOT_ATTACH_INSET)
+            # Build a 3-stage tapered curve manually (base→mid 30%→tip)
+            # Custom radii so first segments stay buttress-thick before tapering
+            curve_raw = branch_curve(attach_pos, base_dir, length, base_r, tip_r,
+                                     ROOT_SEGMENTS, droop_m=0.0, lateral_jitter=0.03,
+                                     rng=self.rng, gravity_k=ROOT_GRAVITY_K)
+            # Override radii with 3-stage taper + per-ring noise + radial_mod for surface bumps
+            seed_local = self.rng.uniform(0, 1000)
             clamped_curve = []
-            for pt in curve:
+            # Find which segment first crosses ground (z<=0) so we can terminate there
+            # with a THICK ring (not a thin dagger tip).
+            ground_seg = None
+            for j, pt in enumerate(curve_raw):
+                if pt[0].z <= 0.0:
+                    ground_seg = j
+                    break
+            # If no ground crossing, terminate normally
+            n_effective = ground_seg + 1 if ground_seg is not None else len(curve_raw)
+            for j in range(n_effective):
+                pt = curve_raw[j]
+                t = j / max(n_effective - 1, 1)
+                # 3-stage taper: 0-30% base→mid, 30-90% mid→mid*0.7 (root EXITS ground thick)
+                # Last segment uses radius around mid_r * 0.6 (NOT thin tip)
+                if t < 0.30:
+                    tt = t / 0.30
+                    r = base_r * (1 - tt) + mid_r * tt
+                elif t < 0.90:
+                    tt = (t - 0.30) / 0.60
+                    r = mid_r * (1 - tt * 0.4) + mid_r * 0.6 * (tt * 0.4)
+                else:
+                    # Last 10% — keep thick (root EXITS ground at full thickness)
+                    r = mid_r * 0.6
+                r *= 1.0 + 0.06 * self.rng.uniform(-1, 1)
                 pos = pt[0]
-                # Last 30% of root sinks into ground
-                if pos.z < -0.02:
-                    pos = Vector((pos.x, pos.y, -0.02))
-                clamped_curve.append((pos, pt[1], pt[2], pt[3] if len(pt) > 3 else None))
+                # Last segment: snap to ground level (z=0) so root exits cleanly
+                if j == n_effective - 1:
+                    pos = Vector((pos.x, pos.y, -0.01))   # just sub-ground
+                elif pos.z < 0:
+                    pos = Vector((pos.x, pos.y, 0.0))
+                # radial_mod: light surface bumps (knurls) along root
+                def root_radial_mod(angle, jz=j, jt=t, sd=seed_local):
+                    mod = 1.0
+                    # Subtle 3-lobe gnarl that varies by position along root
+                    n_val = _hash_noise(jz * 1.5, angle * 1.5 / (2 * math.pi), sd)
+                    mod += 0.10 * n_val
+                    return max(0.85, mod)
+                clamped_curve.append((pos, r, pt[2], root_radial_mod))
             face_start = len(self.bm_wood.faces)
             build_tube(self.bm_wood, clamped_curve, ROOT_RADIAL_SEGS, 0, self.wood_faces,
-                       tier=0, collar_bulge=COLLAR_BULGE_FACTOR * 1.3)
+                       tier=0, collar_bulge=COLLAR_BULGE_FACTOR * 1.6)   # stronger collar bulge
             face_end = len(self.bm_wood.faces)
-            self._stamp_wood_kind(face_start, face_end, kind=1)   # surface_root
+            self._stamp_wood_kind(face_start, face_end, kind=1)
             self.surface_roots.append({"curve": clamped_curve, "base_pos": attach_pos})
 
     # ----- ROUND 26: DEAD SNAGS (kırık kuru dal güdükleri) -----
@@ -1676,8 +1783,10 @@ class TreeBuilder:
                 c_prox = COLOR_BARK_TIERS[tier]
                 c_dist = COLOR_BARK_TIERS[min(tier + 1, 3)]
                 col = [c_prox[i] * (1 - t_val) + c_dist[i] * t_val for i in range(3)]
-                # Cracks: only trunk + scaffold (tier 0, 1)
-                if tier <= 1:
+                # Cracks: only trunk + scaffold (tier 0, 1), NOT surface roots (wood_kind=1)
+                # Round 29: roots smooth → no crack noise → no "almost black" issue
+                is_root = (wood_kind_layer is not None and v[wood_kind_layer] == 1)
+                if tier <= 1 and not is_root:
                     n_val = mu_noise.noise((v.co.x * BARK_CRACK_SCALE_XY,
                                             v.co.y * BARK_CRACK_SCALE_XY,
                                             v.co.z * BARK_CRACK_SCALE_Z))
@@ -1689,10 +1798,14 @@ class TreeBuilder:
                 if wood_kind_layer is not None:
                     kind = v[wood_kind_layer]
                     if kind == 1:   # surface root
-                        # Darken + hafif yeşilimsi (toprak/yosun hint)
-                        moss_t = max(0, 1.0 - (max(v.co.z, 0) / 0.30)) * 0.20
+                        # Round 29: use scaffold tier (lighter brown) as base + no crack
+                        # Smooth surface = natural root look, not "black spike"
+                        c_scaffold = COLOR_BARK_TIERS[1]  # lighter warm brown
+                        col = list(c_scaffold)
                         col = [c * ROOT_DARKEN for c in col]
-                        col[1] = col[1] * (1 - moss_t) + 0.18 * moss_t   # G hafif yeşil
+                        # Subtle moss only at ground entry (z<0.15)
+                        moss_t = max(0, 1.0 - (max(v.co.z, 0) / 0.15)) * ROOT_MOSS_TINT_MAX
+                        col[1] = col[1] * (1 - moss_t) + 0.22 * moss_t   # G hafif yeşil
                         n_root_darken += 1
                     elif kind == 2:   # dead snag
                         col = [c * DEAD_SNAG_DARKEN for c in col]
@@ -2443,6 +2556,11 @@ def place_camera(view_name):
         cam.location = (2.8, -2.8, 1.8)
         cam.rotation_euler = Euler((math.radians(84), 0, math.radians(45)))
         cam_data.lens = 80
+    elif view_name == "trunk_base":
+        # Round 29 QA: kök buttress incelemesi için trunk base close-up
+        cam.location = (1.6, -1.6, 0.55)
+        cam.rotation_euler = Euler((math.radians(78), 0, math.radians(45)))
+        cam_data.lens = 65
     bpy.context.scene.camera = cam
 
 
@@ -2579,15 +2697,15 @@ def main():
         export_fbx(OUT_FBX, include_lods=args.lods)
     if args.render:
         # Round 27 — Stage 1 QA contact sheet (front + side + top + 3/4 silhouette test)
-        view_order = ["front", "side", "back", "top", "three_quarter", "close"]
+        view_order = ["front", "side", "back", "top", "three_quarter", "close", "trunk_base"]
         rendered_paths = []
         for view in view_order:
             render_view(view, args.round)
             rendered_paths.append(RENDER_OUT_TMPL.format(round=args.round, view=view))
             print(f"Rendered: {view}")
-        # Round 28: contact sheet (3×2 grid)
+        # Round 28: contact sheet (3×2 grid, 6 main views — trunk_base is separate QA)
         contact_out = os.path.join(OUT_DIR, "apple_tree_contact_sheet.png")
-        build_contact_sheet(rendered_paths, contact_out, cols=3)
+        build_contact_sheet(rendered_paths[:6], contact_out, cols=3)
 
 
 if __name__ == "__main__":
