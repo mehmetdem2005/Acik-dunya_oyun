@@ -1786,6 +1786,286 @@ class TreeBuilder:
 
 
 # ------------------------------------------------------------------
+# COLLECTIONS / COLLISION / LODS (Round 28 — Stage 7+8)
+# ------------------------------------------------------------------
+
+def setup_collections():
+    """Create the locked-pipeline collection structure.
+
+    Returns dict of name → collection. Existing collections are reused.
+    """
+    scene_coll = bpy.context.scene.collection
+    structure = [
+        "APPLE_TREE_FINAL",
+        "TRUNK_BRANCHES",
+        "ROOTS",
+        "FOLIAGE_CARDS",
+        "APPLES",
+        "MATERIALS",
+        "LODS",
+        "COLLISION",
+        "DEBUG_VISUALS",
+        "EXPORTS",
+        "QA_RENDERS",
+    ]
+    colls = {}
+    for name in structure:
+        if name in bpy.data.collections:
+            colls[name] = bpy.data.collections[name]
+        else:
+            c = bpy.data.collections.new(name)
+            colls[name] = c
+            # Link top-level collection to scene
+            if name == "APPLE_TREE_FINAL":
+                scene_coll.children.link(c)
+            else:
+                colls["APPLE_TREE_FINAL"].children.link(c)
+    return colls
+
+
+def move_to_collection(obj, target_coll):
+    """Move object from current collection(s) to target collection."""
+    for c in list(obj.users_collection):
+        c.objects.unlink(obj)
+    target_coll.objects.link(obj)
+
+
+def build_collision_proxy(trunk_base_r=0.18, trunk_height=2.5):
+    """Simple cylinder collision proxy at trunk base.
+
+    Single 8-side cylinder, only large enough to block player from walking
+    through the trunk. Smaller than visual trunk (no need to cover flare).
+    """
+    radius = trunk_base_r * 0.85   # tighter than visual trunk
+    bpy.ops.mesh.primitive_cylinder_add(
+        vertices=8,
+        radius=radius,
+        depth=trunk_height,
+        location=(0, 0, trunk_height * 0.5),
+    )
+    obj = bpy.context.object
+    obj.name = "AppleTree_Collision"
+    # Apply a minimal flat material (no PBR — collision mesh shouldn't render)
+    if "M_Collision" not in bpy.data.materials:
+        m = bpy.data.materials.new("M_Collision")
+        m.diffuse_color = (1.0, 0.0, 1.0, 0.4)   # magenta debug
+    obj.data.materials.append(bpy.data.materials["M_Collision"])
+    # Hide from final render (collision is invisible in-game)
+    obj.hide_render = True
+    obj.display_type = 'WIRE'
+    return obj
+
+
+def build_lod1(wood_obj, leaf_obj, apple_obj, lods_coll):
+    """LOD1: medium detail. Decimate wood ~40%, halve leaf cards.
+
+    LOD1 strategy:
+      - Wood mesh: decimate modifier ratio 0.6 (40% tri reduction)
+      - Leaf mesh: delete every second face (single quad/cross-quad cluster)
+      - Apple mesh: keep all (apples small, decimation breaks shape)
+    Target: ~50-60% of LOD0 tri.
+    """
+    suffix = "_LOD1"
+    # Duplicate wood + decimate
+    wood_l1 = wood_obj.copy()
+    wood_l1.data = wood_obj.data.copy()
+    wood_l1.name = wood_obj.name + suffix
+    bpy.context.collection.objects.link(wood_l1)
+    move_to_collection(wood_l1, lods_coll)
+    # Decimate via modifier + apply
+    mod = wood_l1.modifiers.new("Decim", 'DECIMATE')
+    mod.ratio = 0.62
+    bpy.context.view_layer.objects.active = wood_l1
+    bpy.ops.object.modifier_apply(modifier=mod.name)
+
+    # Duplicate leaf mesh + delete every 2nd face (halve density)
+    leaf_l1 = leaf_obj.copy()
+    leaf_l1.data = leaf_obj.data.copy()
+    leaf_l1.name = leaf_obj.name + suffix
+    bpy.context.collection.objects.link(leaf_l1)
+    move_to_collection(leaf_l1, lods_coll)
+    # Each cluster card = 4 faces (cross-quad) or 2 faces (single-quad). To halve,
+    # delete every other 4-face cluster from cross-quads, every other pair from single.
+    # Simple approach: delete every 2nd face starting from index 1 (rough halving)
+    bm = bmesh.new()
+    bm.from_mesh(leaf_l1.data)
+    bm.faces.ensure_lookup_table()
+    faces_to_remove = [f for i, f in enumerate(bm.faces) if i % 2 == 1]
+    bmesh.ops.delete(bm, geom=faces_to_remove, context='FACES')
+    # Remove orphan verts
+    bm.verts.ensure_lookup_table()
+    orphans = [v for v in bm.verts if not v.link_faces]
+    bmesh.ops.delete(bm, geom=orphans, context='VERTS')
+    bm.to_mesh(leaf_l1.data)
+    bm.free()
+
+    # Duplicate apple mesh (keep — only 25 apples)
+    apple_l1 = apple_obj.copy()
+    apple_l1.data = apple_obj.data.copy()
+    apple_l1.name = apple_obj.name + suffix
+    bpy.context.collection.objects.link(apple_l1)
+    move_to_collection(apple_l1, lods_coll)
+
+    # Hide LOD1 by default in viewport
+    for o in (wood_l1, leaf_l1, apple_l1):
+        o.hide_set(True)
+        o.hide_render = True
+    return wood_l1, leaf_l1, apple_l1
+
+
+def build_lod2(wood_obj, leaf_obj, lods_coll):
+    """LOD2: low detail. Wood decimate 0.35, leaf cards reduce ~75%.
+
+    Apple omitted at this LOD (not visible at distance anyway).
+    Target: ~25% of LOD0 tri.
+    """
+    suffix = "_LOD2"
+    wood_l2 = wood_obj.copy()
+    wood_l2.data = wood_obj.data.copy()
+    wood_l2.name = wood_obj.name + suffix
+    bpy.context.collection.objects.link(wood_l2)
+    move_to_collection(wood_l2, lods_coll)
+    mod = wood_l2.modifiers.new("Decim", 'DECIMATE')
+    mod.ratio = 0.35
+    bpy.context.view_layer.objects.active = wood_l2
+    bpy.ops.object.modifier_apply(modifier=mod.name)
+
+    leaf_l2 = leaf_obj.copy()
+    leaf_l2.data = leaf_obj.data.copy()
+    leaf_l2.name = leaf_obj.name + suffix
+    bpy.context.collection.objects.link(leaf_l2)
+    move_to_collection(leaf_l2, lods_coll)
+    # Aggressive: keep only every 4th face
+    bm = bmesh.new()
+    bm.from_mesh(leaf_l2.data)
+    bm.faces.ensure_lookup_table()
+    faces_to_remove = [f for i, f in enumerate(bm.faces) if i % 4 != 0]
+    bmesh.ops.delete(bm, geom=faces_to_remove, context='FACES')
+    bm.verts.ensure_lookup_table()
+    orphans = [v for v in bm.verts if not v.link_faces]
+    bmesh.ops.delete(bm, geom=orphans, context='VERTS')
+    bm.to_mesh(leaf_l2.data)
+    bm.free()
+
+    for o in (wood_l2, leaf_l2):
+        o.hide_set(True)
+        o.hide_render = True
+    return wood_l2, leaf_l2
+
+
+def build_contact_sheet(image_paths, out_path, cols=3):
+    """Composite multiple preview PNGs into a single contact sheet PNG.
+
+    Uses Blender's bpy.data.images pixel ops (no PIL needed).
+    Layout: cols × ceil(len/cols) grid.
+    """
+    if not image_paths:
+        print("contact_sheet: no images provided")
+        return False
+    images = []
+    for p in image_paths:
+        if not os.path.exists(p):
+            print(f"contact_sheet: skip missing {p}")
+            continue
+        img = bpy.data.images.load(p, check_existing=True)
+        images.append((p, img))
+    if not images:
+        return False
+    # All previews same resolution — use first as reference
+    src_w, src_h = images[0][1].size
+    n = len(images)
+    rows = (n + cols - 1) // cols
+    out_w = src_w * cols
+    out_h = src_h * rows
+    out_img = bpy.data.images.new("ContactSheet", width=out_w, height=out_h, alpha=False)
+    # Initialize with grey background
+    pix = [0.5, 0.5, 0.5, 1.0] * (out_w * out_h)
+    out_img.pixels = pix
+    # Read each src and blit into correct cell
+    # Source pixels are stored row-major bottom-up in Blender's float array
+    out_pix = list(out_img.pixels)
+    for idx, (path, src) in enumerate(images):
+        sw, sh = src.size
+        if (sw, sh) != (src_w, src_h):
+            # Scale source — bilinear via temp NumPy not available; resort to skip if mismatch
+            print(f"contact_sheet: size mismatch {path} {sw}x{sh}, expected {src_w}x{src_h} — skipping")
+            continue
+        col = idx % cols
+        row = idx // cols
+        # In Blender pixel arrays origin is bottom-left
+        # We want row 0 (first row of grid) at TOP of contact sheet
+        out_row_top = (rows - 1 - row)
+        src_pix = list(src.pixels)
+        # Blit row-by-row
+        for y in range(sh):
+            src_y = y
+            dst_y = out_row_top * sh + y
+            for x in range(sw):
+                src_idx = (src_y * sw + x) * 4
+                dst_x = col * sw + x
+                dst_idx = (dst_y * out_w + dst_x) * 4
+                out_pix[dst_idx:dst_idx + 4] = src_pix[src_idx:src_idx + 4]
+    out_img.pixels = out_pix
+    out_img.filepath_raw = out_path
+    out_img.file_format = 'PNG'
+    out_img.save()
+    bpy.data.images.remove(out_img, do_unlink=True)
+    print(f"Contact sheet saved: {out_path}")
+    return True
+
+
+def export_fbx(out_path, include_lods=False):
+    """Export tree as FBX with materials + vertex colors.
+
+    By default only LOD0 (main tree objects) exported. Use include_lods=True
+    to include LOD1/2 meshes as well.
+    """
+    for o in bpy.context.scene.objects:
+        o.select_set(False)
+    targets = []
+    main_names = ["AppleTree_Wood", "AppleTree_Leaves", "AppleTree_Apples"]
+    if include_lods:
+        main_names += ["AppleTree_Wood_LOD1", "AppleTree_Leaves_LOD1", "AppleTree_Apples_LOD1",
+                       "AppleTree_Wood_LOD2", "AppleTree_Leaves_LOD2"]
+    for name in main_names:
+        obj = bpy.data.objects.get(name)
+        if obj is not None:
+            obj.select_set(True)
+            obj.hide_set(False)   # FBX export skips hidden objects
+            targets.append(obj)
+    if not targets:
+        print("export_fbx: no objects found")
+        return False
+    try:
+        bpy.ops.export_scene.fbx(
+            filepath=out_path,
+            use_selection=True,
+            apply_unit_scale=True,
+            global_scale=1.0,
+            axis_forward='-Z',
+            axis_up='Y',
+            object_types={'MESH'},
+            use_mesh_modifiers=True,
+            mesh_smooth_type='FACE',
+            colors_type='SRGB',
+            embed_textures=True,
+            path_mode='COPY',
+        )
+        size_kb = os.path.getsize(out_path) // 1024
+        print(f"Exported FBX: {out_path} ({size_kb} KB)")
+        # Re-hide LOD objects
+        for o in targets:
+            if "_LOD" in o.name:
+                o.hide_set(True)
+        return True
+    except Exception as e:
+        print(f"export_fbx failed: {e}")
+        import traceback
+        traceback.print_exc()
+        return False
+
+
+# ------------------------------------------------------------------
 # MATERIALS
 # ------------------------------------------------------------------
 
@@ -2216,6 +2496,7 @@ def verify_tree(wood_obj, leaf_obj, apple_obj):
 
 LEAF_TEXTURE_PATH = os.path.join(OUT_DIR, "textures", "leaf", "leaf_placeholder.png")
 OUT_GLB = os.path.join(OUT_DIR, "elma_agaci.glb")
+OUT_FBX = os.path.join(OUT_DIR, "elma_agaci.fbx")
 
 
 def parse_args():
@@ -2233,6 +2514,12 @@ def parse_args():
                    help="Skip leaf texture bake (use existing or fallback color)")
     p.add_argument("--export-glb", action="store_true",
                    help="Export tree as GLB at OUT_GLB path")
+    p.add_argument("--export-fbx", action="store_true",
+                   help="Export tree as FBX at OUT_FBX path (Round 28)")
+    p.add_argument("--lods", action="store_true",
+                   help="Build LOD1 + LOD2 simplified meshes (Round 28 Stage 7)")
+    p.add_argument("--collision", action="store_true",
+                   help="Build simple cylinder collision proxy at trunk base (Stage 8)")
     return p.parse_args(argv)
 
 
@@ -2259,17 +2546,48 @@ def main():
     builder.build_apples()
     wood_obj, leaf_obj, apple_obj = builder.assemble()
     stats = verify_tree(wood_obj, leaf_obj, apple_obj)
+
+    # Round 28 Stage 7+8 — collections + LOD + collision
+    colls = setup_collections()
+    move_to_collection(wood_obj, colls["TRUNK_BRANCHES"])
+    move_to_collection(leaf_obj, colls["FOLIAGE_CARDS"])
+    move_to_collection(apple_obj, colls["APPLES"])
+    lod_meshes = []
+    if args.lods:
+        l1 = build_lod1(wood_obj, leaf_obj, apple_obj, colls["LODS"])
+        l2 = build_lod2(wood_obj, leaf_obj, colls["LODS"])
+        lod_meshes = list(l1) + list(l2)
+        # LOD stats
+        for o in lod_meshes:
+            poly = sum(1 for _ in o.data.polygons)
+            tri = sum(len(p.vertices) - 2 for p in o.data.polygons)
+            print(f"LOD: {o.name} polys={poly} tris={tri}")
+    if args.collision:
+        collision = build_collision_proxy(
+            trunk_base_r=TRUNK_BASE_R, trunk_height=TOTAL_HEIGHT * 0.7,
+        )
+        move_to_collection(collision, colls["COLLISION"])
+        print(f"Collision proxy: {collision.name}")
+
     setup_world()
     if not args.no_save:
         bpy.ops.wm.save_as_mainfile(filepath=OUT_BLEND)
         print(f"Saved: {OUT_BLEND}")
     if args.export_glb:
         export_glb(OUT_GLB)
+    if args.export_fbx:
+        export_fbx(OUT_FBX, include_lods=args.lods)
     if args.render:
         # Round 27 — Stage 1 QA contact sheet (front + side + top + 3/4 silhouette test)
-        for view in ["front", "side", "back", "top", "three_quarter", "close"]:
+        view_order = ["front", "side", "back", "top", "three_quarter", "close"]
+        rendered_paths = []
+        for view in view_order:
             render_view(view, args.round)
+            rendered_paths.append(RENDER_OUT_TMPL.format(round=args.round, view=view))
             print(f"Rendered: {view}")
+        # Round 28: contact sheet (3×2 grid)
+        contact_out = os.path.join(OUT_DIR, "apple_tree_contact_sheet.png")
+        build_contact_sheet(rendered_paths, contact_out, cols=3)
 
 
 if __name__ == "__main__":
