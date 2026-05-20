@@ -35,10 +35,12 @@ TRUNK_GEOM_TOP_FRAC = 0.68       # ↓ from 0.72 — trunk top daha kısa, canop
 TRUNK_BASE_R = 0.14
 TRUNK_FORK_R = 0.10
 TRUNK_TOP_R = 0.025              # taper to near-point inside canopy
-ROOT_FLARE_FACTOR = 1.85         # Round 29: 2.50→1.85 (mantar şapka değil, doğal flare)
-ROOT_FLARE_HEIGHT = 0.40         # Round 29: 0.55→0.40 (daha lokal flare)
-BUTTRESS_LOBES = 5               # Round 26: 5-lobe (asymmetric, AAA standart)
-BUTTRESS_AMP = 0.28              # Round 29: 0.32→0.28 (daha subtle lob)
+ROOT_FLARE_FACTOR = 2.20         # Round 30: 1.85→2.20 (kuvvetli flare, surface root yok)
+ROOT_FLARE_HEIGHT = 0.65         # Round 30: 0.40→0.65 (flare yukarı uzanır, gradual blend)
+BUTTRESS_LOBES = 6               # Round 30: 5→6 fins (asymmetric)
+BUTTRESS_AMP = 0.55              # Round 30: 0.28→0.55 (BELİRGİN buttress fins)
+BUTTRESS_SHARPNESS = 3.0         # Round 30: yeni — fin'lerin keskinliği (cos^p, sadece +outward)
+BUTTRESS_PHASE_JITTER_DEG = 12   # Round 30: yeni — fin'ler eşit aralıkta değil
 
 # Round 26 — Surface roots (yer üstü görünür kök buttress'leri)
 # Round 29: kök rework — buttress-thick, varyasyonlu, trunk'a blend
@@ -80,8 +82,8 @@ TRUNK_GNARL_FREQ_THETA = 4.0
 TRUNK_BURL_COUNT = 3             # one more burl
 TRUNK_BURL_AMP = 0.40            # ↑ stronger localized swells
 TRUNK_BURL_SIGMA = 0.09          # tighter falloff (was implicit 0.18)
-TRUNK_RADIAL_SEGS = 11
-TRUNK_HEIGHT_SEGS = 10
+TRUNK_RADIAL_SEGS = 12           # Round 30: 11→12 (14 was over budget, 12 sufficient for fins)
+TRUNK_HEIGHT_SEGS = 8            # ↓ from 10 — base sub-rings ile compensate edilir
 
 # Scaffold branches (primaries)
 N_SCAFFOLDS = 6                  # Round 27: 5→6 (daha çok primary spread için)
@@ -153,8 +155,8 @@ LEAVES_PER_ATLAS_CELL = 6        # silhouettes baked into each cell
 
 # Foliage volume placement — clusters at twig tips form spherical bouquets
 # Round 24 — Botanist panel: along-twig parametric placement (kills floating bouquets)
-CARDS_PER_TWIG_ALONG = 4         # ↓ from 5 Round 27 — trunk-mid puff için yer
-CARDS_PER_TWIG_TERMINAL = 2      # ↓ from 3
+CARDS_PER_TWIG_ALONG = 3         # ↓ from 4 Round 30 — buttress fin geometrisi için yer
+CARDS_PER_TWIG_TERMINAL = 2
 CARDS_PER_SUBTWIG_ALONG = 2      # sub-twig: hafif yapraklanma
 CARDS_PER_SUBTWIG_TERMINAL = 2
 CLUSTERS_PER_SPUR = 2            # ↓ from 3 — tri budget için (Stage 1 fix Round 27)
@@ -337,8 +339,11 @@ def smooth_bezier3_tangent(p0, p1, p2, p3, t):
 def trunk_curve(rng):
     """Return list of (pos, radius, up_dir, radial_mod) along trunk.
 
-    radial_mod is a callable (angle) -> multiplier producing buttress lobes
-    near the root flare and gnarl noise along the height.
+    Round 30 OVERHAUL: buttress fins INTEGRATED into trunk geometry.
+    - Sharp outward-only fins (cos^p, max with 0 → no inward dips)
+    - 6 fins with phase jitter (organic, not symmetric)
+    - Fins die off smoothly with height (full at z=0, gone at ROOT_FLARE_HEIGHT)
+    - Extra height segments at base (0..0.6m) for resolution to capture fin shape
     """
     pts = []
     geom_top = TOTAL_HEIGHT * TRUNK_GEOM_TOP_FRAC
@@ -355,13 +360,30 @@ def trunk_curve(rng):
                  0.66 * h))
     p3 = Vector((math.sin(lean) * h * lean_dir.x, math.sin(lean) * h * lean_dir.y, h))
 
-    # pre-pick burl height positions
     burl_zs = [rng.uniform(0.25 * h, 0.85 * h) for _ in range(TRUNK_BURL_COUNT)]
     burl_azimuths = [rng.uniform(0, math.pi * 2) for _ in range(TRUNK_BURL_COUNT)]
 
-    n = TRUNK_HEIGHT_SEGS + 1
-    for i in range(n):
-        t = i / (n - 1)
+    # Round 30: pre-pick fin azimuths with jitter (no perfect symmetry)
+    fin_jitter = math.radians(BUTTRESS_PHASE_JITTER_DEG)
+    fin_azimuths = []
+    base_step = 2 * math.pi / BUTTRESS_LOBES
+    for i in range(BUTTRESS_LOBES):
+        fin_azimuths.append(i * base_step + rng.uniform(-fin_jitter, fin_jitter))
+    # Per-fin amplitude variation (not all fins same size)
+    fin_amps = [rng.uniform(0.75, 1.15) for _ in range(BUTTRESS_LOBES)]
+
+    # Round 30: extra sub-sampling in lower trunk z=[0, ROOT_FLARE_HEIGHT*1.1]
+    # for fin shape resolution. Generate t-list with concentration at base.
+    n_base = 6   # base sub-rings inside flare zone
+    n_top = TRUNK_HEIGHT_SEGS + 1   # standard upper sampling
+    flare_t_max = (ROOT_FLARE_HEIGHT * 1.05) / h   # parameter t value at flare top
+    t_list = []
+    for i in range(n_base):
+        t_list.append((i / max(n_base - 1, 1)) * flare_t_max)
+    for i in range(1, n_top):
+        t_list.append(flare_t_max + (i / (n_top - 1)) * (1.0 - flare_t_max))
+
+    for t in t_list:
         pos = smooth_bezier3(p0, p1, p2, p3, t)
         fork_frac = TRUNK_FORK_HEIGHT / h
         if t < fork_frac:
@@ -380,7 +402,7 @@ def trunk_curve(rng):
         in_flare = z_capture < ROOT_FLARE_HEIGHT
         flare_strength = 0.0
         if in_flare:
-            flare_strength = 1.0 - smooth_step(z_capture / ROOT_FLARE_HEIGHT)
+            flare_strength = (1.0 - smooth_step(z_capture / ROOT_FLARE_HEIGHT)) ** 1.2
 
         burl_contributions = []
         for bz, baz in zip(burl_zs, burl_azimuths):
@@ -389,24 +411,40 @@ def trunk_curve(rng):
             burl_contributions.append((baz, falloff))
 
         def radial_mod(angle, z=z_capture, fs=flare_strength,
-                       burls=burl_contributions, ns=noise_seed):
+                       burls=burl_contributions, ns=noise_seed,
+                       faz=fin_azimuths, famp=fin_amps):
             mod = 1.0
-            # Buttress lobes near root flare (cos(N*theta) modulation)
+            # Round 30: Sharp outward-only buttress fins
+            # For each fin, compute angular distance to its center azimuth,
+            # apply cos^p^sharpness, scale by per-fin amplitude × flare_strength
             if fs > 0:
-                lobes = 0.5 * (math.cos(BUTTRESS_LOBES * angle) + 1.0)  # 0..1
-                mod += BUTTRESS_AMP * fs * (lobes - 0.5) * 2  # symmetric +/-
-            # Gnarl noise: shallow per-angle radial perturbation
+                fin_bulge = 0.0
+                for f_i in range(BUTTRESS_LOBES):
+                    # signed angular delta (-pi..pi)
+                    d = angle - faz[f_i]
+                    while d > math.pi:
+                        d -= 2 * math.pi
+                    while d < -math.pi:
+                        d += 2 * math.pi
+                    # cos peak at fin center (d=0)
+                    c = math.cos(d)
+                    if c > 0:
+                        # Sharp peak: cos^sharpness (more sharpness = narrower fin)
+                        fin_bulge = max(fin_bulge,
+                                        (c ** BUTTRESS_SHARPNESS) * famp[f_i])
+                mod += BUTTRESS_AMP * fs * fin_bulge
+            # Gnarl noise: subtle per-angle perturbation (all heights)
             n_val = _hash_noise(z * TRUNK_GNARL_FREQ_Z,
                                 angle * TRUNK_GNARL_FREQ_THETA / (2 * math.pi),
                                 ns)
             mod += TRUNK_GNARL_AMP * n_val
-            # Burls: localized azimuth-aligned bumps
+            # Burls
             for baz, fall in burls:
                 if fall > 0:
                     azc = math.cos(angle - baz)
                     if azc > 0.4:
                         mod += TRUNK_BURL_AMP * fall * (azc - 0.4) / 0.6
-            return max(0.7, mod)
+            return max(0.85, mod)
 
         pts.append((pos, r, tangent.normalized(), radial_mod))
     return pts
@@ -913,9 +951,12 @@ class TreeBuilder:
     def build_trunk_and_branches(self):
         trunk_pts = trunk_curve(self.rng)
         build_tube(self.bm_wood, trunk_pts, TRUNK_RADIAL_SEGS, 0, self.wood_faces, tier=0)
-        # Round 26 AAA — surface roots (köklenme): trunk base'inden 5 buttress root
-        trunk_base_r = trunk_pts[0][1] * ROOT_FLARE_FACTOR  # flared radius at z=0
-        self._build_surface_roots(trunk_base_r)
+        # Round 30: surface root tubes KALDIRILDI — trunk'a entegre buttress fins yeterli.
+        # Önceki tube yaklaşımı "sail fin" gibi görünüyordu (sail/dagger artifact).
+        # Şimdi trunk_curve() içindeki sharp outward fins + extra base rings ile
+        # gerçek mature apple tree base flare elde edildi.
+        # _build_surface_roots() metodu hala mevcut (gelecek isteğe için), ama çağrılmıyor.
+        # self._build_surface_roots(trunk_pts[0][1] * ROOT_FLARE_FACTOR)
 
         geom_top = TOTAL_HEIGHT * TRUNK_GEOM_TOP_FRAC
 
