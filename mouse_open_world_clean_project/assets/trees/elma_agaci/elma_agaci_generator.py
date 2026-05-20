@@ -97,24 +97,40 @@ SPUR_TIP_R = 0.0032
 SPUR_RADIAL_SEGS = 4
 SPUR_SEGMENTS = 1                # single segment is enough at this scale
 
-# Leaves — per-leaf ovate mesh (50-agent panel synthesis: cluster card terkedildi)
-# 6-vert diamond layout, 4 triangles, V-fold midrib + tip droop baked into geometry.
-# Silhouette geometry-defined; texture only adds vein detail when supplied.
-LEAF_LENGTH = 0.105              # ~105mm — stylized-realistic (real 75mm, art director: bigger for visibility)
-LEAF_WIDTH_RATIO = 0.62          # 0.62 × 105mm = 65mm width (1.6:1 ovate ratio)
-LEAF_V_FOLD = 0.015              # midrib lift (~%14 length) — adaxial convexity
-LEAF_TIP_DROOP_DEG = 22          # tip vert bends down (gravity hint)
-LEAVES_PER_TWIG = 9              # spiral phyllotaxis along long-shoot
-LEAVES_PER_SPUR = 6              # opposite-pair rosette
-LEAF_SIZE_JITTER = (0.82, 1.18)  # per-leaf scale variation
-LEAF_AZIMUTH_JITTER_DEG = 14     # tight spiral
-LEAF_PITCH_BIAS_DEG = 35         # heliotropism: leaves tilt toward sky on upper canopy
-LEAF_HOLLOW_CORE_THRESHOLD = 0.55  # leaves deeper than this (m from outer shell) thin out
-LEAF_HOLLOW_SKIP_PROB = 0.35     # probability to skip interior leaves (LAI gradient)
+# Leaves — Round 23: CLUSTER ALPHA CARD (industry standard, SpeedTree/RDR2/Genshin pattern)
+# Cross-quad (X-pattern) cards with baked alpha atlas showing 5-7 leaf silhouettes per cell.
+# Card boundary invisible due to soft alpha; multiple cards form spherical cluster volume.
+LEAF_CARD_W = 0.22               # cluster card width (m) — covers 5-7 leaves in texture
+LEAF_CARD_H = 0.20
+USE_CROSS_QUAD = True            # X-pattern: 2 perpendicular quads = 4 tri/cluster
+ATLAS_GRID = 2                   # 2×2 = 4 cluster variants in atlas
+ATLAS_RES = 512                  # atlas resolution
+LEAVES_PER_ATLAS_CELL = 6        # silhouettes baked into each cell
+
+# Foliage volume placement — clusters at twig tips form spherical bouquets
+CLUSTERS_PER_TWIG_TIP = 7        # bouquet at each twig endpoint
+CLUSTER_VOLUME_RADIUS = 0.24
+CLUSTER_TIP_LENGTH_FRAC = 0.25
+SECONDARY_TIP_CLUSTERS = 6       # bouquet at secondary branch tips (major canopy mass)
+SECONDARY_TIP_VOLUME = 0.40
+
+# Spur clusters — small bouquet on each spur
+CLUSTERS_PER_SPUR = 3
+SPUR_CLUSTER_RADIUS = 0.10
+
+# Card transform variation (organic look — user feedback: rotasyon/scale artırılmalı)
+LEAF_CARD_SIZE_JITTER = (0.65, 1.20)
+LEAF_CARD_YAW_JITTER_DEG = 180   # full random yaw around vertical
+LEAF_CARD_PITCH_JITTER_DEG = 60  # wide pitch variation
+LEAF_CARD_ROLL_JITTER_DEG = 180  # full roll for X-pattern variation
+
+# Canopy density gradient (LAI: outer dense, inner sparse)
+LEAF_HOLLOW_CORE_THRESHOLD = 0.45
+LEAF_HOLLOW_SKIP_PROB = 0.40
 
 # Apples — biggers + visible + botanically paired (50-agent panel)
-APPLE_COUNT_TARGET = 30
-APPLE_DIAMETER = 0.100           # ↑ from 0.080 — art director: visibility priority
+APPLE_COUNT_TARGET = 25          # user feedback Round 23: 12-25 düşük poly elma
+APPLE_DIAMETER = 0.130           # ↑ from 0.10 — "elmalar biraz küçük" feedback
 APPLE_OBLATE = 0.84               # oblate "apple" shape
 APPLE_UV_SEGS = 7
 APPLE_UV_RINGS = 5
@@ -352,6 +368,68 @@ def build_tube(bm, curve_pts, radial_segs, mat_index, face_index_track):
     end_face = len(bm.faces)
     face_index_track.setdefault(mat_index, []).append((start_face, end_face))
     return rings
+
+
+def make_cluster_card(bm, center, normal, width, height, mat_index, face_index_track,
+                      uv_cell=(0, 0), atlas_grid=2, color_layer=None,
+                      vcolor=(1.0, 1.0, 1.0, 1.0), roll=0.0, cross_quad=True, rng=None):
+    """Cluster alpha card (industry standard: SpeedTree/RDR2/Witcher 3 pattern).
+
+    Cross-quad (X-pattern): 2 perpendicular quads = 4 tri per cluster.
+    UV maps to one cell in atlas (atlas_grid × atlas_grid layout).
+    Texture cell shows 5-7 organic leaf silhouettes with alpha cutout.
+    Card boundary is invisible because alpha at edges fades out.
+
+    `uv_cell`: (col, row) in atlas grid, e.g. (0,0), (0,1), (1,0), (1,1) for 2×2
+    """
+    n = normal.normalized()
+    helper = Vector((0, 0, 1)) if abs(n.z) < 0.9 else Vector((1, 0, 0))
+    u_base = (helper - helper.dot(n) * n).normalized()
+    v_base = n.cross(u_base).normalized()
+    cr, sr = math.cos(roll), math.sin(roll)
+    u1 = u_base * cr + v_base * sr
+    v1 = -u_base * sr + v_base * cr
+
+    # Compute atlas UV range for this cell
+    cell_size = 1.0 / atlas_grid
+    pad = cell_size * 0.02   # 2% gutter padding to avoid bleed
+    cx, cy = uv_cell
+    uv_u_min = cx * cell_size + pad
+    uv_u_max = (cx + 1) * cell_size - pad
+    uv_v_min = cy * cell_size + pad
+    uv_v_max = (cy + 1) * cell_size - pad
+
+    uv_layer = bm.loops.layers.uv.active or bm.loops.layers.uv.new()
+
+    def quad(uvec, vvec):
+        hw, hh = width * 0.5, height * 0.5
+        verts = [
+            bm.verts.new(center + (-uvec * hw) + (-vvec * hh)),
+            bm.verts.new(center + (uvec * hw) + (-vvec * hh)),
+            bm.verts.new(center + (uvec * hw) + (vvec * hh)),
+            bm.verts.new(center + (-uvec * hw) + (vvec * hh)),
+        ]
+        quad_uvs = [
+            (uv_u_min, uv_v_min),
+            (uv_u_max, uv_v_min),
+            (uv_u_max, uv_v_max),
+            (uv_u_min, uv_v_max),
+        ]
+        start = len(bm.faces)
+        try:
+            f = bm.faces.new(verts)
+            for li, loop in enumerate(f.loops):
+                loop[uv_layer].uv = quad_uvs[li]
+                if color_layer is not None:
+                    loop[color_layer] = vcolor
+        except ValueError:
+            pass
+        end = len(bm.faces)
+        face_index_track.setdefault(mat_index, []).append((start, end))
+
+    quad(u1, v1)
+    if cross_quad:
+        quad(v1, n)
 
 
 def make_ovate_leaf_mesh(bm, base_pos, blade_normal, blade_dir, length, width,
@@ -789,89 +867,91 @@ class TreeBuilder:
         # Vertex color RGB normalized 0..1, used as multiplicative tint
         return (r * 2.0, g * 2.0, b * 2.0, ao)  # ×2 to allow shader brightening if needed
 
-    def build_leaves(self):
-        """Per-leaf ovate mesh placement: 137.5° spiral on twigs, opposite pairs on spurs."""
-        self.canopy_radius = self._compute_canopy_radius()
-        skipped_interior = 0
-        placed = 0
+    def _place_cluster_bouquet(self, center, n_clusters, radius, vcolor_pos=None):
+        """Place n_clusters cross-quad cards in a spherical volume around center.
 
-        # ----- TWIG LEAVES (long shoots): spiral phyllotaxis -----
+        Each card gets random size, full random yaw/pitch/roll for organic look.
+        UV cell picked round-robin from atlas (4 variants in 2×2 grid).
+        """
+        placed = 0
+        for i in range(n_clusters):
+            # Random spherical offset within radius
+            theta = self.rng.uniform(0, 2 * math.pi)
+            phi = math.acos(self.rng.uniform(-1, 1))   # uniform on sphere
+            r = radius * (self.rng.random() ** 0.5)    # bias toward outer shell
+            offset = Vector((
+                r * math.sin(phi) * math.cos(theta),
+                r * math.sin(phi) * math.sin(theta),
+                r * math.cos(phi) * 0.7,    # slightly flatten vertically
+            ))
+            pos = center + offset
+            if self._hollow_core_skip(pos):
+                continue
+            # Random card orientation — wide variation for organic look
+            yaw = math.radians(self.rng.uniform(-LEAF_CARD_YAW_JITTER_DEG, LEAF_CARD_YAW_JITTER_DEG))
+            pitch = math.radians(self.rng.uniform(-LEAF_CARD_PITCH_JITTER_DEG, LEAF_CARD_PITCH_JITTER_DEG))
+            n = Vector((0, 0, 1))
+            n = Quaternion(Vector((1, 0, 0)), pitch) @ n
+            n = Quaternion(Vector((0, 0, 1)), yaw) @ n
+            roll = math.radians(self.rng.uniform(-LEAF_CARD_ROLL_JITTER_DEG, LEAF_CARD_ROLL_JITTER_DEG))
+            scale = self.rng.uniform(*LEAF_CARD_SIZE_JITTER)
+            w = LEAF_CARD_W * scale
+            h = LEAF_CARD_H * scale
+            # UV cell: round-robin through atlas grid (variation)
+            cell_idx = (i + int(theta * 2)) % (ATLAS_GRID * ATLAS_GRID)
+            uv_cell = (cell_idx % ATLAS_GRID, cell_idx // ATLAS_GRID)
+            vcolor = self._leaf_vcolor(vcolor_pos if vcolor_pos else pos)
+            make_cluster_card(self.bm_leaf, pos, n, w, h, 0, self.leaf_faces,
+                              uv_cell=uv_cell, atlas_grid=ATLAS_GRID,
+                              color_layer=self.leaf_color_layer,
+                              vcolor=vcolor, roll=roll,
+                              cross_quad=USE_CROSS_QUAD, rng=self.rng)
+            placed += 1
+        return placed
+
+    def build_leaves(self):
+        """Cluster card placement: bouquets at twig tips, secondary tips, and spurs.
+
+        Industry standard: cross-quad cluster cards with cluster alpha atlas.
+        Card boundaries invisible (soft alpha edge); multiple cards form sphere volume.
+        """
+        self.canopy_radius = self._compute_canopy_radius()
+        placed = 0
+        skipped = 0
+
+        # ----- TWIG TIPS: dense bouquet at end of each twig -----
         for twig in self.twigs:
             curve = twig["curve"]
-            n_leaves = LEAVES_PER_TWIG + self.rng.randint(-1, 1)
-            for i in range(n_leaves):
-                frac = 0.15 + 0.80 * (i / max(n_leaves - 1, 1))
-                pos, _, tan = self._sample_branch_curve(curve, frac)
-                # Spiral azimuth around twig axis
-                azimuth = i * GOLDEN_ANGLE + math.radians(self.rng.uniform(-LEAF_AZIMUTH_JITTER_DEG, LEAF_AZIMUTH_JITTER_DEG))
-                up = Vector((0, 0, 1))
-                side = tan.cross(up).normalized() if abs(tan.z) < 0.95 else Vector((1, 0, 0))
-                fwd = tan.cross(side).normalized()
-                radial = math.cos(azimuth) * side + math.sin(azimuth) * fwd
-                # Petiole base on twig surface
-                base_pos = pos + radial * 0.005
-                if self._hollow_core_skip(base_pos):
-                    skipped_interior += 1
-                    continue
-                # Blade extends radially outward + slight forward along twig
-                blade_dir = (radial * 0.85 + tan * 0.15).normalized()
-                # Heliotropism: bias normal upward (toward sun) more for upper canopy
-                z_frac = base_pos.z / max(TOTAL_HEIGHT, 0.1)
-                pitch_bias = math.radians(LEAF_PITCH_BIAS_DEG * (0.5 + 0.5 * z_frac))
-                blade_normal = (radial.cross(tan).normalized() * math.cos(pitch_bias)
-                                + up * math.sin(pitch_bias)).normalized()
-                # Make blade_normal perpendicular to blade_dir
-                blade_normal = (blade_normal - blade_normal.dot(blade_dir) * blade_dir).normalized()
-                roll = self.rng.uniform(-0.3, 0.3)
-                scale = self.rng.uniform(*LEAF_SIZE_JITTER)
-                length = LEAF_LENGTH * scale
-                width = LEAF_LENGTH * LEAF_WIDTH_RATIO * scale
-                vcolor = self._leaf_vcolor(base_pos)
-                make_ovate_leaf_mesh(self.bm_leaf, base_pos, blade_normal, blade_dir,
-                                     length, width, 0, self.leaf_faces,
-                                     color_layer=self.leaf_color_layer,
-                                     vcolor=vcolor, roll=roll, rng=self.rng)
-                placed += 1
+            # Use last segment of twig as cluster center
+            tip_pos, _, _ = self._sample_branch_curve(curve, 1.0 - CLUSTER_TIP_LENGTH_FRAC * 0.5)
+            before = placed
+            placed += self._place_cluster_bouquet(tip_pos, CLUSTERS_PER_TWIG_TIP, CLUSTER_VOLUME_RADIUS)
 
-        # ----- SPUR LEAVES (rosette): opposite pairs (decussate, 180° apart) -----
+        # ----- SECONDARY BRANCH TIPS: bigger bouquets for canopy volume -----
+        # Sample secondary tips: walk through all wood face indices is hard, so we use
+        # the spurs as proxy (spurs are attached to secondaries). Pick first spur per
+        # secondary group.
+        seen_secondaries = set()
+        for spur in self.spurs:
+            parent = id(spur.get("parent_curve")) if "parent_curve" in spur else None
+            if parent in seen_secondaries:
+                continue
+            seen_secondaries.add(parent)
+            # Use parent_curve tip as bouquet center
+            parent_curve = spur.get("parent_curve")
+            if parent_curve and len(parent_curve) > 0:
+                tip_pos = parent_curve[-1][0]
+                placed += self._place_cluster_bouquet(tip_pos, SECONDARY_TIP_CLUSTERS, SECONDARY_TIP_VOLUME)
+
+        # ----- SPUR CLUSTERS: small bouquet on each spur -----
         for spur in self.spurs:
             base_pos = spur["pos"]
-            tan = spur["tangent"]
             sdir = spur.get("dir", Vector((0, 0, 1)))
-            up = Vector((0, 0, 1))
-            side = sdir.cross(up).normalized() if abs(sdir.z) < 0.95 else Vector((1, 0, 0))
-            fwd = sdir.cross(side).normalized()
-            for c in range(LEAVES_PER_SPUR):
-                # Distribute leaves along the short spur length
-                t_frac = 0.20 + 0.70 * (c / max(LEAVES_PER_SPUR - 1, 1))
-                # Opposite pairs: alternate 0° / 180° azimuth with 90° rotation between pairs
-                pair_idx = c // 2
-                in_pair = c % 2
-                base_azimuth = pair_idx * math.pi * 0.5  # 0, 90°, 180° between pairs
-                azimuth = base_azimuth + in_pair * math.pi  # +180° within pair
-                azimuth += self.rng.uniform(-0.20, 0.20)
-                radial = math.cos(azimuth) * side + math.sin(azimuth) * fwd
-                leaf_base = base_pos - sdir * 0.005 + radial * 0.004 + sdir * (t_frac * 0.015)
-                if self._hollow_core_skip(leaf_base):
-                    skipped_interior += 1
-                    continue
-                # Blade extends radially out from spur, mildly upturned
-                blade_dir = (radial * 0.7 + Vector((0, 0, 0.3))).normalized()
-                blade_normal = (radial.cross(blade_dir).normalized()
-                                + Vector((0, 0, 1)) * 0.6).normalized()
-                blade_normal = (blade_normal - blade_normal.dot(blade_dir) * blade_dir).normalized()
-                roll = self.rng.uniform(-0.2, 0.2)
-                scale = self.rng.uniform(0.90, 1.10)
-                length = LEAF_LENGTH * scale
-                width = LEAF_LENGTH * LEAF_WIDTH_RATIO * scale
-                vcolor = self._leaf_vcolor(leaf_base)
-                make_ovate_leaf_mesh(self.bm_leaf, leaf_base, blade_normal, blade_dir,
-                                     length, width, 0, self.leaf_faces,
-                                     color_layer=self.leaf_color_layer,
-                                     vcolor=vcolor, roll=roll, rng=self.rng)
-                placed += 1
+            cluster_center = base_pos + sdir * 0.01
+            placed += self._place_cluster_bouquet(cluster_center, CLUSTERS_PER_SPUR, SPUR_CLUSTER_RADIUS)
 
-        print(f"LEAVES: placed={placed}, skipped_interior={skipped_interior} (hollow-core)")
+        print(f"LEAVES: placed={placed} clusters (atlas grid {ATLAS_GRID}×{ATLAS_GRID}, "
+              f"{LEAF_CARD_W*100:.0f}×{LEAF_CARD_H*100:.0f}cm cards, cross_quad={USE_CROSS_QUAD})")
 
     # ----- APPLES -----
     def build_apples(self):
@@ -1090,205 +1170,134 @@ def make_leaf_material(name, fallback_color, texture_path=None):
     mat.diffuse_color = (*fallback_color, 1.0)
     mat.blend_method = 'CLIP'
     mat.shadow_method = 'CLIP'
-    mat.use_backface_culling = True   # cull_back: backface culling AÇIK (eleştirmen)
-    mat.alpha_threshold = 0.5
+    mat.use_backface_culling = False  # cross-quad: both sides visible for cluster cards
+    mat.alpha_threshold = 0.4
     return mat
 
 
+def _ovate_silhouette(x, y, cx, cy, half_w, half_h, rot_rad):
+    """Inside-test for rotated ovate silhouette centered at (cx, cy).
+    Returns (inside_bool, edge_distance_norm 0..1).
+    Used to paint leaf silhouettes into atlas pixels directly (Python image build).
+    """
+    dx = x - cx
+    dy = y - cy
+    c, s = math.cos(rot_rad), math.sin(rot_rad)
+    lx = dx * c + dy * s   # along leaf axis (-half_h..half_h)
+    ly = -dx * s + dy * c  # cross axis
+    # Ovate width function: narrows toward base and tip
+    t = (lx + half_h) / (2 * half_h)
+    if t < 0 or t > 1:
+        return (False, 0.0)
+    # width(t) = sin(pi*t)^0.6 * half_w (broad in middle, taper at ends)
+    wt = (math.sin(math.pi * t) ** 0.6) * half_w
+    if wt < 1e-6:
+        return (False, 0.0)
+    norm = abs(ly) / wt
+    if norm > 1.0:
+        return (False, 0.0)
+    return (True, norm)
+
+
+def _build_cluster_atlas_pixels(res, grid, rng):
+    """Build atlas pixels in Python directly — full control over silhouettes & alpha.
+
+    Returns a list of float RGBA pixels (length res*res*4) ready for image.pixels.
+    Each of grid×grid cells contains LEAVES_PER_ATLAS_CELL ovate leaf silhouettes
+    randomly placed and rotated. Edges fade to alpha=0 (card boundary invisible).
+    """
+    cell_px = res // grid
+    pixels = [0.0] * (res * res * 4)
+    # Leaf color palette (HSV-ish jitter per leaf)
+    base_color = COLOR_LEAF_VARIANTS[1]  # midtone
+    vein_color = tuple(c * 0.55 for c in COLOR_LEAF_VARIANTS[0])
+
+    for gy in range(grid):
+        for gx in range(grid):
+            # Generate leaf placements for this cell
+            cell_x0 = gx * cell_px
+            cell_y0 = gy * cell_px
+            n_leaves = LEAVES_PER_ATLAS_CELL + rng.randint(-1, 2)
+            leaves = []
+            for _ in range(n_leaves):
+                # Leaf center within cell (in cell-local pixel coords, with margin)
+                margin = cell_px * 0.10
+                cx = rng.uniform(margin, cell_px - margin)
+                cy = rng.uniform(margin, cell_px - margin)
+                # Leaf size (random scale)
+                size_frac = rng.uniform(0.22, 0.38)
+                half_h = cell_px * size_frac * 0.5
+                half_w = half_h * rng.uniform(0.55, 0.70)  # ovate ratio
+                rot = rng.uniform(0, 2 * math.pi)
+                # Per-leaf tint
+                hsv_shift = rng.uniform(-0.10, 0.12)
+                color = (
+                    max(0, min(1, base_color[0] + hsv_shift * 0.3)),
+                    max(0, min(1, base_color[1] + hsv_shift * 0.8)),
+                    max(0, min(1, base_color[2] + hsv_shift * 0.4)),
+                )
+                leaves.append((cx, cy, half_w, half_h, rot, color))
+
+            # Rasterize cell pixels
+            for py in range(cell_px):
+                for px in range(cell_px):
+                    # Find topmost (largest) leaf at this pixel
+                    best = None
+                    for cx, cy, hw, hh, rot, color in leaves:
+                        ok, edge_norm = _ovate_silhouette(px, py, cx, cy, hw, hh, rot)
+                        if ok:
+                            # Larger leaves on top (z-order by hh)
+                            if best is None or hh > best[0]:
+                                best = (hh, edge_norm, color, cx, cy, hw, hh, rot)
+                    if best is None:
+                        continue
+                    _, edge_norm, color, lcx, lcy, lhw, lhh, lrot = best
+                    # Alpha: soft edge falloff (1.0 at center, 0 at edge)
+                    alpha = 1.0 - smooth_step(edge_norm ** 1.5)
+                    # Vein darkening: midrib axis (rotated)
+                    c, s = math.cos(lrot), math.sin(lrot)
+                    lx = (px - lcx) * c + (py - lcy) * s
+                    ly_local = -(px - lcx) * s + (py - lcy) * c
+                    vein_strength = max(0, 1.0 - abs(ly_local) / max(lhw * 0.10, 0.5))
+                    # Mix base color with vein color
+                    r = color[0] * (1 - vein_strength * 0.6) + vein_color[0] * vein_strength * 0.6
+                    g = color[1] * (1 - vein_strength * 0.6) + vein_color[1] * vein_strength * 0.6
+                    b = color[2] * (1 - vein_strength * 0.6) + vein_color[2] * vein_strength * 0.6
+                    # Write to image pixels (Blender uses bottom-up)
+                    img_x = cell_x0 + px
+                    img_y = cell_y0 + py
+                    idx = (img_y * res + img_x) * 4
+                    pixels[idx + 0] = r
+                    pixels[idx + 1] = g
+                    pixels[idx + 2] = b
+                    pixels[idx + 3] = alpha
+    return pixels
+
+
 def bake_leaf_texture(out_path, res=512):
-    """Procedural ovate leaf alpha texture bake — Blender shader nodes → PNG.
+    """Build cluster leaf atlas (2×2 cells, 5-7 ovate silhouettes per cell) directly in Python.
 
-    Creates a temp plane with a shader that generates an ovate silhouette + leaf
-    color + subtle vein pattern, bakes to image, exports PNG. The texture is then
-    used by make_leaf_material() as placeholder until user supplies a real photo.
+    Produces a 512×512 RGBA PNG with organic leaf cluster silhouettes — card boundary
+    invisible due to alpha fadeout. Each cell is a distinct cluster variant (UV cell pick).
 
-    Returns the path to the baked PNG, or None on failure.
+    Returns the path to the saved PNG, or None on failure.
     """
     try:
-        # Create temp plane
-        bpy.ops.mesh.primitive_plane_add(size=2, location=(0, 0, 0))
-        plane = bpy.context.object
-        plane.name = "_LeafBakeTemp"
-
-        # Build shader: super-ellipse alpha mask + leaf color + vein gradient
-        mat = bpy.data.materials.new("_BakeLeafMat")
-        mat.use_nodes = True
-        nt = mat.node_tree
-        for n in list(nt.nodes):
-            nt.nodes.remove(n)
-
-        output = nt.nodes.new('ShaderNodeOutputMaterial')
-        output.location = (800, 0)
-        emit = nt.nodes.new('ShaderNodeEmission')
-        emit.location = (600, 0)
-        nt.links.new(emit.outputs[0], output.inputs[0])
-
-        # Generated tex coord centered (0..1, 0..1) → (-0.5..0.5, -0.5..0.5)
-        texcoord = nt.nodes.new('ShaderNodeTexCoord')
-        texcoord.location = (-800, 0)
-        sep = nt.nodes.new('ShaderNodeSeparateXYZ')
-        sep.location = (-600, 0)
-        nt.links.new(texcoord.outputs["Generated"], sep.inputs[0])
-
-        # u = (x - 0.5), v = (y - 0.5)
-        u_sub = nt.nodes.new('ShaderNodeMath')
-        u_sub.operation = 'SUBTRACT'
-        u_sub.inputs[1].default_value = 0.5
-        u_sub.location = (-400, 100)
-        nt.links.new(sep.outputs["X"], u_sub.inputs[0])
-        v_sub = nt.nodes.new('ShaderNodeMath')
-        v_sub.operation = 'SUBTRACT'
-        v_sub.inputs[1].default_value = 0.5
-        v_sub.location = (-400, -50)
-        nt.links.new(sep.outputs["Y"], v_sub.inputs[0])
-
-        # Ovate silhouette: ellipse stretched in v, narrowing at v→±0.5
-        # silhouette = (u / (width(v)))^2 + (v / 0.5)^2 < 1
-        # width(v) = base_w * (1 - |v|*2)^0.5 - taper at top
-        v_abs = nt.nodes.new('ShaderNodeMath')
-        v_abs.operation = 'ABSOLUTE'
-        v_abs.location = (-200, -50)
-        nt.links.new(v_sub.outputs[0], v_abs.inputs[0])
-        # taper = 1 - |v|*0.8  (width narrows toward tip/base)
-        taper = nt.nodes.new('ShaderNodeMath')
-        taper.operation = 'MULTIPLY'
-        taper.inputs[1].default_value = 0.8
-        taper.location = (0, -50)
-        nt.links.new(v_abs.outputs[0], taper.inputs[0])
-        taper_inv = nt.nodes.new('ShaderNodeMath')
-        taper_inv.operation = 'SUBTRACT'
-        taper_inv.inputs[0].default_value = 1.0
-        taper_inv.location = (200, -50)
-        nt.links.new(taper.outputs[0], taper_inv.inputs[1])
-        # half_width = 0.25 * taper  (max blade width 0.5 at v=0)
-        half_w = nt.nodes.new('ShaderNodeMath')
-        half_w.operation = 'MULTIPLY'
-        half_w.inputs[1].default_value = 0.32
-        half_w.location = (400, -50)
-        nt.links.new(taper_inv.outputs[0], half_w.inputs[0])
-        # u_norm = |u| / half_width
-        u_abs = nt.nodes.new('ShaderNodeMath')
-        u_abs.operation = 'ABSOLUTE'
-        u_abs.location = (-200, 100)
-        nt.links.new(u_sub.outputs[0], u_abs.inputs[0])
-        u_norm = nt.nodes.new('ShaderNodeMath')
-        u_norm.operation = 'DIVIDE'
-        u_norm.location = (600, 50)
-        nt.links.new(u_abs.outputs[0], u_norm.inputs[0])
-        nt.links.new(half_w.outputs[0], u_norm.inputs[1])
-        # alpha = 1 - smoothstep(0.85, 1.0, u_norm)  — hard ovate edge
-        alpha_ramp = nt.nodes.new('ShaderNodeMapRange')
-        alpha_ramp.inputs[1].default_value = 0.85
-        alpha_ramp.inputs[2].default_value = 1.0
-        alpha_ramp.inputs[3].default_value = 1.0
-        alpha_ramp.inputs[4].default_value = 0.0
-        alpha_ramp.clamp = True
-        alpha_ramp.location = (800, 50)
-        nt.links.new(u_norm.outputs[0], alpha_ramp.inputs[0])
-
-        # Leaf color: midtone green with vein pattern (darker midrib)
-        leaf_color = nt.nodes.new('ShaderNodeRGB')
-        leaf_color.outputs[0].default_value = (*COLOR_LEAF_VARIANTS[1], 1.0)
-        leaf_color.location = (0, 300)
-        vein_color = nt.nodes.new('ShaderNodeRGB')
-        vein_color.outputs[0].default_value = (
-            COLOR_LEAF_VARIANTS[0][0] * 0.6,
-            COLOR_LEAF_VARIANTS[0][1] * 0.6,
-            COLOR_LEAF_VARIANTS[0][2] * 0.6,
-            1.0,
-        )
-        vein_color.location = (0, 150)
-        # Vein mask: darken near midrib (small |u|)
-        vein_mask = nt.nodes.new('ShaderNodeMapRange')
-        vein_mask.inputs[1].default_value = 0.0
-        vein_mask.inputs[2].default_value = 0.04
-        vein_mask.inputs[3].default_value = 1.0
-        vein_mask.inputs[4].default_value = 0.0
-        vein_mask.clamp = True
-        vein_mask.location = (200, 150)
-        nt.links.new(u_abs.outputs[0], vein_mask.inputs[0])
-        # Mix leaf_color with vein_color by vein_mask
-        col_mix = nt.nodes.new('ShaderNodeMixRGB')
-        col_mix.location = (400, 250)
-        nt.links.new(vein_mask.outputs[0], col_mix.inputs[0])
-        nt.links.new(leaf_color.outputs[0], col_mix.inputs[1])
-        nt.links.new(vein_color.outputs[0], col_mix.inputs[2])
-        nt.links.new(col_mix.outputs[0], emit.inputs["Color"])
-
-        plane.data.materials.append(mat)
-
-        # Setup bake image
-        img = bpy.data.images.new("_LeafBake", width=res, height=res, alpha=True)
-        # Add image texture node and select it for bake target
-        tex_node = nt.nodes.new('ShaderNodeTexImage')
-        tex_node.image = img
-        tex_node.location = (-1000, -200)
-        nt.nodes.active = tex_node
-
-        # Build alpha-multiplied color: out_rgba = (col.rgb, alpha) — bake combined RGBA
-        # Use Combine RGB approach: emit color is RGB, need to bake alpha into image's alpha channel
-        # Solution: do 2 passes (color, then alpha), OR set emission strength = alpha
-        # Simpler: set image pixels manually after baking color.
-        # For now: bake EMIT (color), then write alpha via second pass.
-
-        # Switch to cycles for bake
-        scene = bpy.context.scene
-        old_engine = scene.render.engine
-        scene.render.engine = 'CYCLES'
-        scene.cycles.bake_type = 'EMIT'
-        scene.cycles.samples = 4
-        scene.cycles.use_denoising = False
-
-        # Select plane only
-        for o in bpy.context.scene.objects:
-            o.select_set(o is plane)
-        bpy.context.view_layer.objects.active = plane
-
-        # Bake color
-        try:
-            bpy.ops.object.bake(type='EMIT')
-        except Exception as e:
-            print(f"Bake color failed: {e}")
-            scene.render.engine = old_engine
-            return None
-
-        # Now compute alpha per-pixel via second bake: hook alpha_ramp.Result → emit.Color
-        nt.links.new(alpha_ramp.outputs[0], emit.inputs["Color"])
-        # Bake alpha (will write grayscale into image)
-        alpha_img = bpy.data.images.new("_LeafBakeAlpha", width=res, height=res, alpha=False)
-        tex_node.image = alpha_img
-        try:
-            bpy.ops.object.bake(type='EMIT')
-        except Exception as e:
-            print(f"Bake alpha failed: {e}")
-            scene.render.engine = old_engine
-            return None
-
-        # Combine: image rgb from img, alpha from alpha_img
-        rgb_pixels = list(img.pixels)
-        alpha_pixels = list(alpha_img.pixels)
-        n_px = res * res
-        combined = [0.0] * (n_px * 4)
-        for i in range(n_px):
-            combined[i * 4 + 0] = rgb_pixels[i * 4 + 0]
-            combined[i * 4 + 1] = rgb_pixels[i * 4 + 1]
-            combined[i * 4 + 2] = rgb_pixels[i * 4 + 2]
-            combined[i * 4 + 3] = alpha_pixels[i * 4 + 0]
-        img.pixels = combined
+        rng = random.Random(DEFAULT_SEED)
+        print(f"Building cluster atlas ({res}×{res}, {ATLAS_GRID}×{ATLAS_GRID} cells)...")
+        pixels = _build_cluster_atlas_pixels(res, ATLAS_GRID, rng)
+        img = bpy.data.images.new("_LeafAtlas", width=res, height=res, alpha=True)
+        img.pixels = pixels
         img.filepath_raw = out_path
         img.file_format = 'PNG'
         img.save()
-        print(f"Baked leaf texture → {out_path}")
-
-        scene.render.engine = old_engine
-        # Cleanup
-        bpy.data.objects.remove(plane, do_unlink=True)
-        bpy.data.materials.remove(mat, do_unlink=True)
         bpy.data.images.remove(img, do_unlink=True)
-        bpy.data.images.remove(alpha_img, do_unlink=True)
+        print(f"Baked cluster atlas → {out_path}")
         return out_path
     except Exception as e:
         print(f"bake_leaf_texture exception: {e}")
+        import traceback
+        traceback.print_exc()
         return None
 
 
@@ -1466,9 +1475,13 @@ def main():
     texture_path = None
     if not args.no_bake:
         os.makedirs(os.path.dirname(LEAF_TEXTURE_PATH), exist_ok=True)
-        texture_path = bake_leaf_texture(LEAF_TEXTURE_PATH, res=512)
+        texture_path = bake_leaf_texture(LEAF_TEXTURE_PATH, res=ATLAS_RES)
         # After bake, reset scene clean for tree build
         reset_scene()
+    elif os.path.exists(LEAF_TEXTURE_PATH):
+        # --no-bake but texture exists on disk — use it
+        texture_path = LEAF_TEXTURE_PATH
+        print(f"Using existing texture: {LEAF_TEXTURE_PATH}")
 
     builder = TreeBuilder(seed=args.seed)
     builder.leaf_texture_path = texture_path
