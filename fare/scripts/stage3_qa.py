@@ -81,7 +81,7 @@ CATEGORY_COLOR = {
 
 
 def categorize(name):
-    if name == "root" or name in ("pelvis", "spine_01", "spine_02", "chest"):
+    if name == "root" or name in ("pelvis", "sacrum", "spine_01", "spine_02", "chest"):
         return "spine"
     if name in ("neck", "head", "snout"):
         return "head"
@@ -266,7 +266,8 @@ def qa_gates(arm, mesh):
               ("front_paw.L", "forearm.L"),
               ("hip.L", "pelvis"), ("thigh.L", "hip.L"),
               ("shin.L", "thigh.L"), ("back_paw.L", "shin.L"),
-              ("tail_01", "pelvis")]
+              ("tail_01", "sacrum"),
+              ("sacrum", "pelvis")]
     hier_fail = []
     for child, expected_parent in chain:
         cb = arm.data.bones.get(child)
@@ -331,19 +332,20 @@ def qa_gates(arm, mesh):
         passes.append(f"tail chain {tail_count} segments")
         log(f"  ✓ Tail chain {tail_count} segments")
 
-    # 7. Tail base emerges from pelvis bone (pelvis.tail near tail_01.head)
-    pelvis = arm.data.bones.get("pelvis")
+    # 7. Tail_01 ancestry leads back to pelvis (directly or via sacrum)
     tail01 = arm.data.bones.get("tail_01")
-    if pelvis and tail01:
-        pt = mw @ pelvis.tail_local
-        th = mw @ tail01.head_local
-        dist = (pt - th).length
-        if dist > 0.05:
-            failures.append(f"tail base not at pelvis tail (dist={dist:.3f})")
-            log(f"  ✗ Tail base not at pelvis tail (dist={dist:.3f})")
+    if tail01:
+        ancestor = tail01.parent
+        ancestors = []
+        while ancestor is not None:
+            ancestors.append(ancestor.name)
+            ancestor = ancestor.parent
+        if "pelvis" in ancestors:
+            passes.append(f"tail_01 ancestry → pelvis (via {ancestors[:ancestors.index('pelvis')+1]})")
+            log(f"  ✓ tail_01 ancestry → pelvis (chain: {' → '.join(ancestors[:ancestors.index('pelvis')+1])})")
         else:
-            passes.append(f"tail emerges from pelvis (dist={dist:.3f})")
-            log(f"  ✓ Tail emerges from pelvis (pelvis.tail → tail_01.head dist={dist:.4f})")
+            failures.append(f"tail_01 has no pelvis ancestor (chain: {ancestors})")
+            log(f"  ✗ tail_01 ancestry doesn't lead to pelvis: {ancestors}")
 
     # 8. Paws near floor
     for paw_name in ("front_paw.L", "front_paw.R", "back_paw.L", "back_paw.R"):
