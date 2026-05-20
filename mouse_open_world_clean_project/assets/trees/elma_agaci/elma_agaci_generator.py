@@ -16,7 +16,7 @@ import sys
 
 import bmesh
 import bpy
-from mathutils import Euler, Matrix, Quaternion, Vector
+from mathutils import Euler, Matrix, Quaternion, Vector, noise as mu_noise
 
 # ------------------------------------------------------------------
 # CONFIG
@@ -108,15 +108,15 @@ ATLAS_RES = 512                  # atlas resolution
 LEAVES_PER_ATLAS_CELL = 6        # silhouettes baked into each cell
 
 # Foliage volume placement — clusters at twig tips form spherical bouquets
-CLUSTERS_PER_TWIG_TIP = 7        # bouquet at each twig endpoint
-CLUSTER_VOLUME_RADIUS = 0.24
-CLUSTER_TIP_LENGTH_FRAC = 0.25
-SECONDARY_TIP_CLUSTERS = 6       # bouquet at secondary branch tips (major canopy mass)
-SECONDARY_TIP_VOLUME = 0.40
-
-# Spur clusters — small bouquet on each spur
-CLUSTERS_PER_SPUR = 3
-SPUR_CLUSTER_RADIUS = 0.10
+# Round 24 — Botanist panel: along-twig parametric placement (kills floating bouquets)
+CARDS_PER_TWIG_ALONG = 7         # cards along long shoot (t=0.15..0.90)
+CARDS_PER_TWIG_TERMINAL = 4      # cards at twig tip (juvenile slowdown cluster)
+CLUSTERS_PER_SPUR = 4            # rosette on each spur
+LEAF_ALONG_T_START = 0.18        # skip basal 18% (sparse basal in reality)
+LEAF_ALONG_T_END = 0.92          # skip absolute tip (terminal handles that)
+LEAF_PETIOLE_LEN = 0.025         # 2.5 cm petiole — leaves attached visibly
+LEAF_TERMINAL_OFFSET = 0.04      # terminal cluster jitter radius (tight)
+LEAF_CARD_TILT_JITTER_DEG = 20   # ±20° normal jitter (SpeedTree sweet spot)
 
 # Card transform variation (organic look — user feedback: rotasyon/scale artırılmalı)
 LEAF_CARD_SIZE_JITTER = (0.65, 1.20)
@@ -151,13 +151,33 @@ SCAFFOLD_DROOP_TIP_M = 0.32
 SECONDARY_DROOP_TIP_M = 0.22
 
 # Material colors (placeholders, user will supply textures later)
-COLOR_BARK   = (0.30, 0.20, 0.13)
+COLOR_BARK   = (0.26, 0.21, 0.17)   # fallback (used if vcolor missing)
+# Round 24 — Botanist panel: cool grey-brown bark by branch order (linear-RGB)
+COLOR_BARK_TIERS = [
+    (0.18, 0.15, 0.13),    # 0 trunk: dark grey-brown, fissured plates
+    (0.26, 0.21, 0.17),    # 1 scaffold: mid grey-brown, lenticels
+    (0.34, 0.26, 0.19),    # 2 secondary: warmer smooth brown, no fissures
+    (0.42, 0.22, 0.16),    # 3 twig: reddish-mahogany current-year shoot
+]
+# Crack/fissure parameters (procedural vertex color, trunk + scaffold only)
+BARK_CRACK_SCALE_Z = 8.0       # stretches noise vertically → vertical fissures
+BARK_CRACK_SCALE_XY = 2.5
+BARK_CRACK_THRESHOLD = -0.15
+BARK_CRACK_DARKEN = 0.45        # crack vert color = base * 0.45
+
 COLOR_LEAF_VARIANTS = [
     (0.18, 0.42, 0.13),     # darker mature
     (0.24, 0.52, 0.18),     # midtone
     (0.32, 0.58, 0.22),     # lighter young leaves
 ]
 COLOR_APPLE  = (0.85, 0.13, 0.10)
+# Round 24 — Pomologist panel: Gala variety (sun/shade gradient)
+COLOR_APPLE_SUN    = (0.45, 0.04, 0.03)    # primary red (sun-side)
+COLOR_APPLE_SHADE  = (0.55, 0.42, 0.08)    # yellow-green (shade-side)
+COLOR_APPLE_STRIPE = (0.28, 0.02, 0.02)    # deep red stripe
+COLOR_APPLE_ENDS   = (0.18, 0.06, 0.04)    # calyx/stem-end darkening
+COLOR_STEM_BASE    = (0.30, 0.32, 0.10)    # greenish near apple
+COLOR_STEM_TIP     = (0.22, 0.14, 0.06)    # corky brown at branch attach
 COLOR_STEM   = (0.42, 0.26, 0.14)
 
 # Output
@@ -351,16 +371,25 @@ def branch_curve(base_pos, base_dir, length, base_r, tip_r, segments, droop_m, l
 # MESH BUILDERS
 # ------------------------------------------------------------------
 
-def build_tube(bm, curve_pts, radial_segs, mat_index, face_index_track):
+def build_tube(bm, curve_pts, radial_segs, mat_index, face_index_track, tier=0):
     """Build a tube along the curve and record face indices for material assignment.
 
     curve_pts: list of (pos, radius, tangent, radial_mod_or_None).
+    `tier` (0=trunk, 1=scaffold, 2=secondary, 3=twig) stamped on every vert
+    along with `branch_t` (0=base..1=tip) for later vcolor gradient.
     """
+    tier_layer = bm.verts.layers.int.get('tier') or bm.verts.layers.int.new('tier')
+    t_layer = bm.verts.layers.float.get('branch_t') or bm.verts.layers.float.new('branch_t')
     rings = []
-    for pt in curve_pts:
+    n_pts = len(curve_pts)
+    for i, pt in enumerate(curve_pts):
         pos, r, tangent = pt[0], pt[1], pt[2]
         radial_mod = pt[3] if len(pt) > 3 else None
         ring = cap_disk(bm, pos, tangent, r, radial_segs, radial_mod=radial_mod)
+        t_val = i / max(n_pts - 1, 1)
+        for v in ring:
+            v[tier_layer] = tier
+            v[t_layer] = t_val
         rings.append(ring)
     start_face = len(bm.faces)
     for i in range(len(rings) - 1):
@@ -525,59 +554,119 @@ def make_ovate_leaf_mesh(bm, base_pos, blade_normal, blade_dir, length, width,
 
 
 def make_apple(bm, center, mat_apple_idx, mat_stem_idx, face_index_track, rng):
-    """UV sphere ~8x6 squashed, with stem, hanging vertically."""
-    # UV sphere construction
-    diameter = APPLE_DIAMETER * rng.uniform(0.88, 1.12)
+    """Biologically-shaped Malus domestica apple (Round 24 pomologist panel).
+
+    Gala-type cultivar profile:
+      - Oblate-globular body (h/d = 0.88-0.92)
+      - Stem cavity (top concave dimple, depth ~7% diameter)
+      - Calyx basin (bottom wider deeper dimple, depth ~10%)
+      - Asymmetry (±3-5% radial jitter, 2-4° axis tilt)
+      - Dual-axis vcolor gradient: sun→shade (horizontal) + ends darken (vertical)
+      - Stem: 4-side × 3-ring cylinder, brown→green vcolor
+
+    Per-vertex color "apple" attribute stamped at build time.
+    """
+    color_layer = bm.loops.layers.color.get("apple") or bm.loops.layers.color.new("apple")
+
+    # Body dimensions
+    diameter = APPLE_DIAMETER * rng.uniform(0.92, 1.08)
     r = diameter * 0.5
-    z_scale = APPLE_OBLATE * rng.uniform(0.95, 1.05)
+    h_d_ratio = rng.uniform(0.88, 0.92)
+    r_z = r * h_d_ratio
     rings = APPLE_UV_RINGS
     segs = APPLE_UV_SEGS
 
-    rng_offset = Vector((rng.uniform(-0.005, 0.005), rng.uniform(-0.005, 0.005), 0))
-    apple_center = center - Vector((0, 0, r * z_scale)) + rng_offset  # fruit hangs below attach point
+    # Hang point: apple body below branch attach
+    apple_center = center - Vector((0, 0, r_z * 1.05))
 
-    # Build rings (latitude lines)
+    # Random "sun direction" per apple (which side gets more red). Use horizontal direction.
+    sun_az = rng.uniform(0, 2 * math.pi)
+    sun_dir = Vector((math.cos(sun_az), math.sin(sun_az), 0))
+    stripe_seed = rng.random() * 6.28
+
+    # Slight axis tilt for asymmetry
+    axis_tilt_rad = math.radians(rng.uniform(2, 4))
+    tilt_dir = rng.uniform(0, 2 * math.pi)
+    tilt_axis = Vector((math.cos(tilt_dir), math.sin(tilt_dir), 0))
+
+    def _apple_vcolor(local_pos):
+        """Dual-axis gradient: sun↔shade horizontal + end-darken vertical + stripes."""
+        # Vertical position normalized -1..1 (top=+1, bot=-1)
+        v_norm = local_pos.z / max(r_z, 1e-5)
+        # Horizontal dot with sun dir → -1..1
+        h_norm = (local_pos.xy.normalized().dot(sun_dir.xy)
+                  if local_pos.xy.length > 1e-5 else 0.0)
+        # Base: lerp sun↔shade
+        sun_t = max(0, min(1, (h_norm + 1) * 0.5))      # 0 shade .. 1 sun
+        base = [COLOR_APPLE_SHADE[i] * (1 - sun_t) + COLOR_APPLE_SUN[i] * sun_t
+                for i in range(3)]
+        # Stripe streaks: vertical streaks bias toward stripe color on sun side
+        stripe_w = 0.5 + 0.5 * math.sin(math.atan2(local_pos.y, local_pos.x) * 8 + stripe_seed)
+        if sun_t > 0.55 and stripe_w > 0.65:
+            stripe_blend = (stripe_w - 0.65) * 2.5
+            base = [base[i] * (1 - stripe_blend) + COLOR_APPLE_STRIPE[i] * stripe_blend
+                    for i in range(3)]
+        # End-darken: darker near calyx (z<0) & stem cavity (z>0.7)
+        end_t = max(0, abs(v_norm) - 0.65) / 0.35
+        if end_t > 0:
+            base = [base[i] * (1 - end_t * 0.7) + COLOR_APPLE_ENDS[i] * (end_t * 0.7)
+                    for i in range(3)]
+        return (base[0], base[1], base[2], 1.0)
+
+    # Build rings — phi 0=top..pi=bot
     ring_verts = []
+    ring_locals = []   # local positions for vcolor
     for i in range(1, rings):
-        phi = math.pi * i / rings  # 0..pi from top
-        z = math.cos(phi) * r * z_scale
-        rad = math.sin(phi) * r
-        # slight stem-end pucker (top) and calyx pucker (bottom)
+        phi = math.pi * i / rings
+        z = math.cos(phi) * r_z
+        rad_horiz = math.sin(phi) * r
+        # Stem cavity (top): pinch ring 1 inward + slight z-pull-down (concave)
         if i == 1:
-            rad *= 0.42        # stronger top pinch → stem cavity
-            z *= 1.04
+            rad_horiz *= 0.55
+            z -= r_z * 0.08   # 8% depth concave
+        # Calyx basin (bottom): wider pinch + deeper z-pull-up
         elif i == rings - 1:
-            rad *= 0.42        # stronger bottom pinch → calyx basin
-            z *= 1.04
+            rad_horiz *= 0.48
+            z += r_z * 0.10   # 10% depth concave
+        # Equator emphasis (oblate bulge)
+        elif i == rings // 2:
+            rad_horiz *= 1.04
         verts = []
+        locals_row = []
         for j in range(segs):
             ang = 2 * math.pi * j / segs
-            # slight asymmetry per apple
-            asym = 1.0 + 0.04 * math.sin(ang * 2 + rng.random() * 6.28)
-            x = math.cos(ang) * rad * asym
-            y = math.sin(ang) * rad * asym
-            verts.append(bm.verts.new(apple_center + Vector((x, y, z))))
+            # Radial asymmetry jitter
+            asym = 1.0 + 0.04 * math.sin(ang * 2 + stripe_seed)
+            jitter = rng.uniform(-0.03, 0.03) * rad_horiz
+            x = math.cos(ang) * (rad_horiz * asym + jitter)
+            y = math.sin(ang) * (rad_horiz * asym + jitter)
+            local = Vector((x, y, z))
+            # Apply axis tilt
+            local = Quaternion(tilt_axis, axis_tilt_rad) @ local
+            verts.append(bm.verts.new(apple_center + local))
+            locals_row.append(local)
         ring_verts.append(verts)
+        ring_locals.append(locals_row)
 
-    # Top pole (calyx end up if we orient stem down? no — stem at top, hanging)
-    top_pole = bm.verts.new(apple_center + Vector((0, 0, r * z_scale * 1.10)))
-    bot_pole = bm.verts.new(apple_center + Vector((0, 0, -r * z_scale * 1.10)))
-    # Stronger basin pucker — apple stem cavity + calyx basin
-    top_pole.co.z -= r * z_scale * 0.18
-    bot_pole.co.z += r * z_scale * 0.16
+    # Top pole (stem cavity bottom — deepest point of dimple)
+    top_local = Vector((0, 0, r_z * 0.78))    # 22% deeper than ring 1
+    top_pole = bm.verts.new(apple_center + Quaternion(tilt_axis, axis_tilt_rad) @ top_local)
+    # Bottom pole (calyx basin center — deepest)
+    bot_local = Vector((0, 0, -r_z * 0.75))
+    bot_pole = bm.verts.new(apple_center + Quaternion(tilt_axis, axis_tilt_rad) @ bot_local)
 
     start = len(bm.faces)
-    # Cap top
+    # Cap top (stem cavity)
     for j in range(segs):
         jn = (j + 1) % segs
         try:
             bm.faces.new((top_pole, ring_verts[0][jn], ring_verts[0][j]))
         except ValueError:
             pass
-    # Bridge rings
+    # Bridge body rings
     for i in range(len(ring_verts) - 1):
         bridge_rings(bm, ring_verts[i], ring_verts[i + 1])
-    # Cap bottom
+    # Cap bottom (calyx basin)
     for j in range(segs):
         jn = (j + 1) % segs
         try:
@@ -587,9 +676,19 @@ def make_apple(bm, center, mat_apple_idx, mat_stem_idx, face_index_track, rng):
     end = len(bm.faces)
     face_index_track.setdefault(mat_apple_idx, []).append((start, end))
 
-    # Stem: tiny cylinder from top pole going up to attachment point
+    # Apply vcolor per loop on all newly created faces
+    bm.faces.ensure_lookup_table()
+    for fi in range(start, end):
+        f = bm.faces[fi]
+        for loop in f.loops:
+            local_pos = loop.vert.co - apple_center
+            # Un-tilt for color lookup (color in untilted local frame)
+            local_pos = Quaternion(tilt_axis, -axis_tilt_rad) @ local_pos
+            loop[color_layer] = _apple_vcolor(local_pos)
+
+    # ----- STEM: brown→green corky stem (Pomologist panel: 4 sides × 3 rings) -----
     stem_top = center  # branch attachment
-    stem_bot = Vector((apple_center.x, apple_center.y, apple_center.z + r * z_scale * 1.04))
+    stem_bot = apple_center + Quaternion(tilt_axis, axis_tilt_rad) @ Vector((0, 0, r_z * 0.95))
     stem_dir = (stem_top - stem_bot)
     stem_len = max(stem_dir.length, APPLE_STEM_LEN * 0.5)
     stem_dir = stem_dir.normalized() if stem_dir.length > 1e-5 else Vector((0, 0, 1))
@@ -599,16 +698,33 @@ def make_apple(bm, center, mat_apple_idx, mat_stem_idx, face_index_track, rng):
     for i in range(n_seg):
         t = i / (n_seg - 1)
         pos = stem_bot + stem_dir * (stem_len * t)
-        r_stem = APPLE_STEM_R * (1.0 - 0.2 * t)
-        stem_pts.append((pos, r_stem, stem_dir))
+        r_stem = APPLE_STEM_R * (1.0 - 0.25 * t)
+        stem_pts.append((pos, r_stem, stem_dir, t))
     stem_start = len(bm.faces)
     stem_rings = []
-    for pos, rr, td in stem_pts:
-        stem_rings.append(cap_disk(bm, pos, td, rr, APPLE_STEM_RADIAL_SEGS))
+    stem_ts = []
+    for pos, rr, td, t_val in stem_pts:
+        ring = cap_disk(bm, pos, td, rr, APPLE_STEM_RADIAL_SEGS)
+        stem_rings.append(ring)
+        stem_ts.append(t_val)
     for i in range(len(stem_rings) - 1):
         bridge_rings(bm, stem_rings[i], stem_rings[i + 1])
     stem_end = len(bm.faces)
     face_index_track.setdefault(mat_stem_idx, []).append((stem_start, stem_end))
+
+    # Stem vcolor: t=0 base (greenish) → t=1 tip near branch (corky brown)
+    # Build vert→ring lookup
+    vert_to_t = {}
+    for ring_idx, ring in enumerate(stem_rings):
+        for v in ring:
+            vert_to_t[v] = stem_ts[ring_idx]
+    bm.faces.ensure_lookup_table()
+    for fi in range(stem_start, stem_end):
+        f = bm.faces[fi]
+        for loop in f.loops:
+            t_val = vert_to_t.get(loop.vert, 0.5)
+            col = [COLOR_STEM_BASE[i] * (1 - t_val) + COLOR_STEM_TIP[i] * t_val for i in range(3)]
+            loop[color_layer] = (col[0], col[1], col[2], 1.0)
 
 
 # ------------------------------------------------------------------
@@ -640,7 +756,7 @@ class TreeBuilder:
     # ----- WOOD -----
     def build_trunk_and_branches(self):
         trunk_pts = trunk_curve(self.rng)
-        build_tube(self.bm_wood, trunk_pts, TRUNK_RADIAL_SEGS, 0, self.wood_faces)
+        build_tube(self.bm_wood, trunk_pts, TRUNK_RADIAL_SEGS, 0, self.wood_faces, tier=0)
 
         geom_top = TOTAL_HEIGHT * TRUNK_GEOM_TOP_FRAC
 
@@ -677,7 +793,7 @@ class TreeBuilder:
             droop = SCAFFOLD_DROOP_TIP_M * FRUIT_LOAD * (0.7 if is_co_leader else 1.0)
             curve = branch_curve(t_pos + out_dir * (t_r * 0.6), base_dir, length, base_r, tip_r,
                                  SCAFFOLD_SEGMENTS, droop, lateral_jitter=0.10, rng=self.rng)
-            build_tube(self.bm_wood, curve, SCAFFOLD_RADIAL_SEGS, 0, self.wood_faces)
+            build_tube(self.bm_wood, curve, SCAFFOLD_RADIAL_SEGS, 0, self.wood_faces, tier=1)
             self._build_secondaries(curve, depth=1)
 
         # UPPER CROWN BRANCHES: near trunk top, more upright, fill crown above scaffolds.
@@ -701,7 +817,7 @@ class TreeBuilder:
             droop = SECONDARY_DROOP_TIP_M * FRUIT_LOAD * 0.6
             curve = branch_curve(t_pos + out_dir * (t_r * 0.5), base_dir, length, base_r, tip_r,
                                  SCAFFOLD_SEGMENTS - 1, droop, lateral_jitter=0.06, rng=self.rng)
-            build_tube(self.bm_wood, curve, SCAFFOLD_RADIAL_SEGS - 2, 0, self.wood_faces)
+            build_tube(self.bm_wood, curve, SCAFFOLD_RADIAL_SEGS - 2, 0, self.wood_faces, tier=1)
             self._build_secondaries(curve, depth=1, count_override=(2, 4))
 
     def _build_secondaries(self, parent_curve, depth, count_override=None):
@@ -730,7 +846,7 @@ class TreeBuilder:
             droop = SECONDARY_DROOP_TIP_M * FRUIT_LOAD * (1.0 + 0.2 * depth)
             curve = branch_curve(pos + radial * (r_parent * 0.5), base_dir, length, base_r, tip_r,
                                  SECONDARY_SEGMENTS, droop, lateral_jitter=0.06, rng=self.rng)
-            build_tube(self.bm_wood, curve, SECONDARY_RADIAL_SEGS, 0, self.wood_faces)
+            build_tube(self.bm_wood, curve, SECONDARY_RADIAL_SEGS, 0, self.wood_faces, tier=2)
             # twigs
             self._build_twigs(curve, depth=depth + 1)
             # spurs on this secondary
@@ -755,8 +871,8 @@ class TreeBuilder:
             droop = 0.03 * FRUIT_LOAD
             curve = branch_curve(pos + radial * (r_parent * 0.4), base_dir, length, base_r, tip_r,
                                  TWIG_SEGMENTS, droop, lateral_jitter=0.03, rng=self.rng)
-            build_tube(self.bm_wood, curve, TWIG_RADIAL_SEGS, 0, self.wood_faces)
-            self.twigs.append({"curve": curve, "depth": depth})
+            build_tube(self.bm_wood, curve, TWIG_RADIAL_SEGS, 0, self.wood_faces, tier=3)
+            self.twigs.append({"curve": curve, "depth": depth, "parent_curve": parent_curve})
             # occasional spurs on twigs (mostly long shoots have leaves, no spurs)
             if self.rng.random() < SPURS_PER_TWIG_AVG:
                 self._sprinkle_spurs_on_branch(curve, count=1)
@@ -777,7 +893,7 @@ class TreeBuilder:
             base = pos + radial * (r_parent * 0.4)
             curve = branch_curve(base, spur_dir, spur_len, SPUR_BASE_R, SPUR_TIP_R,
                                  SPUR_SEGMENTS, 0.0, 0.001, self.rng)
-            build_tube(self.bm_wood, curve, SPUR_RADIAL_SEGS, 0, self.wood_faces)
+            build_tube(self.bm_wood, curve, SPUR_RADIAL_SEGS, 0, self.wood_faces, tier=3)
             # Spur tip = leaf rosette + (sometimes) apple cluster
             tip = curve[-1]
             self.spurs.append({"pos": tip[0], "tangent": tip[2], "parent_curve": parent_curve,
@@ -867,88 +983,124 @@ class TreeBuilder:
         # Vertex color RGB normalized 0..1, used as multiplicative tint
         return (r * 2.0, g * 2.0, b * 2.0, ao)  # ×2 to allow shader brightening if needed
 
-    def _place_cluster_bouquet(self, center, n_clusters, radius, vcolor_pos=None):
-        """Place n_clusters cross-quad cards in a spherical volume around center.
+    def _place_card_at(self, pos, twig_axis, scale_mul=1.0, cell_idx=0):
+        """Place one cross-quad cluster card at given position.
 
-        Each card gets random size, full random yaw/pitch/roll for organic look.
-        UV cell picked round-robin from atlas (4 variants in 2×2 grid).
+        twig_axis: tangent of the parent twig (card normal points radially outward + jitter).
+        Returns 1 if placed, 0 if skipped (hollow-core).
+        """
+        if self._hollow_core_skip(pos):
+            return 0
+        # Card normal: radial outward from twig axis + ±20° jitter (SpeedTree sweet spot)
+        # Build a radial direction perpendicular to twig_axis
+        up = Vector((0, 0, 1))
+        radial_seed = self.rng.uniform(0, 2 * math.pi)
+        side = twig_axis.cross(up).normalized() if abs(twig_axis.z) < 0.95 else Vector((1, 0, 0))
+        fwd = twig_axis.cross(side).normalized()
+        radial = (math.cos(radial_seed) * side + math.sin(radial_seed) * fwd).normalized()
+        # Heliotropic upward bias (+15-25°)
+        tilt_up = math.radians(self.rng.uniform(15, 25))
+        radial = (radial * math.cos(tilt_up) + up * math.sin(tilt_up)).normalized()
+        # ±20° jitter
+        jitter_ax = side if self.rng.random() < 0.5 else fwd
+        jit = math.radians(self.rng.uniform(-LEAF_CARD_TILT_JITTER_DEG, LEAF_CARD_TILT_JITTER_DEG))
+        n = Quaternion(jitter_ax, jit) @ radial
+        roll = math.radians(self.rng.uniform(-LEAF_CARD_ROLL_JITTER_DEG, LEAF_CARD_ROLL_JITTER_DEG))
+        scale = self.rng.uniform(*LEAF_CARD_SIZE_JITTER) * scale_mul
+        w = LEAF_CARD_W * scale
+        h = LEAF_CARD_H * scale
+        uv_cell = (cell_idx % ATLAS_GRID, (cell_idx // ATLAS_GRID) % ATLAS_GRID)
+        vcolor = self._leaf_vcolor(pos)
+        make_cluster_card(self.bm_leaf, pos, n, w, h, 0, self.leaf_faces,
+                          uv_cell=uv_cell, atlas_grid=ATLAS_GRID,
+                          color_layer=self.leaf_color_layer,
+                          vcolor=vcolor, roll=roll,
+                          cross_quad=USE_CROSS_QUAD, rng=self.rng)
+        return 1
+
+    def _place_along_twig(self, curve, n_cards_along, n_cards_terminal):
+        """Place leaf cards ALONG twig curve at parametric t values + terminal bouquet.
+
+        Spec from Botanist panel (Agent 3):
+        - Along-twig: 6 cards at t=0.15, 0.30, 0.45, 0.60, 0.75, 0.90
+        - Terminal bouquet: 2-3 cards at t=1.0 (juvenile slowdown rosette)
+        - Radial offset = petiole length (~2.5cm)
+        - Azimuth step = 137.5° (golden angle) around twig axis
+        - Tip cards 70% scale (juvenile size)
         """
         placed = 0
-        for i in range(n_clusters):
-            # Random spherical offset within radius
-            theta = self.rng.uniform(0, 2 * math.pi)
-            phi = math.acos(self.rng.uniform(-1, 1))   # uniform on sphere
-            r = radius * (self.rng.random() ** 0.5)    # bias toward outer shell
-            offset = Vector((
-                r * math.sin(phi) * math.cos(theta),
-                r * math.sin(phi) * math.sin(theta),
-                r * math.cos(phi) * 0.7,    # slightly flatten vertically
-            ))
-            pos = center + offset
-            if self._hollow_core_skip(pos):
-                continue
-            # Random card orientation — wide variation for organic look
-            yaw = math.radians(self.rng.uniform(-LEAF_CARD_YAW_JITTER_DEG, LEAF_CARD_YAW_JITTER_DEG))
-            pitch = math.radians(self.rng.uniform(-LEAF_CARD_PITCH_JITTER_DEG, LEAF_CARD_PITCH_JITTER_DEG))
-            n = Vector((0, 0, 1))
-            n = Quaternion(Vector((1, 0, 0)), pitch) @ n
-            n = Quaternion(Vector((0, 0, 1)), yaw) @ n
-            roll = math.radians(self.rng.uniform(-LEAF_CARD_ROLL_JITTER_DEG, LEAF_CARD_ROLL_JITTER_DEG))
-            scale = self.rng.uniform(*LEAF_CARD_SIZE_JITTER)
-            w = LEAF_CARD_W * scale
-            h = LEAF_CARD_H * scale
-            # UV cell: round-robin through atlas grid (variation)
-            cell_idx = (i + int(theta * 2)) % (ATLAS_GRID * ATLAS_GRID)
-            uv_cell = (cell_idx % ATLAS_GRID, cell_idx // ATLAS_GRID)
-            vcolor = self._leaf_vcolor(vcolor_pos if vcolor_pos else pos)
-            make_cluster_card(self.bm_leaf, pos, n, w, h, 0, self.leaf_faces,
-                              uv_cell=uv_cell, atlas_grid=ATLAS_GRID,
-                              color_layer=self.leaf_color_layer,
-                              vcolor=vcolor, roll=roll,
-                              cross_quad=USE_CROSS_QUAD, rng=self.rng)
-            placed += 1
+        if n_cards_along < 1:
+            return 0
+        # Along-twig cards at parametric t values
+        for i in range(n_cards_along):
+            t_frac = LEAF_ALONG_T_START + (LEAF_ALONG_T_END - LEAF_ALONG_T_START) * (i / max(n_cards_along - 1, 1))
+            t_frac += self.rng.uniform(-0.03, 0.03)
+            pos, r_branch, tan = self._sample_branch_curve(curve, t_frac)
+            # Azimuth: golden angle spiral around twig
+            azimuth = i * GOLDEN_ANGLE + self.rng.uniform(-0.25, 0.25)
+            up = Vector((0, 0, 1))
+            side = tan.cross(up).normalized() if abs(tan.z) < 0.95 else Vector((1, 0, 0))
+            fwd = tan.cross(side).normalized()
+            radial = (math.cos(azimuth) * side + math.sin(azimuth) * fwd).normalized()
+            # Petiole offset: radial out from twig surface (twig radius + petiole length)
+            petiole = LEAF_PETIOLE_LEN + self.rng.uniform(-0.005, 0.005)
+            attach_pos = pos + radial * (r_branch + petiole)
+            # Cards taper to 70% scale toward tip (juvenile leaves)
+            scale_mul = 1.0 - 0.30 * t_frac
+            placed += self._place_card_at(attach_pos, tan, scale_mul=scale_mul,
+                                          cell_idx=i + int(t_frac * 7))
+        # Terminal bouquet at tip (small juvenile cluster, NOT a sphere)
+        if n_cards_terminal > 0:
+            tip_pos, _, tip_tan = self._sample_branch_curve(curve, 1.0)
+            for i in range(n_cards_terminal):
+                # Tighter cluster: small angular spread around tip
+                ang = i * (2 * math.pi / max(n_cards_terminal, 1)) + self.rng.uniform(0, 0.6)
+                offset = Vector((math.cos(ang), math.sin(ang), 0.3)).normalized() * LEAF_TERMINAL_OFFSET
+                pos = tip_pos + offset
+                placed += self._place_card_at(pos, tip_tan, scale_mul=0.75,
+                                              cell_idx=(i + 3))
+        return placed
+
+    def _place_spur_rosette(self, spur):
+        """Place 2-3 cards as tight rosette at spur tip (real apple spur biology).
+
+        Spurs are compressed-internode shoots where leaves cluster in rosette.
+        """
+        placed = 0
+        base_pos = spur["pos"]
+        sdir = spur.get("dir", Vector((0, 0, 1)))
+        for i in range(CLUSTERS_PER_SPUR):
+            ang = i * (2 * math.pi / max(CLUSTERS_PER_SPUR, 1)) + self.rng.uniform(0, 0.5)
+            up = Vector((0, 0, 1))
+            side = sdir.cross(up).normalized() if abs(sdir.z) < 0.95 else Vector((1, 0, 0))
+            fwd = sdir.cross(side).normalized()
+            radial = math.cos(ang) * side + math.sin(ang) * fwd
+            pos = base_pos + sdir * (i * 0.005) + radial * LEAF_PETIOLE_LEN
+            placed += self._place_card_at(pos, sdir, scale_mul=0.85,
+                                          cell_idx=i + 1)
         return placed
 
     def build_leaves(self):
-        """Cluster card placement: bouquets at twig tips, secondary tips, and spurs.
+        """Cluster cards placed ALONG twigs (parametric t) + terminal + spur rosette.
 
-        Industry standard: cross-quad cluster cards with cluster alpha atlas.
-        Card boundaries invisible (soft alpha edge); multiple cards form sphere volume.
+        Round 24 — Botanist panel (Agent 3) spec:
+        - Long shoots: 6 cards distributed t=0.15..0.90 + 2-3 terminal cluster
+        - Spurs: tight 2-3 card rosette
+        - Petiole radial offset 2.5cm — leaves visibly attached to twig
+        - Heliotropic upward tilt 15-25°
+        - Golden-angle azimuth spiral
         """
         self.canopy_radius = self._compute_canopy_radius()
         placed = 0
-        skipped = 0
 
-        # ----- TWIG TIPS: dense bouquet at end of each twig -----
+        # ----- LONG SHOOTS (twigs): along-curve placement -----
         for twig in self.twigs:
             curve = twig["curve"]
-            # Use last segment of twig as cluster center
-            tip_pos, _, _ = self._sample_branch_curve(curve, 1.0 - CLUSTER_TIP_LENGTH_FRAC * 0.5)
-            before = placed
-            placed += self._place_cluster_bouquet(tip_pos, CLUSTERS_PER_TWIG_TIP, CLUSTER_VOLUME_RADIUS)
+            placed += self._place_along_twig(curve, CARDS_PER_TWIG_ALONG, CARDS_PER_TWIG_TERMINAL)
 
-        # ----- SECONDARY BRANCH TIPS: bigger bouquets for canopy volume -----
-        # Sample secondary tips: walk through all wood face indices is hard, so we use
-        # the spurs as proxy (spurs are attached to secondaries). Pick first spur per
-        # secondary group.
-        seen_secondaries = set()
+        # ----- SPURS: tight rosette (compressed internode biology) -----
         for spur in self.spurs:
-            parent = id(spur.get("parent_curve")) if "parent_curve" in spur else None
-            if parent in seen_secondaries:
-                continue
-            seen_secondaries.add(parent)
-            # Use parent_curve tip as bouquet center
-            parent_curve = spur.get("parent_curve")
-            if parent_curve and len(parent_curve) > 0:
-                tip_pos = parent_curve[-1][0]
-                placed += self._place_cluster_bouquet(tip_pos, SECONDARY_TIP_CLUSTERS, SECONDARY_TIP_VOLUME)
-
-        # ----- SPUR CLUSTERS: small bouquet on each spur -----
-        for spur in self.spurs:
-            base_pos = spur["pos"]
-            sdir = spur.get("dir", Vector((0, 0, 1)))
-            cluster_center = base_pos + sdir * 0.01
-            placed += self._place_cluster_bouquet(cluster_center, CLUSTERS_PER_SPUR, SPUR_CLUSTER_RADIUS)
+            placed += self._place_spur_rosette(spur)
 
         print(f"LEAVES: placed={placed} clusters (atlas grid {ATLAS_GRID}×{ATLAS_GRID}, "
               f"{LEAF_CARD_W*100:.0f}×{LEAF_CARD_H*100:.0f}cm cards, cross_quad={USE_CROSS_QUAD})")
@@ -1005,8 +1157,49 @@ class TreeBuilder:
                 make_apple(self.bm_apple, center, 0, 1, self.apple_faces, self.rng)
                 placed += 1
 
+    # ----- BARK VCOLOR (Round 24 botanist panel) -----
+    def _apply_bark_vcolor(self):
+        """Stamp per-loop vertex color on wood: 4-tier gradient + crack noise on trunk/scaffold.
+
+        Trunk: dark grey-brown with vertical fissure noise (proc cracks).
+        Scaffold: warmer with mild cracks.
+        Secondary: smooth warm brown, no cracks.
+        Twig: reddish-mahogany current shoot, no cracks.
+        Gradient: proximal→distal along each branch's own t∈[0,1].
+        """
+        bm = self.bm_wood
+        tier_layer = bm.verts.layers.int.get('tier')
+        t_layer = bm.verts.layers.float.get('branch_t')
+        if tier_layer is None or t_layer is None:
+            print("WARN: bark vcolor — tier/t layers missing, skipping")
+            return
+        color_layer = bm.loops.layers.color.new("bark")
+        bm.faces.ensure_lookup_table()
+        n_crack = 0
+        for face in bm.faces:
+            for loop in face.loops:
+                v = loop.vert
+                tier = max(0, min(3, v[tier_layer]))
+                t_val = max(0.0, min(1.0, v[t_layer]))
+                c_prox = COLOR_BARK_TIERS[tier]
+                c_dist = COLOR_BARK_TIERS[min(tier + 1, 3)]
+                col = [c_prox[i] * (1 - t_val) + c_dist[i] * t_val for i in range(3)]
+                # Cracks: only trunk + scaffold (tier 0, 1)
+                if tier <= 1:
+                    n_val = mu_noise.noise((v.co.x * BARK_CRACK_SCALE_XY,
+                                            v.co.y * BARK_CRACK_SCALE_XY,
+                                            v.co.z * BARK_CRACK_SCALE_Z))
+                    if n_val < BARK_CRACK_THRESHOLD:
+                        col = [c * BARK_CRACK_DARKEN for c in col]
+                        n_crack += 1
+                loop[color_layer] = (col[0], col[1], col[2], 1.0)
+        print(f"BARK: vcolor applied — {n_crack} crack loops")
+
     # ----- ASSEMBLE OBJECTS -----
     def assemble(self):
+        # Apply bark vertex color before to_mesh (Round 24)
+        self._apply_bark_vcolor()
+
         # Create wood object with bark material
         wood_mesh = bpy.data.meshes.new("Wood_Mesh")
         self.bm_wood.normal_update()
@@ -1015,7 +1208,7 @@ class TreeBuilder:
         wood_mesh.update()
         wood_obj = bpy.data.objects.new("AppleTree_Wood", wood_mesh)
         bpy.context.collection.objects.link(wood_obj)
-        bark_mat = make_pbr_material("M_Bark", COLOR_BARK, alpha=False, roughness=0.85)
+        bark_mat = make_bark_material("M_Bark", COLOR_BARK)
         wood_obj.data.materials.append(bark_mat)
 
         # Leaf object — single M_Leaf material + vertex color tint (50-agent panel)
@@ -1042,8 +1235,8 @@ class TreeBuilder:
         apple_mesh.update()
         apple_obj = bpy.data.objects.new("AppleTree_Apples", apple_mesh)
         bpy.context.collection.objects.link(apple_obj)
-        apple_mat = make_pbr_material("M_Apple", COLOR_APPLE, alpha=False, roughness=0.45)
-        stem_mat = make_pbr_material("M_AppleStem", COLOR_STEM, alpha=False, roughness=0.8)
+        apple_mat = make_apple_material("M_Apple", COLOR_APPLE)
+        stem_mat = make_apple_material("M_AppleStem", COLOR_STEM, vcolor_attr="apple", roughness=0.8)
         apple_obj.data.materials.append(apple_mat)
         apple_obj.data.materials.append(stem_mat)
         # Assign material indices using tracked face ranges
@@ -1104,6 +1297,66 @@ def make_pbr_material(name, color, alpha=False, roughness=0.7):
         mat.shadow_method = 'CLIP'
         mat.use_backface_culling = False
         mat.alpha_threshold = 0.5
+    return mat
+
+
+def make_bark_material(name, fallback_color, vcolor_attr="bark", roughness=0.88):
+    """Bark material that reads per-vertex color attribute (Round 24).
+
+    Vertex color "bark" → Base Color (tier gradient + crack noise from build-time).
+    """
+    mat = bpy.data.materials.new(name)
+    mat.use_nodes = True
+    nt = mat.node_tree
+    # Clear default nodes
+    for n in list(nt.nodes):
+        nt.nodes.remove(n)
+    output = nt.nodes.new('ShaderNodeOutputMaterial')
+    output.location = (400, 0)
+    bsdf = nt.nodes.new('ShaderNodeBsdfPrincipled')
+    bsdf.location = (100, 0)
+    if "Roughness" in bsdf.inputs:
+        bsdf.inputs["Roughness"].default_value = roughness
+    if "Specular IOR Level" in bsdf.inputs:
+        bsdf.inputs["Specular IOR Level"].default_value = 0.2
+    elif "Specular" in bsdf.inputs:
+        bsdf.inputs["Specular"].default_value = 0.2
+    # Attribute node reading vertex color "bark"
+    attr = nt.nodes.new('ShaderNodeAttribute')
+    attr.attribute_name = vcolor_attr
+    attr.location = (-200, 0)
+    nt.links.new(attr.outputs["Color"], bsdf.inputs["Base Color"])
+    nt.links.new(bsdf.outputs[0], output.inputs[0])
+    mat.diffuse_color = (*fallback_color, 1.0)
+    return mat
+
+
+def make_apple_material(name, fallback_color, vcolor_attr="apple", roughness=0.42):
+    """Apple material — per-vertex color attribute (sun/shade gradient).
+
+    Vertex color "apple" → Base Color with Gala sun-side/shade-side gradient.
+    """
+    mat = bpy.data.materials.new(name)
+    mat.use_nodes = True
+    nt = mat.node_tree
+    for n in list(nt.nodes):
+        nt.nodes.remove(n)
+    output = nt.nodes.new('ShaderNodeOutputMaterial')
+    output.location = (400, 0)
+    bsdf = nt.nodes.new('ShaderNodeBsdfPrincipled')
+    bsdf.location = (100, 0)
+    if "Roughness" in bsdf.inputs:
+        bsdf.inputs["Roughness"].default_value = roughness
+    if "Specular IOR Level" in bsdf.inputs:
+        bsdf.inputs["Specular IOR Level"].default_value = 0.55
+    elif "Specular" in bsdf.inputs:
+        bsdf.inputs["Specular"].default_value = 0.55
+    attr = nt.nodes.new('ShaderNodeAttribute')
+    attr.attribute_name = vcolor_attr
+    attr.location = (-200, 0)
+    nt.links.new(attr.outputs["Color"], bsdf.inputs["Base Color"])
+    nt.links.new(bsdf.outputs[0], output.inputs[0])
+    mat.diffuse_color = (*fallback_color, 1.0)
     return mat
 
 
