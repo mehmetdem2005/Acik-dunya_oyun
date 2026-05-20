@@ -1,118 +1,91 @@
-# Fare — Karakter Rig (AAA seviye)
+# Fare (Mouse) Rig — v14
 
-Açık Dünya Fare Simülasyonu için profesyonel rigli fare karakteri.
+Bağımsız fare rigi: nefes, bıyık, kulak, kuyruk, yürüme, parmak ve mimik animasyonlarını destekler.
 
-## İçerik
+## Dosyalar
 
+| Dosya | Açıklama |
+|------|----------|
+| `source/mouse3dmodel1k.glb` | Tripo AI mesh kaynağı (orijinal, değiştirilmedi) |
+| `source/fare_original.prisma` | Prisma3D referans |
+| `scripts/rig_mouse_v14.py` | Aktif rig kurulum script'i (final) |
+| `scripts/render_v14.py` | Multi-angle QA render script'i |
+| `out/mouse.glb` | Rigli + skinli GLB (final ürün) |
+| `out/mouse_v14.blend` | Blender çalışma dosyası |
+| `out/qa_v14/` | 6-açılı QA renderları (yan/yan2/ön/arka/üst/perspektif) |
+
+## Kurulum / yeniden üretim
+
+```bash
+sudo apt-get install -y blender
+cd <repo>
+blender --background --python fare/scripts/rig_mouse_v14.py
+blender --background --python fare/scripts/render_v14.py
 ```
-fare/
-├── source/
-│   ├── mouse3dmodel1k.glb     # Tripo AI export (ham mesh + bozuk auto-rig — referans)
-│   └── fare_original.prisma   # Prisma3D kaynak proje (referans)
-├── scripts/
-│   └── rig_mouse.py           # Blender 4.0 headless rig script (bpy)
-├── out/
-│   └── mouse.glb              # ÜRETİLEN: rigli fare (Godot'a hazır)
-└── README.md
-```
 
-## Rig özeti
-
-- **110 kemik**: 77 DEF (deform) + 20 CTRL (controller) + 12 MCH (mechanism) + 1 root
-- **Tek mesh, tek material, 3 texture**, 15.8k vert
-- Endüstri standardı `.L` / `.R` suffix naming, `DEF-` / `CTRL-` / `MCH-` prefix
-
-### Uygulanan AAA teknikler
-
-| Teknik | Nerede kullanıldı |
-|---|---|
-| **Mesh-feature-based bone placement** | Patiler (4) ve kulaklar mesh topolojisinden tespit edildi (AABB değil) |
-| **Bendy Bones (B-Bones)** | Spine (3 seg), neck (2), tail (2/seg), ears (3), whiskers (4) — smooth deformation |
-| **Spline IK (kuyruk)** | Bezier curve + 3 hook control bone → akıcı kuyruk eğrisi |
-| **IK + pole target + stretch** | 4 bacakta — `paw_*` chain_count=3, pole = elbow/knee yönü |
-| **Twist bones** | Üst kol & uyluk → candy-wrap engellenir |
-| **Foot-roll mekanizması** | Heel/ball/toe MCH zinciri (her pati) |
-| **Look-at on eyes** | DAMPED_TRACK constraint → `CTRL-eye_aim` master + L/R sub-targets |
-| **Breath driver** | `armature["breath"]` ∈ [0,1] → DEF-chest scale_x/y/z'yi sürer |
-| **Limit Rotation constraints** | Diz/dirsek sadece tek yönde bükülür; boyun limit'li |
-| **Bone collections** | deform / ctrl_main / ctrl_ik / ctrl_face / mch (mch default gizli) |
-| **Custom bone shapes** | Daire/küp/küre primitive widget'lar (controller görünürlüğü) |
-| **Bone color themes** | THEME01/03/04/09/10 kemik gruplarına göre |
-| **Weight smoothing** | 2 iter `vertex_group_smooth` |
-| **4 max influence + normalize** | `limit_total` + `normalize_all` (Godot/AAA standardı) |
-| **Smart orphan adoption** | Heat weighting'in kaçırdığı vertex'ler en yakın DEF bone segment'ine atanır |
-
-## Kemik hiyerarşisi
+## Rig yapısı (86 kemik)
 
 ```
 root
-└─ DEF-hips
-   ├─ DEF-spine_01 → DEF-spine_02 → DEF-chest
-   │  ├─ DEF-neck → DEF-head
-   │  │  ├─ DEF-jaw
-   │  │  ├─ DEF-ear.L / DEF-ear.R
-   │  │  ├─ DEF-eye.L / DEF-eye.R
-   │  │  └─ DEF-whisker_01..04.L / DEF-whisker_01..04.R
-   │  ├─ DEF-shoulder.L/R → DEF-arm.L/R → DEF-forearm.L/R → DEF-paw_F.L/R
-   │  │     └─ DEF-toe_F_1..3_01..03.L/R   (3 parmak × 3 segment × 2 pati)
-   │  └─ DEF-tail_01..08                     (Spline IK ile sürülür)
-   └─ DEF-thigh.L/R → DEF-shin.L/R → DEF-paw_B.L/R
-        └─ DEF-toe_B_1..3_01..03.L/R
-
-CTRL-hips → CTRL-chest → CTRL-head → CTRL-jaw, CTRL-eye_aim
-CTRL-foot_F.L/R, CTRL-foot_B.L/R   (IK controllers)
-CTRL-pole_F.L/R, CTRL-pole_B.L/R   (IK pole targets)
-CTRL-tail_1/2/3                    (Spline hooks)
-CTRL-ear.L/R                       (kulak FK)
-
-MCH-arm_twist.L/R, MCH-thigh_twist.L/R    (anti-candywrap)
-MCH-heel_F.L/R, MCH-toe_F.L/R              (foot roll)
-MCH-heel_B.L/R, MCH-toe_B.L/R
+└─ hips
+   ├─ spine_01 → spine_02 → chest → neck → head
+   │                                        ├─ snout → nose
+   │                                        ├─ jaw
+   │                                        ├─ eye_L, eye_R
+   │                                        ├─ ear_L_base → ear_L_mid → ear_L_tip
+   │                                        ├─ ear_R_base → ear_R_mid → ear_R_tip
+   │                                        └─ whisker_{L,R}_{1..4}
+   │              chest:
+   │                ├─ scapula_L → upper_arm_L → forearm_L → front_paw_L
+   │                │                                          └─ finger_F_L_{1..3}_{01,02}
+   │                └─ scapula_R → upper_arm_R → forearm_R → front_paw_R
+   │                                                           └─ finger_F_R_{1..3}_{01,02}
+   ├─ hip_L → thigh_L → shin_L → [ankle_L →] back_paw_L
+   │                                       └─ finger_B_L_{1..3}_{01,02}
+   ├─ hip_R → thigh_R → shin_R → back_paw_R
+   │                              └─ finger_B_R_{1..3}_{01,02}
+   └─ tail_01 → tail_02 → ... → tail_19  (kuyruk omurları, mesh eğrisini takip eder)
 ```
 
-## Animasyon hook'ları (sonraki adımda kullanılacak)
+## Constraint stack
 
-| Animasyon | Hangi kemikleri / property'leri kullan |
-|---|---|
-| **Breathing** (idle loop) | `armature["breath"]` 0↔1 sinüs eğrisi (3-4 sn cycle) |
-| **Walk cycle** | `CTRL-foot_F.L/R`, `CTRL-foot_B.L/R` (IK adım), `CTRL-hips` rotation (kalça aktarımı), `CTRL-chest` Y rotation, kuyruk hafif sway |
-| **Whisker twitch** | 8 `DEF-whisker_*` kemiği — küçük random Z rotation, 0.1-0.3 sn aralıkta |
-| **Ear perk** | `CTRL-ear.L/R` X rotation pozitif (yukarı dik) |
-| **Tail sway** | `CTRL-tail_2`, `CTRL-tail_3` Y/Z rotation → spline curve yumuşak eğrilir |
-| **Head turn** | `CTRL-head` Z rotation (sağa/sola bakış) |
-| **Look** | `CTRL-eye_aim` translation (gözler hedefi takip eder) |
-| **Open mouth** | `CTRL-jaw` X rotation |
+- **IK**: `front_paw_L/R`, `back_paw_L/R` (her biri chain_count=3)
+- **Driver**: `chest.scale_y = 1 + breath * 0.08` (nefes alıp verme)
+- **Driver**: `jaw.rotation_x = jaw_open * 0.6` (çene açma)
+- **Driver**: `ear_{L,R}_base.rotation_x = ear_{L,R}_perk * 0.4` (kulak dikme)
 
-## Yeniden üretmek
+## Custom properties (armature object üzerinde)
 
-```bash
-# Bağımlılıklar
-sudo apt-get install -y blender python3-numpy
+- `breath` — [-1, 1] nefes alıp verme
+- `jaw_open` — [0, 1] çene açma
+- `ear_L_perk`, `ear_R_perk` — [-1, 1] kulak dikme
 
-# Rig'i yeniden üret
-blender --background --python fare/scripts/rig_mouse.py
-# → fare/out/mouse.glb üretir
-```
+## Anatomik anchor kaynakları
 
-## Godot entegrasyonu (gelecek)
+Rig, Tripo AI'nın 33 mesh-içi joint'ini anatomik referans olarak alır
+(omuz/kalça/diz/pati pozisyonları doğrudan mesh içinden gelir), eksik
+kısımlar (kuyruk uzantısı, kulak kıkırdağı, bıyık, çene, göz, parmak)
+mesh landmark'larından + BVH iç-kontrol ile eklenmiştir. Tüm DEF
+kemikleri mesh içinde konumlanmıştır.
 
-`mouse.glb` Godot 4.6'ya doğrudan import edilebilir:
-- `Skeleton3D` node otomatik oluşur (110 kemik)
-- `AnimationPlayer` ile yukarıdaki hook'lar üzerinde animasyon yapılır
-- Bone collections Godot tarafında ignore edilir (sadece düz kemik listesi alır)
+## Mesh durumu
 
-> **Not**: `armature["breath"]` glTF extras olarak export edilir; Godot tarafında runtime'da `Skeleton3D` üzerinde custom property olarak okunabilir veya doğrudan `chest` kemiğinin scale'i animate edilebilir.
+Mesh DOKUNULMADI — sadece import transformu bake edildi (Y-up → Z-up).
+Vertex pozisyonları orijinal Tripo çıkışıyla aynı. Eklenenler sadece:
+bone weight'leri (envelope-based skin) ve Armature modifier.
 
-## Kalite raporu
+## Bilinen sınırlamalar
 
-Son `verify()` çıktısı:
-```
-✓ spine: 7        ✓ ears: 2          ✓ whiskers: 8
-✓ tail: 8         ✓ front_limbs: 8   ✓ back_limbs: 6
-✓ fingers_front: 18  ✓ fingers_back: 18
-✓ controllers: 9
-✓ all 15804 verts weighted
-✓ IK constraints: 4/4
-✓ Spline IK on tail
-Result: PASS
-```
+- Auto-weight (heat) headless Blender 4.0'da çalışmadığı için
+  envelope-binding kullanıldı. 172 vertex (%0.76, çoğu bıyık ucu) en
+  yakın kemiğe rigid atandı.
+- GUI'de bir sanatçı ayarlamadıkça envelope bazlı ağırlıklar bazı sınır
+  bölgelerinde (örn. omuz-çene kesişimi) mükemmel olmayabilir;
+  weight-painting bir sonraki aşama (Stage 4) için planlanmıştır.
+
+## Önceki sürümler (1.deneme/, scripts/rig_mouse_v{1-12}.py)
+
+v1-v12 manuel placement + Rigify wolf-metarig denemelerinde kemikler
+mesh dışına taşıyordu (anatomik proporsiyonlar uyuşmadı). v14
+yaklaşımı: Tripo'nun zaten mesh-içi olan 33 anchor joint'ini koru +
+sadece eksikleri ekle — bu sayede tüm kemikler mesh içinde kalır.
