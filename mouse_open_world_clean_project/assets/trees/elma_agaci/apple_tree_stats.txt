@@ -1,0 +1,92 @@
+APPLE TREE STATS — Round 27
+============================
+
+GEOMETRY
+--------
+Triangles total:      20930
+  Wood:               9732
+  Leaves:             9298  (2594 cards: cross-quad outer + single-quad fill)
+  Apples:             1900  (25 fruits × ~76 tri)
+
+Vertices:             ~10500
+Objects:              3
+  AppleTree_Wood
+  AppleTree_Leaves
+  AppleTree_Apples
+
+Bbox (meters):        W=5.57  D=4.96  H=3.36
+Origin:               trunk base, z=0
+Scale:                1.0 uniform (transforms applied)
+
+MATERIALS (4)
+-------------
+M_Bark         — vertex-color "bark" (4-tier gradient + crack noise + wood_kind darken)
+M_Leaf         — texture atlas + vertex-color tint, ALPHA_CLIP, cull off
+M_Apple        — vertex-color "apple" (Gala sun/shade gradient)
+M_AppleStem    — vertex-color "apple" (brown→green stem)
+
+TEXTURES (1)
+------------
+leaf_placeholder.png  — 768×768 RGBA PNG, 3×3 cluster atlas (9 variants)
+                        Storage: ~530 KB on disk, ~2.3 MB GPU uncompressed
+
+FOLIAGE BREAKDOWN
+-----------------
+Outer shell (along-twig + terminal):  1408 cards (cross-quad, 4 tri each)
+Spur rosettes:                         647 cards (cross-quad)
+Inner fill (along secondaries):        159 cards (single-quad, 2 tri)
+Fork puffs (scaffold-trunk junction):  180 cards (single-quad)
+Crown apex puff (Stage 1 silhouette):   80 cards (single-quad)
+Trunk-mid puff (Stage 1 silhouette):   ~40 cards (single-quad)
+Ground litter (root flare base):        80 cards (single-quad)
+                                       -----
+Total cards:                           ~2594
+
+BRANCHING HIERARCHY
+-------------------
+Trunk:                1     (10 height segments × 11 radial = 110 verts + flare/burls)
+Surface roots:        5     (köklenme — visible buttress, vcolor darken+moss)
+Scaffolds:            6     (2 co-leaders + 4 lateral, crotch 58-74°)
+Upper branches:       7     (top crown fill, crotch 32-55°)
+Secondaries:          ~30   (5-7 per scaffold)
+Twigs:                ~100  (3-4 per secondary)
+Sub-twigs:            ~150  (1-2 per twig, t=0.32/0.60/0.85)
+Spurs:                ~80   (5 per secondary + 0.5 per twig prob)
+Dead snags:           2-4   (mature tree history)
+
+APPLE PROFILE
+-------------
+Variety:              Gala (red sun-side, yellow-green shade-side, stripe streaks)
+Count:                25
+Diameter:             13 cm (jitter 92-108%)
+Morphology:           Oblate-globular (h/d = 0.88-0.92), stem cavity + calyx basin
+Asymmetry:            ±3-5% radial jitter, 2-4° axis tilt
+Per-fruit:            Random sun direction → individual color variation
+
+EXPORT FILES
+------------
+elma_agaci.blend     ~1.6 MB
+elma_agaci.glb       1286 KB  (texture embedded, vcolor preserved)
+
+PREVIEW RENDERS (Stage 1 contact sheet)
+---------------------------------------
+preview_round_27_front.png         — front-view silhouette QA
+preview_round_27_side.png          — side-view depth QA
+preview_round_27_back.png          — back-view consistency QA
+preview_round_27_top.png           — top-view radial distribution QA
+preview_round_27_three_quarter.png — 3/4 view full asset QA
+preview_round_27_close.png         — close-up bark + foliage + apple QA
+
+RANDOM SEED
+-----------
+DEFAULT_SEED          (configurable in script)
+
+BUDGET COMPARISON
+-----------------
+                       R26      R27     Δ
+Wood:                  7754    9732   +1978  (more scaffolds + secondaries)
+Leaves:                9442    9298    -144  (denser shells but trimmed cards/twig)
+Apples:                1900    1900       0
+Total:                19096   20930   +1834
+GLB size:           1286 KB   ~1.3MB     ~0
+Foliage cards:         2570    2594     +24

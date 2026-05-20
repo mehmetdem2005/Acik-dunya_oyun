@@ -25,11 +25,11 @@ DEFAULT_SEED = 42
 OUT_DIR = os.path.dirname(os.path.abspath(__file__))
 
 # Tree macro
-TOTAL_HEIGHT = 4.2               # mature backyard apple — shorter than first try
+TOTAL_HEIGHT = 3.8               # Round 27: trunk relative kısaltıldı (4.2→3.8) — broad spreading hedef
 TRUNK_LEAN_DEG = 7.0
 TRUNK_S_CURVE_AMP = 0.08
-TRUNK_FORK_HEIGHT = 0.85
-TRUNK_GEOM_TOP_FRAC = 0.72       # trunk continues higher (taper to point inside canopy)
+TRUNK_FORK_HEIGHT = 0.75         # ↓ from 0.85 — daha alçak fork → daha yatay spread için yer
+TRUNK_GEOM_TOP_FRAC = 0.68       # ↓ from 0.72 — trunk top daha kısa, canopy daha geniş
 
 # Trunk radii (thicker base + stronger flare + gnarl noise)
 TRUNK_BASE_R = 0.14
@@ -80,24 +80,24 @@ TRUNK_RADIAL_SEGS = 11
 TRUNK_HEIGHT_SEGS = 10
 
 # Scaffold branches (primaries)
-N_SCAFFOLDS = 5
-N_CO_LEADERS = 2                 # first N scaffolds are co-dominant leaders (thicker, wider V)
+N_SCAFFOLDS = 6                  # Round 27: 5→6 (daha çok primary spread için)
+N_CO_LEADERS = 2
 CO_LEADER_R_BOOST = 1.35
-CO_LEADER_CROTCH_DEG = (52.0, 64.0)   # wider V for visible fork
-SCAFFOLD_PITCH_Z = 0.18
-SCAFFOLD_LENGTH_RANGE = (1.7, 2.4)    # balance crown size vs height
-SCAFFOLD_CROTCH_RANGE_DEG = (42.0, 58.0)
+CO_LEADER_CROTCH_DEG = (45.0, 56.0)   # ↓ Round 27: co-leaders daha dik (upward growth, tree shape)
+SCAFFOLD_PITCH_Z = 0.16          # ↓ from 0.18 — staggered scaffolds daha sıkı band
+SCAFFOLD_LENGTH_RANGE = (2.0, 2.7)    # ↑ from (1.7-2.4) — daha geniş spread
+SCAFFOLD_CROTCH_RANGE_DEG = (58.0, 74.0)   # ↑ from (42-58°) Round 27: scaffolds daha YATAY (spreading apple form)
 SCAFFOLD_R_FACTOR = 0.52
 SCAFFOLD_TIP_R_FACTOR = 0.26
 SCAFFOLD_SEGMENTS = 5
 SCAFFOLD_RADIAL_SEGS = 7
-SCAFFOLD_AZIMUTH_MODE = "even"   # "even" (uniform spread) or "golden" (137.5°)
+SCAFFOLD_AZIMUTH_MODE = "even"
 
-# Upper crown branches
-N_UPPER_BRANCHES = 4
-UPPER_BRANCH_START_FRAC = 0.62
-UPPER_BRANCH_LENGTH_RANGE = (1.10, 1.70)   # longer so crown is taller
-UPPER_BRANCH_CROTCH_DEG = (38.0, 62.0)   # wider spread for visible canopy mass
+# Upper crown branches — Round 27: trunk üstünü doldur, "narrow top" sorununu çöz
+N_UPPER_BRANCHES = 7             # ↑ from 4 — trunk top kapsama
+UPPER_BRANCH_START_FRAC = 0.55   # ↓ from 0.62 — daha geniş z bandı
+UPPER_BRANCH_LENGTH_RANGE = (1.30, 1.95)   # ↑ longer reach
+UPPER_BRANCH_CROTCH_DEG = (32.0, 55.0)   # daha dik (upward) ama spread için bazı dallar geniş
 
 # Secondaries
 SECONDARIES_PER_SCAFFOLD_RANGE = (5, 7)
@@ -149,26 +149,33 @@ LEAVES_PER_ATLAS_CELL = 6        # silhouettes baked into each cell
 
 # Foliage volume placement — clusters at twig tips form spherical bouquets
 # Round 24 — Botanist panel: along-twig parametric placement (kills floating bouquets)
-CARDS_PER_TWIG_ALONG = 5         # outer shell — along twig curve
-CARDS_PER_TWIG_TERMINAL = 3      # outer shell — twig tip juvenile
+CARDS_PER_TWIG_ALONG = 4         # ↓ from 5 Round 27 — trunk-mid puff için yer
+CARDS_PER_TWIG_TERMINAL = 2      # ↓ from 3
 CARDS_PER_SUBTWIG_ALONG = 2      # sub-twig: hafif yapraklanma
 CARDS_PER_SUBTWIG_TERMINAL = 2
-CLUSTERS_PER_SPUR = 3            # spur rosette
+CLUSTERS_PER_SPUR = 2            # ↓ from 3 — tri budget için (Stage 1 fix Round 27)
 
 # Round 26 — Multi-shell foliage (AAA dolgunluk)
 # Hollow-core INVERTED: sadece trunk axis çevresinde skip (broadleaf canopy dense-cored)
-INNER_FILL_CARDS_PER_SECONDARY = 4   # her secondary boyunca interior fill cards
+INNER_FILL_CARDS_PER_SECONDARY = 3   # Round 27: 4→3 (tri budget + secondary sayısı arttı)
 INNER_FILL_CARD_W = 0.15             # küçük boy (interior shadow)
 INNER_FILL_CARD_H = 0.13
 INNER_FILL_CROSS_QUAD = False        # single quad (2 tri, fill için derinlik gereksiz)
 
 FORK_PUFFS_PER_SCAFFOLD = 1          # her scaffold base'inde 1 puff
-FORK_PUFF_CARDS = 35                 # puff başına card sayısı
+FORK_PUFF_CARDS = 30                 # ↓ 35→30 (Round 27 tri budget)
 FORK_PUFF_RADIUS = 0.40              # puff sphere radius
 FORK_PUFF_OFFSET = 0.30              # scaffold base'inden radial dışa
 FORK_PUFF_CARD_W = 0.20
 FORK_PUFF_CARD_H = 0.18
 FORK_PUFF_CROSS_QUAD = False         # fill, single quad
+
+# Round 27 — Crown apex puff: trunk üstü merkez vertikal kolonu doldur (Stage 1 silüet fix)
+CROWN_APEX_CARDS = 80                # trunk üstüne büyük volumetric clump
+CROWN_APEX_RADIUS = 0.55             # apex puff sphere radius
+CROWN_APEX_CARD_W = 0.22
+CROWN_APEX_CARD_H = 0.20
+CROWN_APEX_Z_OFFSET = 0.15           # trunk top'tan ne kadar yukarı
 
 GROUND_LITTER_CARDS = 80             # trunk tabanında dağılmış yaprak hint
 GROUND_LITTER_RADIUS = 0.85          # trunk merkezinden max yarıçap
@@ -1415,6 +1422,94 @@ class TreeBuilder:
                                           skip_check=False)
         return placed
 
+    def _place_trunk_mid_puff(self):
+        """Round 27 Stage 1 fix #2: Volumetric foliage at fork height to hide trunk middle.
+
+        Front-view test fail: bare trunk visible z=0.8-1.8m. Add a puff cluster
+        centered just above fork that masks the visible trunk segment between
+        root flare and lower scaffolds.
+        """
+        # Centered slightly above fork
+        mid_center = Vector((0, 0, TRUNK_FORK_HEIGHT + 0.35))
+        placed = 0
+        n_cards = 40
+        radius = 0.50
+        for i in range(n_cards):
+            theta = self.rng.uniform(0, 2 * math.pi)
+            phi = math.acos(self.rng.uniform(-1, 1))
+            r = radius * (self.rng.random() ** 0.5)
+            offset = Vector((
+                r * math.sin(phi) * math.cos(theta),
+                r * math.sin(phi) * math.sin(theta),
+                r * math.cos(phi) * 0.65,
+            ))
+            pos = mid_center + offset
+            yaw = self.rng.uniform(0, 2 * math.pi)
+            pitch = math.radians(self.rng.uniform(-40, 40))
+            n = Vector((math.cos(yaw) * math.sin(pitch + math.pi/2),
+                        math.sin(yaw) * math.sin(pitch + math.pi/2),
+                        math.cos(pitch + math.pi/2)))
+            n = n.normalized() if n.length > 1e-5 else Vector((0, 0, 1))
+            roll = math.radians(self.rng.uniform(-180, 180))
+            scale = self.rng.uniform(0.80, 1.10)
+            w = 0.18 * scale
+            h = 0.16 * scale
+            cell_idx = (i + int(theta * 5)) % (ATLAS_GRID * ATLAS_GRID)
+            uv_cell = (cell_idx % ATLAS_GRID, (cell_idx // ATLAS_GRID) % ATLAS_GRID)
+            vcolor = self._leaf_vcolor(pos)
+            make_cluster_card(self.bm_leaf, pos, n, w, h, 0, self.leaf_faces,
+                              uv_cell=uv_cell, atlas_grid=ATLAS_GRID,
+                              color_layer=self.leaf_color_layer,
+                              vcolor=vcolor, roll=roll,
+                              cross_quad=False, rng=self.rng)
+            placed += 1
+        return placed
+
+    def _place_crown_apex_puff(self):
+        """Round 27 Stage 1 fix: Volumetric foliage clump above trunk top.
+
+        Apple tree silhouette test: trunk middle/top vertical column was bare
+        from front/back views. Apex puff fills crown center, hides trunk top.
+        Cards centered at (0, 0, trunk_top + offset) with spherical scatter.
+        """
+        # Find trunk top z (use TRUNK_FORK_HEIGHT + canopy height estimate)
+        geom_top = TOTAL_HEIGHT * TRUNK_GEOM_TOP_FRAC
+        apex_z = geom_top + CROWN_APEX_Z_OFFSET
+        apex_center = Vector((0, 0, apex_z))
+        placed = 0
+        for i in range(CROWN_APEX_CARDS):
+            # Spherical scatter biased to outer (full crown coverage)
+            theta = self.rng.uniform(0, 2 * math.pi)
+            phi = math.acos(self.rng.uniform(-1, 1))
+            r = CROWN_APEX_RADIUS * (self.rng.random() ** 0.4)   # outer-biased
+            offset = Vector((
+                r * math.sin(phi) * math.cos(theta),
+                r * math.sin(phi) * math.sin(theta),
+                r * math.cos(phi) * 0.75,   # slightly flatten vertically
+            ))
+            pos = apex_center + offset
+            # Random tilt around vertical
+            yaw = self.rng.uniform(0, 2 * math.pi)
+            pitch = math.radians(self.rng.uniform(-30, 30))
+            n = Vector((math.cos(yaw) * math.sin(pitch + math.pi/2),
+                        math.sin(yaw) * math.sin(pitch + math.pi/2),
+                        math.cos(pitch + math.pi/2)))
+            n = n.normalized() if n.length > 1e-5 else Vector((0, 0, 1))
+            roll = math.radians(self.rng.uniform(-180, 180))
+            scale = self.rng.uniform(0.85, 1.15)
+            w = CROWN_APEX_CARD_W * scale
+            h = CROWN_APEX_CARD_H * scale
+            cell_idx = (i + int(theta * 4)) % (ATLAS_GRID * ATLAS_GRID)
+            uv_cell = (cell_idx % ATLAS_GRID, (cell_idx // ATLAS_GRID) % ATLAS_GRID)
+            vcolor = self._leaf_vcolor(pos)
+            make_cluster_card(self.bm_leaf, pos, n, w, h, 0, self.leaf_faces,
+                              uv_cell=uv_cell, atlas_grid=ATLAS_GRID,
+                              color_layer=self.leaf_color_layer,
+                              vcolor=vcolor, roll=roll,
+                              cross_quad=False, rng=self.rng)   # single quad fill
+            placed += 1
+        return placed
+
     def _place_ground_litter(self):
         """Scattered horizontal leaf cards near root flare base (mature tree ground hint).
 
@@ -1485,13 +1580,19 @@ class TreeBuilder:
         for scaffold in self.scaffolds:
             puff += self._place_fork_puff(scaffold)
 
-        # 5. Ground litter near root flare base (Round 26 AAA)
+        # 5. Crown apex puff (Round 27 Stage 1 fix — trunk top vertical column fill)
+        apex = self._place_crown_apex_puff()
+
+        # 5b. Trunk mid puff (Round 27 Stage 1 fix #2 — trunk middle fork zone fill)
+        apex += self._place_trunk_mid_puff()
+
+        # 6. Ground litter near root flare base (Round 26 AAA)
         litter += self._place_ground_litter()
 
-        total = outer + spur_n + inner + puff + litter
-        print(f"LEAVES Round 26 AAA multi-shell: outer={outer} spur={spur_n} "
-              f"inner={inner} puff={puff} litter={litter} TOTAL={total} "
-              f"(atlas {ATLAS_GRID}×{ATLAS_GRID})")
+        total = outer + spur_n + inner + puff + apex + litter
+        print(f"LEAVES Round 27 AAA multi-shell: outer={outer} spur={spur_n} "
+              f"inner={inner} puff={puff} apex={apex} litter={litter} "
+              f"TOTAL={total} (atlas {ATLAS_GRID}×{ATLAS_GRID})")
 
     # ----- APPLES -----
     def build_apples(self):
@@ -2048,7 +2149,16 @@ def place_camera(view_name):
         cam.rotation_euler = Euler((math.radians(82), 0, math.radians(45)))
     elif view_name == "top":
         cam.location = (0, 0, 9)
-        cam.rotation_euler = Euler((0, 0, math.radians(0)))
+        cam.rotation_euler = Euler((0, 0, 0))   # straight down
+        cam_data.lens = 35    # wider FoV for top view
+    elif view_name == "back":
+        cam.location = (0, 9, 2.2)
+        cam.rotation_euler = Euler((math.radians(86), 0, math.radians(180)))
+    elif view_name == "silhouette":
+        # Strong backlight silhouette test (Stage 1 QA)
+        cam.location = (0, -10, 2.0)
+        cam.rotation_euler = Euler((math.radians(88), 0, 0))
+        cam_data.lens = 50
     elif view_name == "close":
         cam.location = (2.8, -2.8, 1.8)
         cam.rotation_euler = Euler((math.radians(84), 0, math.radians(45)))
@@ -2156,7 +2266,8 @@ def main():
     if args.export_glb:
         export_glb(OUT_GLB)
     if args.render:
-        for view in ["three_quarter", "front", "side", "close"]:
+        # Round 27 — Stage 1 QA contact sheet (front + side + top + 3/4 silhouette test)
+        for view in ["front", "side", "back", "top", "three_quarter", "close"]:
             render_view(view, args.round)
             print(f"Rendered: {view}")
 
