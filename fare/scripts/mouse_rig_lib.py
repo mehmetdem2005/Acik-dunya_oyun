@@ -121,6 +121,63 @@ def cross_section_centroid(mesh, y, bvh, band=0.012):
     return closest_inside(bvh, c)
 
 
+def build_kdtree(mesh):
+    from mathutils.kdtree import KDTree
+    mw = mesh.matrix_world
+    n = len(mesh.data.vertices)
+    kd = KDTree(n)
+    for i, v in enumerate(mesh.data.vertices):
+        kd.insert(mw @ v.co, i)
+    kd.balance()
+    return kd
+
+
+def center_joint_lateral(p, kd, axis_dir, radius=0.05, min_pts=6):
+    """Pull joint `p` to the LOCAL medial center, moving only PERPENDICULAR to
+    `axis_dir` (so chain spacing along the bone is preserved → continuity safe).
+    Centroid of mesh verts within `radius`, with the along-axis component of the
+    correction removed."""
+    found = kd.find_range(p, radius)
+    if len(found) < min_pts:
+        found = kd.find_range(p, radius * 2.0)
+    if len(found) < min_pts:
+        return p.copy()
+    c = Vector((0, 0, 0))
+    for (co, idx, dist) in found:
+        c += co
+    c /= len(found)
+    delta = c - p
+    a = axis_dir.normalized() if axis_dir.length > 1e-9 else Vector((0, 1, 0))
+    delta -= a * delta.dot(a)          # keep only perpendicular correction
+    return p + delta
+
+
+def medial_spine(mesh, kd, y_back, y_front, n, z_bias=0.0):
+    """Joint points along the body axis (Y), each at the lateral cross-section
+    centroid. z_bias nudges dorsally (+) for a quadruped backbone feel."""
+    pts = []
+    for i in range(n + 1):
+        y = y_back + (y_front - y_back) * (i / n)
+        c = cross_section_centroid_world(mesh, y, kd)
+        if c is None:
+            continue
+        c = Vector((0.0, y, c.z + z_bias))   # centered on X=0, biased Z
+        pts.append(c)
+    return pts
+
+
+def cross_section_centroid_world(mesh, y, kd, band=0.018):
+    mw = mesh.matrix_world
+    pts = []
+    for v in mesh.data.vertices:
+        wp = mw @ v.co
+        if abs(wp.y - y) < band:
+            pts.append(wp)
+    if not pts:
+        return None
+    return sum(pts, Vector((0, 0, 0))) / len(pts)
+
+
 # ----------------------------------------------------------------------------
 # Landmarks
 # ----------------------------------------------------------------------------
