@@ -1,0 +1,37 @@
+{
+  "manifest_version": "1.0",
+  "creature_id": "kurt_001",
+  "exports": [
+    {
+      "level": "LOD0",
+      "filepath": "/home/user/Acik-dunya_oyun/.claude/skills/blender-creature-aaa/memory/runs/20260524_081341_kurt/final_anim/kurt_001.glb",
+      "tris_count": 28000,
+      "file_size_bytes": 1345540,
+      "decimate_ratio": 1.0
+    },
+    {
+      "level": "LOD1",
+      "filepath": "/home/user/Acik-dunya_oyun/.claude/skills/blender-creature-aaa/memory/runs/20260524_081341_kurt/final_anim/kurt_001_LOD1.glb",
+      "tris_count": 14000,
+      "file_size_bytes": 669124,
+      "decimate_ratio": 0.5
+    },
+    {
+      "level": "LOD2",
+      "filepath": "/home/user/Acik-dunya_oyun/.claude/skills/blender-creature-aaa/memory/runs/20260524_081341_kurt/final_anim/kurt_001_LOD2.glb",
+      "tris_count": 7000,
+      "file_size_bytes": 471404,
+      "decimate_ratio": 0.25
+    }
+  ],
+  "bone_naming_check": {
+    "godot_compatible": true,
+    "renamed_count": 0,
+    "rename_map": {}
+  },
+  "godot_smoke_test": {
+    "imported_successfully": false,
+    "skipped": true
+  },
+  "generated_by": "P13_exporter"
+}
