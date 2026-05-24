@@ -32,14 +32,17 @@ mn,mx=bbox(); ctr=(mn+mx)/2; mesh.location=(-ctr.x,-ctr.y,-mn.z); bpy.ops.object
 bpy.ops.object.mode_set(mode='EDIT'); bpy.ops.mesh.select_all(action='SELECT')
 bpy.ops.mesh.normals_make_consistent(inside=False); bpy.ops.object.mode_set(mode='OBJECT')
 bpy.ops.object.shade_smooth()
-# materyal: import edileni KORU (image texture varsa); roughness ayarla
-mat = me.materials[0] if me.materials else None
+# materyal: texture.png'i acikca yukle + UV ile bagla
+texpath=os.path.join(os.path.dirname(mesh_path),'texture.png')
+for m in list(me.materials): me.materials.clear()
+mat=bpy.data.materials.new("wolf_tex"); mat.use_nodes=True; nt=mat.node_tree
+bsdf=nt.nodes.get("Principled BSDF"); bsdf.inputs['Roughness'].default_value=0.72
 has_tex=False
-if mat and mat.use_nodes:
-    for n in mat.node_tree.nodes:
-        if n.type=='TEX_IMAGE' and n.image: has_tex=True
-        if n.type=='BSDF_PRINCIPLED': n.inputs['Roughness'].default_value=0.72
-print("HASTEX" if has_tex else "NOTEX")
+if os.path.exists(texpath) and me.uv_layers:
+    tex=nt.nodes.new('ShaderNodeTexImage'); tex.image=bpy.data.images.load(texpath); tex.location=(-400,0)
+    nt.links.new(tex.outputs['Color'], bsdf.inputs['Base Color']); has_tex=True
+me.materials.append(mat)
+print("HASTEX" if has_tex else "NOTEX", "uv_layers", len(me.uv_layers))
 bpy.ops.wm.save_as_mainfile(filepath=os.path.abspath(outblend))
 # render
 bpy.ops.mesh.primitive_plane_add(size=10); gp=bpy.context.view_layer.objects.active
