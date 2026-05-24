@@ -36,7 +36,7 @@ for v in me.vertices:
     x,y,z=v.co.x,v.co.y,v.co.z; L=0.42
     if -0.36<y<0.32 and z>0.48: L=0.55          # govde orta
     if 0.30<y<0.50 and z>0.46: L=0.78           # yele
-    if y<-0.40: L=1.0                            # kuyruk gur
+    if y<-0.40: L=0.68                           # kuyruk (asiri genis degil)
     if y>0.55 and z>0.66: L=0.10                 # yuz cok kisa
     if z<0.28: L=min(L,0.22)                     # alt bacak
     vg_len.add([v.index],max(0.06,min(1.0,L)),'REPLACE')
@@ -67,9 +67,9 @@ me.materials.append(hair); hslot=len(me.materials)-1
 # ---- particle hair (yogun) ----
 bpy.context.view_layer.objects.active=mesh
 mesh.modifiers.new("fur",'PARTICLE_SYSTEM'); psys=mesh.particle_systems[-1]; ps=psys.settings
-ps.type='HAIR'; ps.count=15000; ps.hair_length=0.058; ps.use_advanced_hair=True
+ps.type='HAIR'; ps.count=18000; ps.hair_length=0.056; ps.use_advanced_hair=True
 ps.emit_from='FACE'; ps.distribution='RAND'; ps.use_modifier_stack=True
-ps.child_type='INTERPOLATED'; ps.child_percent=30; ps.rendered_child_count=60
+ps.child_type='INTERPOLATED'; ps.child_percent=34; ps.rendered_child_count=75
 ps.clump_factor=0.66; ps.clump_shape=0.4
 ps.roughness_1=0.06; ps.roughness_1_size=0.8; ps.roughness_endpoint=0.14; ps.roughness_end_shape=1.0
 ps.use_hair_bspline=True; ps.render_step=3; ps.display_step=3
@@ -93,18 +93,24 @@ try:
 except Exception as ex:
     print("COMB_FAIL",ex)
 # ---- goz (amber+pupil+yas) + burun ----
-def sph(name,loc,r,color,rough,emit=0.0,coat=0.0):
-    bpy.ops.mesh.primitive_uv_sphere_add(radius=r,location=loc,segments=20,ring_count=16)
-    s=bpy.context.view_layer.objects.active; s.name=name; bpy.ops.object.shade_smooth()
+def sph(name,loc,r,color,rough,emit=0.0,coat=0.0,scale=(1,1,1),rot=(0,0,0)):
+    bpy.ops.mesh.primitive_uv_sphere_add(radius=r,location=loc,segments=24,ring_count=18)
+    s=bpy.context.view_layer.objects.active; s.name=name
+    s.scale=scale; s.rotation_euler=rot; bpy.ops.object.transform_apply(scale=True,rotation=True)
+    bpy.ops.object.shade_smooth()
     mt=bpy.data.materials.new(name+"m"); mt.use_nodes=True; bb=mt.node_tree.nodes.get("Principled BSDF")
     bb.inputs['Base Color'].default_value=(*color,1); bb.inputs['Roughness'].default_value=rough
     if emit>0 and 'Emission Color' in bb.inputs: bb.inputs['Emission Color'].default_value=(*color,1); bb.inputs['Emission Strength'].default_value=emit
     if coat>0 and 'Coat Weight' in bb.inputs: bb.inputs['Coat Weight'].default_value=coat
     s.data.materials.append(mt); return s
+# GOZ: kucuk, badem (y'de uzun, z'de yassi), gomuk, islak amber + pupil + goz akligi cevre
 for sgn in (1,-1):
-    sph(f"eye{sgn}",(sgn*0.047,0.662,0.797),0.0145,(0.46,0.29,0.06),0.12,0.25,1.0)
-    sph(f"pup{sgn}",(sgn*0.047,0.676,0.798),0.007,(0.01,0.01,0.01),0.05)
-sph("nose",(0.0,0.892,0.732),0.016,(0.013,0.013,0.016),0.08,coat=1.0)
+    # goz kuresi (amber) - badem icin scale, hafif iceri gomuk
+    sph(f"eye{sgn}",(sgn*0.043,0.672,0.788),0.0115,(0.42,0.26,0.045),0.08,0.12,1.0,
+        scale=(0.85,1.35,0.78), rot=(0,0,math.radians(sgn*-8)))
+    # pupil (dikey, koyu) biraz onde
+    sph(f"pup{sgn}",(sgn*0.046,0.682,0.789),0.0052,(0.01,0.01,0.012),0.05,scale=(0.8,1.0,1.4))
+sph("nose",(0.0,0.896,0.744),0.017,(0.013,0.013,0.016),0.07,coat=1.0,scale=(1.15,0.9,0.85))
 # ---- Nishita gokyuzu + gunes ----
 w=bpy.context.scene.world or bpy.data.worlds.new("W"); bpy.context.scene.world=w; w.use_nodes=True
 wt=w.node_tree; wt.nodes.clear()
