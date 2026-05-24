@@ -1,0 +1,11 @@
+{
+  "manifest_version": "1.0",
+  "uv_layer_name": "UVMap",
+  "method_used": "smart",
+  "seam_count": 253,
+  "island_count_approx": 21,
+  "uv_space_utilization": 0.5393651450211404,
+  "angle_limit": 66,
+  "island_margin": 0.015,
+  "generated_by": "P06_uv_cartographer"
+}

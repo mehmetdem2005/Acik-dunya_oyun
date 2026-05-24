@@ -1,0 +1,25 @@
+{
+  "manifest_version": "1.0",
+  "creature_id": "kurt_001",
+  "material_name": "kurt_001_main",
+  "shader_type": "PrincipledBSDF",
+  "texture_strategy": "single_atlas",
+  "atlas_resolution": 2048,
+  "texture_slots": [
+    {
+      "slot": "Base Color",
+      "is_placeholder": false
+    },
+    {
+      "slot": "Normal",
+      "is_placeholder": false
+    },
+    {
+      "slot": "ORM (packed)",
+      "is_placeholder": false
+    }
+  ],
+  "godot_tres_path": "/home/user/Acik-dunya_oyun/.claude/skills/blender-creature-aaa/memory/runs/20260524_081341_kurt/final/kurt_001.tres",
+  "user_action_required": [],
+  "generated_by": "P11_material_alchemist"
+}

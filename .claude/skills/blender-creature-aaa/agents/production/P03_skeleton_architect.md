@@ -166,7 +166,53 @@ previous_blueprints/           # önceki run'lardan benzer creature blueprint'le
 }
 ```
 
-### 4.2 build_skeleton.py (zorunlu)
+### 4.2 LandmarkSpec.json (P04b için zorunlu)
+
+Skeleton kurulduktan sonra **anatomik landmark koordinatları** çıkarılır. Bunlar P04b Detail Injector'ın **dış servis gerektirmeden** primitive (sphere/cone) yerleştireceği noktalar.
+
+```json
+{
+  "manifest_version": "1.0",
+  "landmarks": {
+    "head":         {"world_pos": [0.0, 0.80, -0.575], "from_bone": "head"},
+    "jaw":          {"world_pos": [0.0, 0.76, -0.60],  "from_bone": "jaw"},
+    "ear_L":        {"world_pos": [+0.045, 0.84, -0.585], "from_bone": "ear_L"},
+    "ear_R":        {"world_pos": [-0.045, 0.84, -0.585], "from_bone": "ear_R"},
+    
+    "eye_L":        {"world_pos": [+0.050, 0.84, -0.615],
+                      "computed_from": "head + offset(+0.05, +0.04, -0.04)"},
+    "eye_R":        {"world_pos": [-0.050, 0.84, -0.615],
+                      "computed_from": "head + offset(-0.05, +0.04, -0.04)"},
+    
+    "snout_tip":    {"world_pos": [0.0, 0.80, -0.715],
+                      "computed_from": "head + offset(0, 0, -0.14)"},
+    
+    "paw_front_L":  {"world_pos": [+0.10, 0.00, -0.37], "from_bone": "foot_ik_front_L"},
+    "paw_front_R":  {"world_pos": [-0.10, 0.00, -0.37], "from_bone": "foot_ik_front_R"},
+    "paw_rear_L":   {"world_pos": [+0.11, 0.00, +0.27], "from_bone": "foot_ik_rear_L"},
+    "paw_rear_R":   {"world_pos": [-0.11, 0.00, +0.27], "from_bone": "foot_ik_rear_R"},
+    
+    "tail_tip":     {"world_pos": [0.0, 0.45, +0.68], "from_bone": "tail_11"}
+  },
+  "anatomy_class": "mammalia_quadruped",
+  "species": "wolf",
+  "generated_by": "P03_skeleton_architect"
+}
+```
+
+**Anatomy class'a göre landmark seti farklı:**
+
+| Anatomy Class | Landmarks |
+|---|---|
+| mammalia_quadruped | head, jaw, ear_L/R, eye_L/R, snout_tip, paw_front_L/R, paw_rear_L/R, tail_tip |
+| mammalia_biped | head, jaw, ear_L/R, eye_L/R, hand_L/R, foot_L/R |
+| aves | head, beak_tip, eye_L/R, wing_tip_L/R, foot_L/R, tail_fan |
+| reptilia_serpent | head, snout_tip, eye_L/R, tongue_tip (no legs/ears) |
+| arthropoda_arachnid | cephalothorax, abdomen, leg_tip_1-8, chelicera_L/R |
+
+`build_skeleton.py` skeleton kurarken `--emit-landmarks` flag'i ile LandmarkSpec.json'u da yazar.
+
+### 4.3 build_skeleton.py (zorunlu)
 
 Tam çalıştırılabilir bpy scripti. Detayı bu dosyada: `scripts/production/build_skeleton.py` (ana skill scripti). P03 ajanı yine bu scripti çağırır, parametre olarak SkeletonBlueprint.json verir.
 

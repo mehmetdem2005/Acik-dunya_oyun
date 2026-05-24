@@ -1,7 +1,0 @@
-# Buyuk, yeniden-uretilebilir ara ciktiları izleme (scriptler+spec'lerden uretilir)
-runs/*/blender_scenes/
-runs/*/renders/
-*.blend
-*.blend1
-# Final teslimat (.glb) izlenir:
-!runs/*/final/

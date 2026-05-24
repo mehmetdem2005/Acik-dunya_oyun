@@ -1,0 +1,98 @@
+{
+  "manifest_version": "1.0",
+  "method_used": "automatic_weights",
+  "armature_modifier_added": true,
+  "vertex_groups_count": 50,
+  "max_influences_per_vertex_target": 4,
+  "weights_normalized": true,
+  "symmetry_enforced": false,
+  "symmetry_max_delta": 0.9902058243751526,
+  "orphan_vertices_count": 0,
+  "post_processing_passes": [
+    {
+      "name": "normalize",
+      "applied": true
+    },
+    {
+      "name": "cap_to_n",
+      "applied": true,
+      "n": 4
+    },
+    {
+      "name": "mirror_x",
+      "applied": true
+    },
+    {
+      "name": "smooth",
+      "applied": true,
+      "iterations": 3
+    },
+    {
+      "name": "cleanup_zero",
+      "applied": true
+    }
+  ],
+  "per_bone_vertex_count": {
+    "metatarsus_R": 471,
+    "rear_toe_R": 254,
+    "tail_0": 703,
+    "tail_1": 692,
+    "tail_2": 458,
+    "pelvis_R": 883,
+    "thigh_R": 1174,
+    "sacrum": 321,
+    "spine_lumbar": 1213,
+    "shin_R": 750,
+    "shin_twist_R": 724,
+    "spine_thorax": 1535,
+    "spine_chest": 1248,
+    "scapula_R": 1020,
+    "upper_arm_R": 724,
+    "tail_3": 439,
+    "tail_4": 425,
+    "tail_5": 369,
+    "thigh_L": 1157,
+    "pelvis_L": 879,
+    "tail_10": 254,
+    "tail_11": 189,
+    "tail_9": 280,
+    "tail_8": 310,
+    "tail_7": 329,
+    "tail_6": 363,
+    "shin_L": 776,
+    "scapula_L": 1031,
+    "front_paw_R": 436,
+    "front_toe_R": 263,
+    "upperarm_twist_R": 633,
+    "spine_shoulder": 914,
+    "neck_1": 1049,
+    "forearm_R": 505,
+    "forearm_twist_R": 505,
+    "neck_2": 884,
+    "neck_3": 562,
+    "jaw": 546,
+    "ear_R": 465,
+    "head": 463,
+    "ear_L": 461,
+    "upper_arm_L": 720,
+    "upperarm_twist_L": 641,
+    "metatarsus_L": 474,
+    "rear_toe_L": 264,
+    "shin_twist_L": 751,
+    "front_paw_L": 442,
+    "front_toe_L": 271,
+    "forearm_L": 511,
+    "forearm_twist_L": 511
+  },
+  "validation": {
+    "all_verts_have_weights": true,
+    "all_weights_sum_to_one": true,
+    "no_negative_weights": true,
+    "over_max_influence_count": 2971
+  },
+  "errors": [
+    "Over 4 influence: 2971 vertex"
+  ],
+  "warnings": [],
+  "generated_by": "P08_skinner"
+}

@@ -1,0 +1,47 @@
+{
+  "manifest_version": "1.0",
+  "method_used": "automatic_weights",
+  "armature_modifier_added": true,
+  "vertex_groups_count": 50,
+  "max_influences_per_vertex_target": 4,
+  "weights_normalized": true,
+  "symmetry_enforced": true,
+  "symmetry_max_delta": 0.0,
+  "orphan_vertices_count": 7501,
+  "post_processing_passes": [
+    {
+      "name": "normalize",
+      "applied": true
+    },
+    {
+      "name": "cap_to_n",
+      "applied": true,
+      "n": 4
+    },
+    {
+      "name": "mirror_x",
+      "applied": true
+    },
+    {
+      "name": "smooth",
+      "applied": true,
+      "iterations": 2
+    },
+    {
+      "name": "cleanup_zero",
+      "applied": true
+    }
+  ],
+  "per_bone_vertex_count": {},
+  "validation": {
+    "all_verts_have_weights": false,
+    "all_weights_sum_to_one": true,
+    "no_negative_weights": true,
+    "over_max_influence_count": 0
+  },
+  "errors": [
+    "Orphan vertex (weight'siz): 7501"
+  ],
+  "warnings": [],
+  "generated_by": "P08_skinner"
+}

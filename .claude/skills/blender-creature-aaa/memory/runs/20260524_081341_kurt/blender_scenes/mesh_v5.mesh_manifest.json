@@ -1,0 +1,12 @@
+{
+  "tris": 15000,
+  "verts": 7502,
+  "non_manifold": 0,
+  "boundary": 0,
+  "bbox": [
+    0.3452,
+    1.66,
+    0.8998
+  ],
+  "method": "metaball_anatomic_v2"
+}

@@ -1,0 +1,28 @@
+{
+  "manifest_version": "1.0",
+  "creature_id": "kurt_001",
+  "base_mesh_object_name": "creature_mesh",
+  "tris_count_actual": 15000,
+  "tris_count_target": 15000,
+  "verts_count": 7508,
+  "faces_count": 14884,
+  "is_manifold": true,
+  "is_watertight": true,
+  "bbox_min": [
+    -0.1534970998764038,
+    -0.8155400156974792,
+    0.12698140740394592
+  ],
+  "bbox_max": [
+    0.1533919721841812,
+    0.7272104024887085,
+    0.8607316613197327
+  ],
+  "voxel_remesh_size": 0.008,
+  "subdivision_level_used": 1,
+  "profile_resolution": 16,
+  "segment_resolution": 32,
+  "errors": [],
+  "warnings": [],
+  "generated_by": "P04_mesh_sculptor"
+}
