@@ -131,7 +131,7 @@ sc.cycles.use_denoising=True
 sc.render.resolution_x=800; sc.render.resolution_y=800
 os.makedirs(outdir,exist_ok=True)
 d=size*2.0
-for nm,az,el in [("side",92,8),("front34",42,12),("head",60,6)]:
+for nm,az,el in [("front34",42,12),("head",58,4)]:
     a=math.radians(az); e=math.radians(el)
     fac = 1.0 if nm!="head" else 0.5
     co.location=(ctr.x+d*fac*math.sin(a)*math.cos(e),ctr.y-d*fac*math.cos(a)*math.cos(e),ctr.z+d*fac*math.sin(e)+ (0.18 if nm=="head" else 0))
