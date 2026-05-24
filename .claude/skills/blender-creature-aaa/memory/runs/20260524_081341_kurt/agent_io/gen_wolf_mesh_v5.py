@@ -50,13 +50,14 @@ ball((0,0.628,0.815),0.045)                     # alin/stop ust
 ball(( 0.040,0.628,0.808),0.026); ball((-0.040,0.628,0.808),0.026)  # brow ridge
 ball(( 0.052,0.598,0.745),0.038); ball((-0.052,0.598,0.745),0.038)  # yanak
 ball(( 0.040,0.60,0.70),0.028); ball((-0.040,0.60,0.70),0.028)      # cene kasi
-# muzzle: tek PURUZSUZ tapered ellipsoid (lumpy bead chain yerine)
-# y boyunca uzun, x/z dar -> duzgun sivrilen burun
-ellip((0,0.745,0.758),0.042, 0.92,2.7,0.78)     # ust cene / burun kopru (uzun taper)
-ellip((0,0.700,0.748),0.038, 1.05,1.5,0.72)     # muzzle taban (yanaga baglanir)
-ellip((0,0.742,0.716),0.030, 0.86,2.4,0.62)     # alt cene (ince uzun)
-ball((0,0.888,0.732),0.020,stiff=2.5)           # burun pad (yuvarlak uc)
-ball((0,0.83,0.742),0.022)                       # burun siti yumusak gecis
+# muzzle: SIK ORTUSEN ball zinciri (kesintisiz alan) - ust snout + alt cene
+_mz=[(0.640,0.780,0.052),(0.672,0.774,0.048),(0.704,0.768,0.044),(0.736,0.762,0.040),
+     (0.768,0.757,0.036),(0.800,0.752,0.032),(0.832,0.747,0.028),(0.862,0.742,0.024),
+     (0.886,0.738,0.021)]
+for yy,zz,rr in _mz: ball((0,yy,zz),rr,stiff=2.8)
+_jw=[(0.660,0.730,0.036),(0.700,0.725,0.032),(0.740,0.721,0.028),(0.780,0.718,0.024),(0.818,0.717,0.020)]
+for yy,zz,rr in _jw: ball((0,yy,zz),rr,stiff=2.8)
+# burun pad metaball'dan CIKARILDI (ayri obje olarak render'da eklenir)
 # ===== BACAKLAR =====
 def seg(name,rh,rt,step=0.022):
     if name not in bones: return
