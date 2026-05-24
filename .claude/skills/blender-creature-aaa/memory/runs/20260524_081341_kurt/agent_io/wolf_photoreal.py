@@ -54,7 +54,7 @@ try:
     el=rmp.color_ramp.elements
     el[0].position=0.0; el[0].color=(0.028,0.025,0.022,1)
     el[1].position=1.0; el[1].color=(0.04,0.036,0.032,1)
-    for p,c in [(0.28,(0.14,0.12,0.095,1)),(0.55,(0.37,0.32,0.255,1)),(0.82,(0.10,0.09,0.078,1))]:
+    for p,c in [(0.30,(0.095,0.082,0.068,1)),(0.58,(0.225,0.19,0.145,1)),(0.84,(0.07,0.062,0.052,1))]:
         e=rmp.color_ramp.elements.new(p); e.color=c
     ht.links.new(hi.outputs['Intercept'],rmp.inputs['Fac'])
     if 'Color' in hb.inputs: ht.links.new(rmp.outputs['Color'],hb.inputs['Color'])
@@ -115,8 +115,8 @@ try:
     wt.links.new(sky.outputs[0],wbg.inputs[0])
 except Exception as ex:
     print("SKY_FAIL",ex); wbg.inputs[0].default_value=(0.45,0.52,0.62,1)
-wbg.inputs[1].default_value=0.45; wt.links.new(wbg.outputs[0],wout.inputs['Surface'])
-sd=bpy.data.lights.new("sun",'SUN'); sd.energy=1.25; sd.angle=math.radians(1.5); sd.color=(1.0,0.95,0.86)
+wbg.inputs[1].default_value=0.28; wt.links.new(wbg.outputs[0],wout.inputs['Surface'])
+sd=bpy.data.lights.new("sun",'SUN'); sd.energy=0.95; sd.angle=math.radians(1.5); sd.color=(1.0,0.95,0.86)
 so=bpy.data.objects.new("sun",sd); bpy.context.collection.objects.link(so); so.rotation_euler=(math.radians(58),math.radians(6),math.radians(45))
 # ---- zemin (toprak) ----
 bpy.ops.mesh.primitive_plane_add(size=14,location=(0,0,0)); gp=bpy.context.view_layer.objects.active
@@ -138,7 +138,7 @@ try:
     looks=[x.name for x in bpy.types.ColorManagedViewSettings.bl_rna.properties['view_transform'].enum_items]
     sc.view_settings.view_transform='AgX' if 'AgX' in looks else 'Filmic'
 except Exception as ex: print("VT_FAIL",ex)
-sc.view_settings.exposure=-0.6; sc.view_settings.gamma=1.0
+sc.view_settings.exposure=-1.4; sc.view_settings.gamma=1.0
 allshots={"hero":(40,9,1.0,ctr+Vector((0,0,-0.02))),"head":(54,4,0.46,Vector((0,0.78,0.80))),"side":(90,6,1.0,ctr+Vector((0,0,-0.02)))}
 d=size*1.95
 for nm in SHOTS.split(","):
