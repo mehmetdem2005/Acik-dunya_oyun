@@ -92,13 +92,10 @@ def get_tail_bones(armature_obj):
 
 
 def get_spine_root(armature_obj):
-    """En üstteki spine bone (root_master varsa o, yoksa spine_00)."""
-    if "root_master" in armature_obj.pose.bones:
-        return "root_master"
-    elif "spine_00" in armature_obj.pose.bones:
-        return "spine_00"
-    elif "spine_hip" in armature_obj.pose.bones:
-        return "spine_hip"
+    """Govde hareketini suren ana bone. Genis naming destegi."""
+    for cand in ("root_master", "root", "spine_00", "spine_hip", "sacrum", "spine_lumbar"):
+        if cand in armature_obj.pose.bones:
+            return cand
     return None
 
 
@@ -483,32 +480,33 @@ def generate_death(armature_obj, frame_count, body_length, fps=30):
 # NLA setup
 # =============================================================================
 
-def setup_nla_tracks(armature_obj, actions):
-    """Her action için NLA track + strip."""
+def setup_nla_tracks(armature_obj, action_names):
+    """Her action icin NLA track + strip. Action'lar isimle yeniden cekilir
+    (cok sayida action olusturulunca Python StructRNA referanslari geersizlesebilir)."""
     if armature_obj.animation_data is None:
         armature_obj.animation_data_create()
-    
+
     ad = armature_obj.animation_data
-    
+
     # Mevcut track'leri temizle
     while ad.nla_tracks:
         ad.nla_tracks.remove(ad.nla_tracks[0])
-    
+
     # Active action'ı kaldır (NLA dominant olsun)
     ad.action = None
-    
-    for action in actions:
+
+    for name in action_names:
+        action = bpy.data.actions.get(name)
+        if action is None:
+            continue
         track = ad.nla_tracks.new()
-        track.name = f"NLA_{action.name.replace('Action_', '')}"
-        
-        strip = track.strips.new(
-            name=action.name,
-            start=int(action.frame_range[0]) if action.frame_range[0] > 0 else 1,
-            action=action,
-        )
-        
+        track.name = f"NLA_{name.replace('Action_', '')}"
+
+        start = int(action.frame_range[0]) if action.frame_range[0] > 0 else 1
+        strip = track.strips.new(name=name, start=start, action=action)
+
         # Loop strategy
-        if "loop" in action.name or "breathe" in action.name:
+        if "loop" in name or "breathe" in name:
             strip.repeat = 1.0
 
 
@@ -661,9 +659,9 @@ def main():
         
         print(f"  ✓ {fcurve_count} F-Curve, foot sliding: {slide_err:.4f}")
     
-    # NLA setup
+    # NLA setup (action'lari isimle gec, stale referans olmasin)
     print(f"[animator] NLA tracks ({len(actions)} action)...")
-    setup_nla_tracks(armature_obj, actions)
+    setup_nla_tracks(armature_obj, [c["action_name"] for c in manifest_clips])
     
     # Manifest
     manifest = {
