@@ -115,15 +115,26 @@ SECONDARY_SEGMENTS = 4
 SECONDARY_RADIAL_SEGS = 5        # reduced
 SECONDARY_START_FRAC = 0.18
 
-# Tertiaries / twigs
-TWIGS_PER_SECONDARY_RANGE = (3, 4)   # ↑ from (2,4) Round 25 — daha cok lateral
-TWIG_LENGTH_RANGE = (0.14, 0.38)
+# Tertiaries / twigs — Round 31: recursive tip-bifurcation (gerçek sympodial dallanma)
+TWIGS_PER_SECONDARY_RANGE = (3, 4)   # secondary boyunca başlangıç twig'leri (recursive forking var)
+TWIG_LENGTH_RANGE = (0.16, 0.40)
 TWIG_ANGLE_RANGE_DEG = (35.0, 65.0)
 TWIG_R_FACTOR = 0.55
-TWIG_TIP_R_FACTOR = 0.30
+TWIG_TIP_R_FACTOR = 0.55              # ↑ from 0.30 — tip kalın kalır (fork için)
 TWIG_SEGMENTS = 2
-TWIG_RADIAL_SEGS = 4
-TWIG_START_FRAC = 0.18
+TWIG_RADIAL_SEGS = 3                  # ↓ from 4 — çok dal var, tri tasarrufu
+TWIG_START_FRAC = 0.16
+
+# Round 31 — Recursive bifurcation (tip Y-fork → her dal tekrar çatallanır)
+# DİKKAT: branch sayısı fork_count^depth ile patlar. Budget kontrolü için sınırlı.
+TWIG_MAX_DEPTH = 2                    # twig(0) → fork(1) → fork(2): 3 seviye
+TWIG_FORK_COUNT = (2, 3)              # tip'te kaç çatal (genelde 2)
+TWIG_FORK_ANGLE_DEG = (16.0, 42.0)    # parent tip yönünden sapma (geniş = açık çatal)
+TWIG_FORK_LENGTH_DECAY = 0.68         # her seviye %68 kısalır
+TWIG_FORK_R_DECAY = 0.70              # her seviye %70 incelir
+TWIG_FORK_LATERAL_PROB = 0.30         # ek yan twiglet olasılığı
+TWIG_MIN_R = 0.0030                   # bundan inceyse dur
+TWIG_GLOBAL_BUDGET = 2600             # toplam twig branch limiti (patlama koruması)
 
 # Round 25 — Sub-twigs: yeni dallanma seviyesi (twig'in kendi alt-twig'leri)
 SUBTWIGS_PER_TWIG_RANGE = (1, 2)
@@ -941,6 +952,7 @@ class TreeBuilder:
         self.secondaries = []   # Round 26: {curve, depth} for inner-fill foliage
         self.surface_roots = [] # Round 26: {curve, base_pos} for vcolor darken
         self.dead_snags = []    # Round 26: {curve} for vcolor darken
+        self._twig_count = 0    # Round 31: recursive bifurcation global budget counter
         # Canopy center: where leaves cluster vertically (above scaffold zone)
         self.canopy_center = Vector((0, 0, TOTAL_HEIGHT * 0.55))
         self.canopy_radius = 2.6   # estimated; refined after branch build
@@ -1072,9 +1084,10 @@ class TreeBuilder:
             self._sprinkle_spurs_on_branch(curve, count=int(SPURS_PER_SECONDARY_AVG * self.rng.uniform(0.7, 1.3)))
 
     def _build_twigs(self, parent_curve, depth):
+        """Round 31: seed twigs along secondary, each grows recursively with tip bifurcation."""
         n = self.rng.randint(*TWIGS_PER_SECONDARY_RANGE)
         for i in range(n):
-            frac = TWIG_START_FRAC + (0.9 - TWIG_START_FRAC) * (i / max(n - 1, 1))
+            frac = TWIG_START_FRAC + (0.92 - TWIG_START_FRAC) * (i / max(n - 1, 1))
             frac += self.rng.uniform(-0.05, 0.05)
             pos, r_parent, tan = self._sample_branch_curve(parent_curve, frac)
             azimuth = i * GOLDEN_ANGLE + self.rng.uniform(-0.4, 0.4)
@@ -1086,64 +1099,75 @@ class TreeBuilder:
             base_dir = (math.cos(ang) * tan + math.sin(ang) * radial).normalized()
             length = self.rng.uniform(*TWIG_LENGTH_RANGE)
             base_r = r_parent * TWIG_R_FACTOR
-            tip_r = base_r * TWIG_TIP_R_FACTOR
-            droop = 0.03 * FRUIT_LOAD
-            curve = branch_curve(pos + radial * (r_parent * 0.4), base_dir, length, base_r, tip_r,
-                                 TWIG_SEGMENTS, droop, lateral_jitter=0.03, rng=self.rng,
-                                 gravity_k=GRAVITY_K_TWIG)
-            build_tube(self.bm_wood, curve, TWIG_RADIAL_SEGS, 0, self.wood_faces, tier=3,
-                       collar_bulge=COLLAR_BULGE_FACTOR * 0.6)
-            self.twigs.append({
-                "curve": curve, "depth": depth, "parent_curve": parent_curve,
-                "cards_along": CARDS_PER_TWIG_ALONG,
-                "cards_terminal": CARDS_PER_TWIG_TERMINAL,
-            })
-            # Round 25: Sub-twigs (fraktal dallanma) — twig'in kendi alt-twig'leri
-            self._build_subtwigs(curve, depth=depth + 1)
-            # occasional spurs on twigs (mostly long shoots have leaves, no spurs)
-            if self.rng.random() < SPURS_PER_TWIG_AVG:
-                self._sprinkle_spurs_on_branch(curve, count=1)
+            start_pos = pos + radial * (r_parent * 0.4)
+            self._grow_twig(start_pos, base_dir, length, base_r, fork_depth=0)
 
-    def _build_subtwigs(self, parent_twig_curve, depth):
-        """Round 25 — yeni dallanma seviyesi: twig'lerin kendi alt-twig'leri.
+    def _grow_twig(self, base_pos, base_dir, length, base_r, fork_depth):
+        """Round 31 — RECURSIVE twig with tip bifurcation (gerçek sympodial dallanma).
 
-        Parent twig boyunca SUBTWIG_T_POINTS noktalarinda 1-2 sub-twig olusur.
-        Sub-twig'ler de yapraklanir (cards_along/cards_terminal daha az).
+        Her twig:
+        1. Kendi tube'unu çizer + yapraklanır (cards azalır derinlikle)
+        2. Tip'inde 2-3 çocuğa çatallanır (Y-fork) — her çocuk recurse
+        3. Bazen ek lateral twiglet ekler
+        Durma: fork_depth >= TWIG_MAX_DEPTH veya base_r < TWIG_MIN_R
         """
-        n_sub = self.rng.randint(*SUBTWIGS_PER_TWIG_RANGE)
-        if n_sub <= 0:
+        # Global budget guard (recursion explosion protection)
+        if self._twig_count >= TWIG_GLOBAL_BUDGET:
             return
-        # Pick random subset of T points
-        t_pool = list(SUBTWIG_T_POINTS)
-        self.rng.shuffle(t_pool)
-        for i in range(min(n_sub, len(t_pool))):
-            frac = t_pool[i] + self.rng.uniform(-0.04, 0.04)
-            pos, r_parent, tan = self._sample_branch_curve(parent_twig_curve, frac)
-            if r_parent < 0.0035:   # parent too thin already, skip
-                continue
-            azimuth = self.rng.uniform(0, 2 * math.pi)
-            up = Vector((0, 0, 1))
-            side = tan.cross(up).normalized() if abs(tan.z) < 0.95 else Vector((1, 0, 0))
-            forward = tan.cross(side).normalized()
-            radial = math.cos(azimuth) * side + math.sin(azimuth) * forward
-            ang = math.radians(self.rng.uniform(*SUBTWIG_ANGLE_RANGE_DEG))
-            base_dir = (math.cos(ang) * tan + math.sin(ang) * radial).normalized()
-            # Parent twig length unknown directly; estimate from curve span
-            parent_len = (parent_twig_curve[-1][0] - parent_twig_curve[0][0]).length
-            length = parent_len * self.rng.uniform(*SUBTWIG_LENGTH_FACTOR)
-            base_r = r_parent * SUBTWIG_R_FACTOR
-            tip_r = base_r * 0.35
-            droop = 0.02 * FRUIT_LOAD
-            curve = branch_curve(pos + radial * (r_parent * 0.4), base_dir, length, base_r, tip_r,
-                                 SUBTWIG_SEGMENTS, droop, lateral_jitter=0.02, rng=self.rng,
-                                 gravity_k=GRAVITY_K_SUBTWIG)
-            build_tube(self.bm_wood, curve, SUBTWIG_RADIAL_SEGS, 0, self.wood_faces, tier=3,
-                       collar_bulge=COLLAR_BULGE_FACTOR * 0.4)
-            self.twigs.append({
-                "curve": curve, "depth": depth, "parent_curve": parent_twig_curve,
-                "cards_along": CARDS_PER_SUBTWIG_ALONG,
-                "cards_terminal": CARDS_PER_SUBTWIG_TERMINAL,
-            })
+        self._twig_count += 1
+        tip_r = base_r * TWIG_TIP_R_FACTOR
+        droop = 0.03 * FRUIT_LOAD * (0.6 ** fork_depth)
+        gravk = GRAVITY_K_TWIG * (0.7 ** fork_depth)
+        curve = branch_curve(base_pos, base_dir, length, base_r, tip_r,
+                             TWIG_SEGMENTS, droop, lateral_jitter=0.025, rng=self.rng,
+                             gravity_k=gravk)
+        radial_segs = max(3, TWIG_RADIAL_SEGS - (1 if fork_depth >= 2 else 0))
+        build_tube(self.bm_wood, curve, radial_segs, 0, self.wood_faces, tier=3,
+                   collar_bulge=COLLAR_BULGE_FACTOR * (0.5 ** fork_depth))
+        # Leaf cards: deeper forks carry fewer cards (outer canopy gets the leaves)
+        cards_along = max(1, CARDS_PER_TWIG_ALONG - fork_depth)
+        cards_terminal = max(1, CARDS_PER_TWIG_TERMINAL - (1 if fork_depth >= 2 else 0))
+        self.twigs.append({
+            "curve": curve, "depth": fork_depth, "parent_curve": None,
+            "cards_along": cards_along,
+            "cards_terminal": cards_terminal,
+        })
+
+        # Stop recursion
+        if fork_depth >= TWIG_MAX_DEPTH or tip_r < TWIG_MIN_R:
+            return
+
+        tip_pos = curve[-1][0]
+        tip_tan = curve[-1][2]
+        # Frame at tip for fork divergence
+        up = Vector((0, 0, 1))
+        side = tip_tan.cross(up).normalized() if abs(tip_tan.z) < 0.95 else Vector((1, 0, 0))
+        forward = tip_tan.cross(side).normalized()
+
+        # Tip bifurcation: 2-3 children diverging from tip
+        n_fork = self.rng.randint(*TWIG_FORK_COUNT)
+        fork_phase = self.rng.uniform(0, 2 * math.pi)
+        for k in range(n_fork):
+            fork_az = fork_phase + (k / n_fork) * 2 * math.pi + self.rng.uniform(-0.3, 0.3)
+            fork_angle = math.radians(self.rng.uniform(*TWIG_FORK_ANGLE_DEG))
+            radial = math.cos(fork_az) * side + math.sin(fork_az) * forward
+            child_dir = (math.cos(fork_angle) * tip_tan + math.sin(fork_angle) * radial).normalized()
+            child_len = length * TWIG_FORK_LENGTH_DECAY * self.rng.uniform(0.85, 1.15)
+            child_r = tip_r * TWIG_FORK_R_DECAY
+            self._grow_twig(tip_pos, child_dir, child_len, child_r, fork_depth + 1)
+
+        # Occasional lateral twiglet mid-branch (extra density)
+        if fork_depth < TWIG_MAX_DEPTH - 1 and self.rng.random() < TWIG_FORK_LATERAL_PROB:
+            lat_frac = self.rng.uniform(0.45, 0.75)
+            lpos, lr, ltan = self._sample_branch_curve(curve, lat_frac)
+            laz = self.rng.uniform(0, 2 * math.pi)
+            lside = ltan.cross(up).normalized() if abs(ltan.z) < 0.95 else Vector((1, 0, 0))
+            lfwd = ltan.cross(lside).normalized()
+            lradial = math.cos(laz) * lside + math.sin(laz) * lfwd
+            lang = math.radians(self.rng.uniform(40, 70))
+            ldir = (math.cos(lang) * ltan + math.sin(lang) * lradial).normalized()
+            self._grow_twig(lpos + lradial * (lr * 0.4), ldir,
+                            length * 0.55, lr * 0.7, fork_depth + 1)
 
     def _sprinkle_spurs_on_branch(self, parent_curve, count):
         for _ in range(count):
