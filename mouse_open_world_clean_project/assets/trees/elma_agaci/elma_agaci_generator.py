@@ -26,10 +26,18 @@ OUT_DIR = os.path.dirname(os.path.abspath(__file__))
 
 # Tree macro
 TOTAL_HEIGHT = 3.8               # Round 27: trunk relative kısaltıldı (4.2→3.8) — broad spreading hedef
-TRUNK_LEAN_DEG = 7.0
-TRUNK_S_CURVE_AMP = 0.08
-TRUNK_FORK_HEIGHT = 0.75         # ↓ from 0.85 — daha alçak fork → daha yatay spread için yer
-TRUNK_GEOM_TOP_FRAC = 0.68       # ↓ from 0.72 — trunk top daha kısa, canopy daha geniş
+TRUNK_LEAN_DEG = 9.0             # Round 33: 7→9 (pistol-butt sweep belirginleşti)
+TRUNK_S_CURVE_AMP = 0.13         # Round 33: 0.08→0.13 (basal sweep — "düz eksen = CGI tell")
+TRUNK_FORK_HEIGHT = 0.75
+TRUNK_GEOM_TOP_FRAC = 0.68
+# Round 33 — Trunk cross-section gerçekçiliği (dendrolog + AAA TA spec)
+TRUNK_LOBES = 4                  # 3-5 lob (4 tipik) — loblu yıldız cross-section
+TRUNK_LOBE_AMP = 0.16            # lob derinliği (base radius'un fraksiyonu)
+TRUNK_LOBE_FORK_FADE = 0.35      # fork'ta lob şiddeti (base %100 → fork %35)
+TRUNK_TWIST_DEG = 18.0           # axial twist — loblar yukarı spiral
+TRUNK_RIDGE_FREQ_THETA2 = 9.0    # 2. oktav (yüksek frekans sub-ridge)
+TRUNK_RIDGE_AMP2 = 0.045         # 2. oktav genliği
+TRUNK_VRIDGE_KZ = 2.2            # dikey ridge phase (noise angle*k + z*kz)
 
 # Trunk radii (thicker base + stronger flare + gnarl noise)
 TRUNK_BASE_R = 0.14
@@ -42,21 +50,33 @@ BUTTRESS_AMP = 0.55              # Round 30: 0.28→0.55 (BELİRGİN buttress fi
 BUTTRESS_SHARPNESS = 3.0         # Round 30: yeni — fin'lerin keskinliği (cos^p, sadece +outward)
 BUTTRESS_PHASE_JITTER_DEG = 12   # Round 30: yeni — fin'ler eşit aralıkta değil
 
-# Round 26 — Surface roots (yer üstü görünür kök buttress'leri)
-# Round 29: kök rework — buttress-thick, varyasyonlu, trunk'a blend
-N_SURFACE_ROOTS = 6              # Round 29: 5→6 (1 küçük yardımcı ekler)
-ROOT_LENGTH_RANGE = (0.35, 0.85)  # Round 29: daha geniş varyasyon
-ROOT_BASE_R = 0.085              # Round 29: 0.055→0.085 — buttress-thick start
-ROOT_MID_R = 0.035               # Round 29: yeni — 30% mesafede ince
-ROOT_TIP_R = 0.006               # Round 29: 0.012→0.006 — toprağa giriş daha incelir
-ROOT_PITCH_RANGE_DEG = (-42.0, -18.0)  # Round 29: pitch varyasyonu artırıldı
-ROOT_AZIMUTH_JITTER_DEG = 22     # Round 29: 18→22 daha asimetrik dağılım
-ROOT_SEGMENTS = 5                # Round 29: 4→5 daha smooth taper
-ROOT_RADIAL_SEGS = 5
-ROOT_GRAVITY_K = -0.22           # Round 29: -0.18→-0.22 daha agresif dalış
-ROOT_DARKEN = 1.00               # Round 29: 0.92→1.00 (artık tier 1 base, ayrıca darken yok)
-ROOT_MOSS_TINT_MAX = 0.10        # Round 29: 0.20→0.10 (less green tint)
-ROOT_ATTACH_INSET = 0.45         # Round 29: 0.85→0.45 — attach point trunk içine (seam hide)
+# Round 33 — Lofted continuous surface roots (kök biyoloğu + AAA TA spec)
+# Trunk flare'in DEVAMI olarak loft edilir (ayrı silindir DEĞİL). D-section (flat-top),
+# buttress lob azimuth'larıyla hizalı, embed ile dikişsiz.
+N_SURFACE_ROOTS = 6              # 6 major root (5-8 aralık, pomolog)
+ROOT_SURFACE_LEN = (0.55, 1.30)  # yüzeyde gidiş mesafesi (m)
+ROOT_JUNCTION_W = 0.24           # trunk junction genişliği (D-section width)
+ROOT_SUBMERGE_W = 0.075          # toprağa giriş genişliği
+ROOT_DH_RATIO = 0.45             # D-section height/width (flat-top: <1 → yassı)
+ROOT_SHOULDER_PITCH_DEG = 7.0    # ilk shoulder pitch (sığ)
+ROOT_DIVE_PITCH_DEG = 30.0       # batış pitch (dik)
+ROOT_SHOULDER_FRAC = 0.45        # shoulder ne kadar (sonra dive)
+ROOT_RINGS = 5                   # kök boyunca ring sayısı
+ROOT_RADIAL_SEGS = 6             # D-section seg
+ROOT_EMBED = 0.35                # ilk ring trunk içine gömülme (junction seam hide)
+ROOT_AZIMUTH_JITTER_DEG = 14     # lob azimuth'una göre küçük sapma
+ROOT_FORK_PROB = 0.45            # kök yüzeyde çatallanma olasılığı (1-3 major forks)
+ROOT_DARKEN = 0.95               # hafif koyu (trunk'tan)
+ROOT_MOSS_TINT_MAX = 0.14        # üst yüzey moss hint
+# Eski tube-root sistemi parametreleri (kullanılmıyor, _build_surface_roots dead)
+ROOT_BASE_R = 0.085
+ROOT_MID_R = 0.035
+ROOT_TIP_R = 0.006
+ROOT_SEGMENTS = 5
+ROOT_GRAVITY_K = -0.22
+ROOT_ATTACH_INSET = 0.45
+ROOT_LENGTH_RANGE = (0.35, 0.85)
+ROOT_PITCH_RANGE_DEG = (-42.0, -18.0)
 
 # Gravimorphism — Round 32: pomolog spec "yapısal dallar SARKMAZ, sadece dış uçlar"
 # Structural scaffolds/secondaries: ZERO sag (arch comes from growth curvature, not gravity)
@@ -192,7 +212,7 @@ FORK_PUFF_CARD_H = 0.18
 FORK_PUFF_CROSS_QUAD = False         # fill, single quad
 
 # Round 27 — Crown apex puff: trunk üstü merkez vertikal kolonu doldur (Stage 1 silüet fix)
-CROWN_APEX_CARDS = 80                # trunk üstüne büyük volumetric clump
+CROWN_APEX_CARDS = 60                # Round 33: 80→60 (lofted root tri için yer)
 CROWN_APEX_RADIUS = 0.55             # apex puff sphere radius
 CROWN_APEX_CARD_W = 0.22
 CROWN_APEX_CARD_H = 0.20
@@ -426,44 +446,54 @@ def trunk_curve(rng):
             falloff = max(0, 1.0 - dist / TRUNK_BURL_SIGMA)
             burl_contributions.append((baz, falloff))
 
+        # Round 33: z-bağımlı lob fade (base %100 → fork %35) ve twist phase
+        z_frac_fork = min(1.0, max(0.0, z_capture / max(TRUNK_FORK_HEIGHT, 0.1)))
+        lobe_strength = 1.0 * (1 - z_frac_fork) + TRUNK_LOBE_FORK_FADE * z_frac_fork
+        twist_phase = math.radians(TRUNK_TWIST_DEG) * z_frac_fork
+
         def radial_mod(angle, z=z_capture, fs=flare_strength,
                        burls=burl_contributions, ns=noise_seed,
-                       faz=fin_azimuths, famp=fin_amps):
+                       faz=fin_azimuths, famp=fin_amps,
+                       lobe_s=lobe_strength, twist=twist_phase):
             mod = 1.0
-            # Round 30: Sharp outward-only buttress fins
-            # For each fin, compute angular distance to its center azimuth,
-            # apply cos^p^sharpness, scale by per-fin amplitude × flare_strength
+            # Round 33: LOBED STAR cross-section (3-5 lob, yukarı spiral, base'de derin)
+            # Loblar trunk boyunca devam eder (sadece flare'de değil) — irregular bole
+            lobe_wave = math.cos(TRUNK_LOBES * (angle + twist))
+            mod += TRUNK_LOBE_AMP * lobe_s * lobe_wave
+            # Round 30+33: Sharp outward-only buttress fins (flare zone, root hizalama)
             if fs > 0:
                 fin_bulge = 0.0
                 for f_i in range(BUTTRESS_LOBES):
-                    # signed angular delta (-pi..pi)
                     d = angle - faz[f_i]
                     while d > math.pi:
                         d -= 2 * math.pi
                     while d < -math.pi:
                         d += 2 * math.pi
-                    # cos peak at fin center (d=0)
                     c = math.cos(d)
                     if c > 0:
-                        # Sharp peak: cos^sharpness (more sharpness = narrower fin)
                         fin_bulge = max(fin_bulge,
                                         (c ** BUTTRESS_SHARPNESS) * famp[f_i])
                 mod += BUTTRESS_AMP * fs * fin_bulge
-            # Gnarl noise: subtle per-angle perturbation (all heights)
-            n_val = _hash_noise(z * TRUNK_GNARL_FREQ_Z,
-                                angle * TRUNK_GNARL_FREQ_THETA / (2 * math.pi),
-                                ns)
-            mod += TRUNK_GNARL_AMP * n_val
+            # Round 33: 2-octave + vertical ridge phase (ridge'ler yukarı çıkar)
+            # Octave 1: low-freq gnarl
+            n1 = _hash_noise(z * TRUNK_GNARL_FREQ_Z,
+                             angle * TRUNK_GNARL_FREQ_THETA / (2 * math.pi),
+                             ns)
+            mod += TRUNK_GNARL_AMP * n1
+            # Octave 2: high-freq sub-ridge, vertical phase (angle*k + z*kz)
+            vridge = math.cos(TRUNK_RIDGE_FREQ_THETA2 * angle + z * TRUNK_VRIDGE_KZ)
+            mod += TRUNK_RIDGE_AMP2 * vridge
             # Burls
             for baz, fall in burls:
                 if fall > 0:
                     azc = math.cos(angle - baz)
                     if azc > 0.4:
                         mod += TRUNK_BURL_AMP * fall * (azc - 0.4) / 0.6
-            return max(0.85, mod)
+            return max(0.80, mod)
 
         pts.append((pos, r, tangent.normalized(), radial_mod))
-    return pts
+    # Round 33: fin azimuths/amps döndür — lofted roots bunlarla hizalanır (lob→root)
+    return pts, fin_azimuths, fin_amps
 
 
 def make_branch_radial_mod(seed, knot_positions=None, knot_amp=0.18, noise_amp=0.08,
@@ -966,14 +996,12 @@ class TreeBuilder:
 
     # ----- WOOD -----
     def build_trunk_and_branches(self):
-        trunk_pts = trunk_curve(self.rng)
+        trunk_pts, fin_azimuths, fin_amps = trunk_curve(self.rng)
         build_tube(self.bm_wood, trunk_pts, TRUNK_RADIAL_SEGS, 0, self.wood_faces, tier=0)
-        # Round 30: surface root tubes KALDIRILDI — trunk'a entegre buttress fins yeterli.
-        # Önceki tube yaklaşımı "sail fin" gibi görünüyordu (sail/dagger artifact).
-        # Şimdi trunk_curve() içindeki sharp outward fins + extra base rings ile
-        # gerçek mature apple tree base flare elde edildi.
-        # _build_surface_roots() metodu hala mevcut (gelecek isteğe için), ama çağrılmıyor.
-        # self._build_surface_roots(trunk_pts[0][1] * ROOT_FLARE_FACTOR)
+        # Round 33: Lofted continuous surface roots — buttress lob azimuth'larıyla hizalı,
+        # D-section, trunk flare'in devamı (dikiş gizli, embed). "spike" sorununun gerçek fix.
+        trunk_base_r = trunk_pts[0][1]
+        self._build_lofted_roots(trunk_base_r, fin_azimuths, fin_amps)
 
         geom_top = TOTAL_HEIGHT * TRUNK_GEOM_TOP_FRAC
 
@@ -1213,7 +1241,125 @@ class TreeBuilder:
             for loop in bm.faces[fi].loops:
                 loop.vert[wood_kind_layer] = kind
 
-    # ----- ROUND 26: SURFACE ROOTS (köklenme) -----
+    # ----- ROUND 33: LOFTED CONTINUOUS SURFACE ROOTS -----
+    def _d_section_ring(self, center, forward, width, height, segs, up_hint=None):
+        """D-shaped (flat-top buttress) cross-section ring perpendicular to `forward`.
+
+        Kök biyoloğu spec: yüzey kökleri D-section (flat-top, geniş>yüksek).
+        width = yatay genişlik, height = dikey (height<width → yassı buttress).
+        Üst yüzey düz (flat-top), alt yuvarlak. Returns list of bmesh verts.
+        """
+        f = forward.normalized()
+        up = up_hint if up_hint else Vector((0, 0, 1))
+        # side = perpendicular to forward, horizontal
+        side = f.cross(up).normalized()
+        if side.length < 1e-5:
+            side = Vector((1, 0, 0))
+        vup = side.cross(f).normalized()   # local up in ring plane
+        verts = []
+        for i in range(segs):
+            ang = 2 * math.pi * i / segs
+            # D-section: flat-top. cos→side (width), sin→vup (height)
+            # Flatten the top half (vup>0) to make buttress flat-top
+            sx = math.cos(ang)
+            sy = math.sin(ang)
+            if sy > 0:
+                sy *= 0.55   # flatten top
+            offset = side * (sx * width * 0.5) + vup * (sy * height * 0.5)
+            verts.append(self.bm_wood.verts.new(center + offset))
+        return verts
+
+    def _build_lofted_roots(self, trunk_base_r, fin_azimuths, fin_amps):
+        """Round 33 — Lofted continuous surface roots aligned with buttress lobes.
+
+        Her kök bir trunk buttress lob azimuth'una hizalanır (lob→root süreklilik).
+        D-section, junction'da geniş+embed (dikiş gizli), shoulder→dive profili,
+        toprağa batar. 1-3 kök yüzeyde çatallanır. tier=0 + wood_kind=1.
+        """
+        wood_kind_layer = (self.bm_wood.verts.layers.int.get('wood_kind')
+                           or self.bm_wood.verts.layers.int.new('wood_kind'))
+        tier_layer = (self.bm_wood.verts.layers.int.get('tier')
+                      or self.bm_wood.verts.layers.int.new('tier'))
+        t_layer = (self.bm_wood.verts.layers.float.get('branch_t')
+                   or self.bm_wood.verts.layers.float.new('branch_t'))
+
+        # Root azimuths = buttress fin azimuths (lob→root alignment), uneven subset
+        n_roots = min(N_SURFACE_ROOTS, len(fin_azimuths))
+        az_jit = math.radians(ROOT_AZIMUTH_JITTER_DEG)
+        # Pick dominant roots (bigger) — clustered, uneven (pomolog: 2-3 dominant)
+        for ri in range(n_roots):
+            azimuth = fin_azimuths[ri % len(fin_azimuths)] + self.rng.uniform(-az_jit, az_jit)
+            amp = fin_amps[ri % len(fin_amps)]
+            # Dominant roots: bigger junction & longer
+            dominance = self.rng.uniform(0.7, 1.3) * amp
+            self._grow_one_lofted_root(azimuth, trunk_base_r, dominance,
+                                       wood_kind_layer, tier_layer, t_layer,
+                                       fork_allowed=True)
+
+    def _grow_one_lofted_root(self, azimuth, trunk_base_r, dominance,
+                              wood_kind_layer, tier_layer, t_layer, fork_allowed):
+        out_dir = Vector((math.cos(azimuth), math.sin(azimuth), 0))
+        surf_len = self.rng.uniform(*ROOT_SURFACE_LEN) * dominance
+        junction_w = ROOT_JUNCTION_W * dominance
+        submerge_w = ROOT_SUBMERGE_W
+        shoulder_pitch = math.radians(ROOT_SHOULDER_PITCH_DEG)
+        dive_pitch = math.radians(ROOT_DIVE_PITCH_DEG)
+
+        # Build ring centers along the root path: start embedded in trunk, shoulder then dive
+        n_rings = ROOT_RINGS
+        # Start point: embedded into trunk flare (negative offset → inside trunk volume)
+        start_z = 0.06   # slightly above ground at trunk
+        start_pos = Vector((0, 0, start_z)) + out_dir * (trunk_base_r * (1.0 - ROOT_EMBED))
+        rings = []
+        radii_w = []
+        cur = start_pos.copy()
+        cur_dir = (out_dir * math.cos(shoulder_pitch) - Vector((0, 0, math.sin(shoulder_pitch)))).normalized()
+        for j in range(n_rings):
+            t = j / (n_rings - 1)
+            # Pitch: shoulder (shallow) → dive (steep) after ROOT_SHOULDER_FRAC
+            if t < ROOT_SHOULDER_FRAC:
+                pitch = shoulder_pitch
+            else:
+                dt = (t - ROOT_SHOULDER_FRAC) / (1.0 - ROOT_SHOULDER_FRAC)
+                pitch = shoulder_pitch + (dive_pitch - shoulder_pitch) * smooth_step(dt)
+            seg_dir = (out_dir * math.cos(pitch) - Vector((0, 0, math.sin(pitch)))).normalized()
+            # Width taper: gradual exponential junction_w → submerge_w
+            w = junction_w * ((submerge_w / junction_w) ** t)
+            radii_w.append(w)
+            # D-section ring
+            h = w * ROOT_DH_RATIO
+            ring = self._d_section_ring(cur, seg_dir, w, h, ROOT_RADIAL_SEGS)
+            for v in ring:
+                v[wood_kind_layer] = 1
+                v[tier_layer] = 0
+                v[t_layer] = t
+            rings.append(ring)
+            # Advance center
+            step = surf_len / (n_rings - 1)
+            cur = cur + seg_dir * step
+            # Clamp: last ring sinks below ground
+            if j == n_rings - 1 and cur.z > -0.04:
+                cur.z = -0.04
+        # Bridge rings into continuous root
+        face_start = len(self.bm_wood.faces)
+        for j in range(len(rings) - 1):
+            bridge_rings(self.bm_wood, rings[j], rings[j + 1])
+        # Cap the submerged tip
+        try:
+            self.bm_wood.faces.new(rings[-1])
+        except (ValueError, IndexError):
+            pass
+        face_end = len(self.bm_wood.faces)
+        self.surface_roots.append({"azimuth": azimuth})
+
+        # Surface fork: split into a thinner secondary buttress before submerging
+        if fork_allowed and self.rng.random() < ROOT_FORK_PROB and dominance > 0.85:
+            fork_az = azimuth + self.rng.uniform(0.25, 0.5) * (1 if self.rng.random() < 0.5 else -1)
+            self._grow_one_lofted_root(fork_az, trunk_base_r, dominance * 0.55,
+                                       wood_kind_layer, tier_layer, t_layer,
+                                       fork_allowed=False)
+
+    # ----- ROUND 26: SURFACE ROOTS (köklenme) — DEAD (Round 33 lofted ile değişti) -----
     def _build_surface_roots(self, trunk_base_r):
         """Round 29 REWORK: buttress-thick surface roots blended into trunk base.
 
@@ -1884,9 +2030,14 @@ class TreeBuilder:
                     elif kind == 2:   # dead snag
                         col = [c * DEAD_SNAG_DARKEN for c in col]
                         n_snag_darken += 1
+                # Round 33: Vertex AO — ground contact + root junction occlusion (ucuz realism)
+                # z<0.35m altında progressif koyulaşma (toprak teması gölgesi)
+                if v.co.z < 0.35:
+                    ao = 0.55 + 0.45 * (max(v.co.z, 0.0) / 0.35)   # 0.55 (yer) → 1.0 (0.35m)
+                    col = [c * ao for c in col]
                 loop[color_layer] = (col[0], col[1], col[2], 1.0)
         print(f"BARK: vcolor applied — {n_crack} crack, {n_root_darken} root_dark, "
-              f"{n_snag_darken} snag_dark loops")
+              f"{n_snag_darken} snag_dark loops (+ground-AO)")
 
     # ----- ASSEMBLE OBJECTS -----
     def assemble(self):
@@ -2677,7 +2828,8 @@ def verify_tree(wood_obj, leaf_obj, apple_obj):
     print(f"VERIFY: wood={wood_tri} leaf={leaf_tri} apple={apple_tri} total={total}")
     print(f"VERIFY: bbox W={bbox[0]:.2f} D={bbox[1]:.2f} H={bbox[2]:.2f}")
     # Round 26: AAA esnek bütçe (mobile mid-high + PC)
-    print(f"VERIFY: target 17000-22000 tris -> {'OK' if 17000 <= total <= 22000 else 'OUT OF RANGE'}")
+    # Round 33: hero asset (zengin trunk lobing + lofted roots) — ceiling 24000
+    print(f"VERIFY: target 17000-24000 tris -> {'OK' if 17000 <= total <= 24000 else 'OUT OF RANGE'}")
     print("=" * 50)
     return {"wood": wood_tri, "leaf": leaf_tri, "apple": apple_tri, "total": total, "bbox": bbox}
 
