@@ -1,0 +1,37 @@
+[gd_resource type="StandardMaterial3D" load_steps=4 format=3]
+
+[ext_resource type="Texture2D" path="res://creatures/kurt_001/textures/kurt_001_albedo.png" id="1_albedo"]
+[ext_resource type="Texture2D" path="res://creatures/kurt_001/textures/kurt_001_normal.png" id="2_normal"]
+[ext_resource type="Texture2D" path="res://creatures/kurt_001/textures/kurt_001_orm.png" id="3_orm"]
+
+[resource]
+resource_name = "kurt_001_main"
+
+; Albedo
+albedo_texture = ExtResource("1_albedo")
+
+; Normal map
+normal_enabled = true
+normal_texture = ExtResource("2_normal")
+normal_scale = 1.0
+
+; Ambient Occlusion (ORM.R)
+ao_enabled = true
+ao_texture = ExtResource("3_orm")
+ao_texture_channel = 0
+ao_light_affect = 0.0
+
+; Roughness (ORM.G)
+roughness = 1.0
+roughness_texture = ExtResource("3_orm")
+roughness_texture_channel = 1
+
+; Metallic (ORM.B)
+metallic = 1.0
+metallic_texture = ExtResource("3_orm")
+metallic_texture_channel = 2
+metallic_specular = 0.5
+
+; Mobile-friendly
+shading_mode = 1  ; per_pixel
+diffuse_mode = 0  ; burley

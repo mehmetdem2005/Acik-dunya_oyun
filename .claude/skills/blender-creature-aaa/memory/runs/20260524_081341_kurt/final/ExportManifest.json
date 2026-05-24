@@ -5,22 +5,22 @@
     {
       "level": "LOD0",
       "filepath": "/home/user/Acik-dunya_oyun/.claude/skills/blender-creature-aaa/memory/runs/20260524_081341_kurt/final/kurt_001.glb",
-      "tris_count": 15000,
-      "file_size_bytes": 1126548,
+      "tris_count": 14998,
+      "file_size_bytes": 9152436,
       "decimate_ratio": 1.0
     },
     {
       "level": "LOD1",
       "filepath": "/home/user/Acik-dunya_oyun/.claude/skills/blender-creature-aaa/memory/runs/20260524_081341_kurt/final/kurt_001_LOD1.glb",
-      "tris_count": 7500,
-      "file_size_bytes": 691796,
+      "tris_count": 7498,
+      "file_size_bytes": 8776688,
       "decimate_ratio": 0.5
     },
     {
       "level": "LOD2",
       "filepath": "/home/user/Acik-dunya_oyun/.claude/skills/blender-creature-aaa/memory/runs/20260524_081341_kurt/final/kurt_001_LOD2.glb",
-      "tris_count": 3750,
-      "file_size_bytes": 566420,
+      "tris_count": 3748,
+      "file_size_bytes": 8679560,
       "decimate_ratio": 0.25
     }
   ],
