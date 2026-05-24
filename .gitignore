@@ -1,3 +1,7 @@
 
 # Blender creature AAA - buyuk ara ciktilar (repo sismesin)
 .claude/skills/blender-creature-aaa/memory/runs/*/blender_scenes/
+
+# Python cache
+__pycache__/
+*.pyc
