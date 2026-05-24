@@ -138,14 +138,15 @@ ctr=sum(bb,Vector())/8; size=max((max(v[i] for v in bb)-min(v[i] for v in bb)) f
 cam=bpy.data.cameras.new("c"); co=bpy.data.objects.new("c",cam); bpy.context.collection.objects.link(co); bpy.context.scene.camera=co; cam.lens=90
 tg=bpy.data.objects.new("t",None); bpy.context.collection.objects.link(tg); co.constraints.new('TRACK_TO').target=tg
 sc=bpy.context.scene; sc.render.engine='CYCLES'; sc.cycles.device='CPU'; sc.cycles.samples=SAMP; sc.cycles.use_denoising=True
-sc.render.resolution_x=720; sc.render.resolution_y=560
+sc.render.resolution_x=1000; sc.render.resolution_y=750
 # pozlama/tonemap (asiri parlakligi engelle)
 try:
     looks=[x.name for x in bpy.types.ColorManagedViewSettings.bl_rna.properties['view_transform'].enum_items]
     sc.view_settings.view_transform='AgX' if 'AgX' in looks else 'Filmic'
 except Exception as ex: print("VT_FAIL",ex)
 sc.view_settings.exposure=-1.4; sc.view_settings.gamma=1.0
-allshots={"hero":(40,9,1.0,ctr+Vector((0,0,-0.02))),"head":(54,4,0.46,Vector((0,0.78,0.80))),"side":(90,6,1.0,ctr+Vector((0,0,-0.02)))}
+allshots={"hero":(40,9,1.0,ctr+Vector((0,0,-0.02))),"head":(54,4,0.46,Vector((0,0.78,0.80))),"side":(90,6,1.0,ctr+Vector((0,0,-0.02))),
+          "cine":(26,7,1.05,ctr+Vector((0,0.05,-0.01))),"facefront":(12,4,0.62,Vector((0,0.72,0.795)))}
 d=size*1.95
 for nm in SHOTS.split(","):
     az,el,fac,tgt=allshots[nm]; a=math.radians(az); e=math.radians(el)
