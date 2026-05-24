@@ -81,7 +81,7 @@ bpy.context.view_layer.objects.active=mesh
 ms=mesh.modifiers.new("fur",'PARTICLE_SYSTEM'); psys=mesh.particle_systems[-1]; ps=psys.settings
 ps.type='HAIR'; ps.count=12000; ps.hair_length=0.085; ps.use_advanced_hair=True
 ps.emit_from='FACE'; ps.distribution='RAND'; ps.use_modifier_stack=True
-ps.child_type='INTERPOLATED'; ps.child_nbr=18; ps.rendered_child_count=55
+ps.child_type='INTERPOLATED'; ps.child_percent=18; ps.rendered_child_count=55
 ps.clump_factor=0.55; ps.clump_shape=0.2
 ps.roughness_1=0.10; ps.roughness_1_size=0.6; ps.roughness_endpoint=0.20; ps.roughness_end_shape=1.0
 ps.kink='CURL'; ps.kink_amplitude=0.006; ps.kink_frequency=2.0
