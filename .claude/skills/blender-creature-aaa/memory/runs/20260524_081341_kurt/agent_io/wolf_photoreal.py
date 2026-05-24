@@ -67,9 +67,9 @@ me.materials.append(hair); hslot=len(me.materials)-1
 # ---- particle hair (yogun) ----
 bpy.context.view_layer.objects.active=mesh
 mesh.modifiers.new("fur",'PARTICLE_SYSTEM'); psys=mesh.particle_systems[-1]; ps=psys.settings
-ps.type='HAIR'; ps.count=34000; ps.hair_length=0.058; ps.use_advanced_hair=True
+ps.type='HAIR'; ps.count=15000; ps.hair_length=0.058; ps.use_advanced_hair=True
 ps.emit_from='FACE'; ps.distribution='RAND'; ps.use_modifier_stack=True
-ps.child_type='INTERPOLATED'; ps.child_percent=40; ps.rendered_child_count=110
+ps.child_type='INTERPOLATED'; ps.child_percent=30; ps.rendered_child_count=60
 ps.clump_factor=0.66; ps.clump_shape=0.4
 ps.roughness_1=0.06; ps.roughness_1_size=0.8; ps.roughness_endpoint=0.14; ps.roughness_end_shape=1.0
 ps.use_hair_bspline=True; ps.render_step=3; ps.display_step=3
@@ -87,9 +87,9 @@ try:
     ps.use_hair_dynamics=True
     cs=psys.cloth.settings
     cs.mass=0.018; cs.bending_stiffness=0.18; cs.pin_stiffness=1.0; cs.air_damping=1.5; cs.quality=6
-    sc=bpy.context.scene; sc.frame_start=1; sc.frame_end=34
-    for f in range(1,35): sc.frame_set(f)
-    print("COMBED")
+    sc=bpy.context.scene; sc.frame_start=1; sc.frame_end=24
+    for f in range(1,25): sc.frame_set(f)
+    print("COMBED", flush=True)
 except Exception as ex:
     print("COMB_FAIL",ex)
 # ---- goz (amber+pupil+yas) + burun ----
@@ -132,7 +132,7 @@ ctr=sum(bb,Vector())/8; size=max((max(v[i] for v in bb)-min(v[i] for v in bb)) f
 cam=bpy.data.cameras.new("c"); co=bpy.data.objects.new("c",cam); bpy.context.collection.objects.link(co); bpy.context.scene.camera=co; cam.lens=90
 tg=bpy.data.objects.new("t",None); bpy.context.collection.objects.link(tg); co.constraints.new('TRACK_TO').target=tg
 sc=bpy.context.scene; sc.render.engine='CYCLES'; sc.cycles.device='CPU'; sc.cycles.samples=SAMP; sc.cycles.use_denoising=True
-sc.render.resolution_x=960; sc.render.resolution_y=720
+sc.render.resolution_x=720; sc.render.resolution_y=560
 allshots={"hero":(40,9,1.0,ctr+Vector((0,0,-0.02))),"head":(54,4,0.46,Vector((0,0.78,0.80))),"side":(90,6,1.0,ctr+Vector((0,0,-0.02)))}
 d=size*1.95
 for nm in SHOTS.split(","):
