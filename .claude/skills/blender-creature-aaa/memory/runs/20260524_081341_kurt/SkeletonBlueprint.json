@@ -1,0 +1,1154 @@
+{
+  "blueprint_version": "1.0",
+  "creature_id": "kurt_001",
+  "scientific_name": "Canis lupus",
+  "anatomy_class": "mammalia_quadruped",
+  "stance": "digitigrade",
+  "body_length_meters": 0.8,
+  "bone_naming_convention": "underscore_LR",
+  "up_axis": "Z",
+  "forward_axis": "Y",
+  "bones": [
+    {
+      "name": "sacrum",
+      "head_local": [
+        0,
+        -0.4,
+        0.58
+      ],
+      "tail_local": [
+        0,
+        -0.34,
+        0.585
+      ],
+      "roll_radians": 0.0,
+      "parent": "root",
+      "use_connect": false,
+      "use_deform": true
+    },
+    {
+      "name": "spine_lumbar",
+      "head_local": [
+        0,
+        -0.34,
+        0.585
+      ],
+      "tail_local": [
+        0,
+        -0.14,
+        0.6
+      ],
+      "roll_radians": 0.0,
+      "parent": "sacrum",
+      "use_connect": true,
+      "use_deform": true
+    },
+    {
+      "name": "spine_thorax",
+      "head_local": [
+        0,
+        -0.14,
+        0.6
+      ],
+      "tail_local": [
+        0,
+        0.1,
+        0.615
+      ],
+      "roll_radians": 0.0,
+      "parent": "spine_lumbar",
+      "use_connect": true,
+      "use_deform": true
+    },
+    {
+      "name": "spine_chest",
+      "head_local": [
+        0,
+        0.1,
+        0.615
+      ],
+      "tail_local": [
+        0,
+        0.3,
+        0.62
+      ],
+      "roll_radians": 0.0,
+      "parent": "spine_thorax",
+      "use_connect": true,
+      "use_deform": true
+    },
+    {
+      "name": "spine_shoulder",
+      "head_local": [
+        0,
+        0.3,
+        0.62
+      ],
+      "tail_local": [
+        0,
+        0.4,
+        0.63
+      ],
+      "roll_radians": 0.0,
+      "parent": "spine_chest",
+      "use_connect": true,
+      "use_deform": true
+    },
+    {
+      "name": "neck_1",
+      "head_local": [
+        0,
+        0.4,
+        0.63
+      ],
+      "tail_local": [
+        0,
+        0.47,
+        0.69
+      ],
+      "roll_radians": 0.0,
+      "parent": "spine_shoulder",
+      "use_connect": true,
+      "use_deform": true
+    },
+    {
+      "name": "neck_2",
+      "head_local": [
+        0,
+        0.47,
+        0.69
+      ],
+      "tail_local": [
+        0,
+        0.53,
+        0.76
+      ],
+      "roll_radians": 0.0,
+      "parent": "neck_1",
+      "use_connect": true,
+      "use_deform": true
+    },
+    {
+      "name": "neck_3",
+      "head_local": [
+        0,
+        0.53,
+        0.76
+      ],
+      "tail_local": [
+        0,
+        0.575,
+        0.8
+      ],
+      "roll_radians": 0.0,
+      "parent": "neck_2",
+      "use_connect": true,
+      "use_deform": true
+    },
+    {
+      "name": "head",
+      "head_local": [
+        0,
+        0.575,
+        0.8
+      ],
+      "tail_local": [
+        0,
+        0.72,
+        0.78
+      ],
+      "roll_radians": 0.0,
+      "parent": "neck_3",
+      "use_connect": true,
+      "use_deform": true
+    },
+    {
+      "name": "jaw",
+      "head_local": [
+        0,
+        0.6,
+        0.76
+      ],
+      "tail_local": [
+        0,
+        0.71,
+        0.73
+      ],
+      "roll_radians": 0.0,
+      "parent": "head",
+      "use_connect": false,
+      "use_deform": true
+    },
+    {
+      "name": "ear_L",
+      "head_local": [
+        0.045,
+        0.585,
+        0.84
+      ],
+      "tail_local": [
+        0.06,
+        0.55,
+        0.92
+      ],
+      "roll_radians": 0.0,
+      "parent": "head",
+      "use_connect": false,
+      "use_deform": true
+    },
+    {
+      "name": "ear_R",
+      "head_local": [
+        -0.045,
+        0.585,
+        0.84
+      ],
+      "tail_local": [
+        -0.06,
+        0.55,
+        0.92
+      ],
+      "roll_radians": 0.0,
+      "parent": "head",
+      "use_connect": false,
+      "use_deform": true
+    },
+    {
+      "name": "tail_0",
+      "head_local": [
+        0,
+        -0.4,
+        0.58
+      ],
+      "tail_local": [
+        0,
+        -0.435,
+        0.5633
+      ],
+      "roll_radians": 0.0,
+      "parent": "sacrum",
+      "use_connect": false,
+      "use_deform": true
+    },
+    {
+      "name": "tail_1",
+      "head_local": [
+        0,
+        -0.435,
+        0.5633
+      ],
+      "tail_local": [
+        0,
+        -0.47,
+        0.5467
+      ],
+      "roll_radians": 0.0,
+      "parent": "tail_0",
+      "use_connect": true,
+      "use_deform": true
+    },
+    {
+      "name": "tail_2",
+      "head_local": [
+        0,
+        -0.47,
+        0.5467
+      ],
+      "tail_local": [
+        0,
+        -0.505,
+        0.53
+      ],
+      "roll_radians": 0.0,
+      "parent": "tail_1",
+      "use_connect": true,
+      "use_deform": true
+    },
+    {
+      "name": "tail_3",
+      "head_local": [
+        0,
+        -0.505,
+        0.53
+      ],
+      "tail_local": [
+        0,
+        -0.54,
+        0.5133
+      ],
+      "roll_radians": 0.0,
+      "parent": "tail_2",
+      "use_connect": true,
+      "use_deform": true
+    },
+    {
+      "name": "tail_4",
+      "head_local": [
+        0,
+        -0.54,
+        0.5133
+      ],
+      "tail_local": [
+        0,
+        -0.575,
+        0.4967
+      ],
+      "roll_radians": 0.0,
+      "parent": "tail_3",
+      "use_connect": true,
+      "use_deform": true
+    },
+    {
+      "name": "tail_5",
+      "head_local": [
+        0,
+        -0.575,
+        0.4967
+      ],
+      "tail_local": [
+        0,
+        -0.61,
+        0.48
+      ],
+      "roll_radians": 0.0,
+      "parent": "tail_4",
+      "use_connect": true,
+      "use_deform": true
+    },
+    {
+      "name": "tail_6",
+      "head_local": [
+        0,
+        -0.61,
+        0.48
+      ],
+      "tail_local": [
+        0,
+        -0.645,
+        0.4633
+      ],
+      "roll_radians": 0.0,
+      "parent": "tail_5",
+      "use_connect": true,
+      "use_deform": true
+    },
+    {
+      "name": "tail_7",
+      "head_local": [
+        0,
+        -0.645,
+        0.4633
+      ],
+      "tail_local": [
+        0,
+        -0.68,
+        0.4467
+      ],
+      "roll_radians": 0.0,
+      "parent": "tail_6",
+      "use_connect": true,
+      "use_deform": true
+    },
+    {
+      "name": "tail_8",
+      "head_local": [
+        0,
+        -0.68,
+        0.4467
+      ],
+      "tail_local": [
+        0,
+        -0.715,
+        0.43
+      ],
+      "roll_radians": 0.0,
+      "parent": "tail_7",
+      "use_connect": true,
+      "use_deform": true
+    },
+    {
+      "name": "tail_9",
+      "head_local": [
+        0,
+        -0.715,
+        0.43
+      ],
+      "tail_local": [
+        0,
+        -0.75,
+        0.4133
+      ],
+      "roll_radians": 0.0,
+      "parent": "tail_8",
+      "use_connect": true,
+      "use_deform": true
+    },
+    {
+      "name": "tail_10",
+      "head_local": [
+        0,
+        -0.75,
+        0.4133
+      ],
+      "tail_local": [
+        0,
+        -0.785,
+        0.3967
+      ],
+      "roll_radians": 0.0,
+      "parent": "tail_9",
+      "use_connect": true,
+      "use_deform": true
+    },
+    {
+      "name": "tail_11",
+      "head_local": [
+        0,
+        -0.785,
+        0.3967
+      ],
+      "tail_local": [
+        0,
+        -0.82,
+        0.38
+      ],
+      "roll_radians": 0.0,
+      "parent": "tail_10",
+      "use_connect": true,
+      "use_deform": true
+    },
+    {
+      "name": "scapula_L",
+      "head_local": [
+        0.05,
+        0.3,
+        0.605
+      ],
+      "tail_local": [
+        0.1,
+        0.3,
+        0.46
+      ],
+      "roll_radians": 0.0,
+      "parent": "spine_shoulder",
+      "use_connect": false,
+      "use_deform": true
+    },
+    {
+      "name": "upper_arm_L",
+      "head_local": [
+        0.1,
+        0.3,
+        0.46
+      ],
+      "tail_local": [
+        0.105,
+        0.34,
+        0.29
+      ],
+      "roll_radians": 0.0,
+      "parent": "scapula_L",
+      "use_connect": true,
+      "use_deform": true
+    },
+    {
+      "name": "forearm_L",
+      "head_local": [
+        0.105,
+        0.34,
+        0.29
+      ],
+      "tail_local": [
+        0.1,
+        0.3,
+        0.13
+      ],
+      "roll_radians": 0.0,
+      "parent": "upper_arm_L",
+      "use_connect": true,
+      "use_deform": true
+    },
+    {
+      "name": "front_paw_L",
+      "head_local": [
+        0.1,
+        0.3,
+        0.13
+      ],
+      "tail_local": [
+        0.1,
+        0.37,
+        0.02
+      ],
+      "roll_radians": 0.0,
+      "parent": "forearm_L",
+      "use_connect": true,
+      "use_deform": true
+    },
+    {
+      "name": "front_toe_L",
+      "head_local": [
+        0.1,
+        0.37,
+        0.02
+      ],
+      "tail_local": [
+        0.1,
+        0.43,
+        0.0
+      ],
+      "roll_radians": 0.0,
+      "parent": "front_paw_L",
+      "use_connect": true,
+      "use_deform": true
+    },
+    {
+      "name": "pelvis_L",
+      "head_local": [
+        0.05,
+        -0.36,
+        0.58
+      ],
+      "tail_local": [
+        0.1,
+        -0.3,
+        0.5
+      ],
+      "roll_radians": 0.0,
+      "parent": "sacrum",
+      "use_connect": false,
+      "use_deform": true
+    },
+    {
+      "name": "thigh_L",
+      "head_local": [
+        0.1,
+        -0.3,
+        0.5
+      ],
+      "tail_local": [
+        0.11,
+        -0.22,
+        0.33
+      ],
+      "roll_radians": 0.0,
+      "parent": "pelvis_L",
+      "use_connect": true,
+      "use_deform": true
+    },
+    {
+      "name": "shin_L",
+      "head_local": [
+        0.11,
+        -0.22,
+        0.33
+      ],
+      "tail_local": [
+        0.11,
+        -0.32,
+        0.17
+      ],
+      "roll_radians": 0.0,
+      "parent": "thigh_L",
+      "use_connect": true,
+      "use_deform": true
+    },
+    {
+      "name": "metatarsus_L",
+      "head_local": [
+        0.11,
+        -0.32,
+        0.17
+      ],
+      "tail_local": [
+        0.11,
+        -0.27,
+        0.02
+      ],
+      "roll_radians": 0.0,
+      "parent": "shin_L",
+      "use_connect": true,
+      "use_deform": true
+    },
+    {
+      "name": "rear_toe_L",
+      "head_local": [
+        0.11,
+        -0.27,
+        0.02
+      ],
+      "tail_local": [
+        0.11,
+        -0.21,
+        0.0
+      ],
+      "roll_radians": 0.0,
+      "parent": "metatarsus_L",
+      "use_connect": true,
+      "use_deform": true
+    },
+    {
+      "name": "scapula_R",
+      "head_local": [
+        -0.05,
+        0.3,
+        0.605
+      ],
+      "tail_local": [
+        -0.1,
+        0.3,
+        0.46
+      ],
+      "roll_radians": 0.0,
+      "parent": "spine_shoulder",
+      "use_connect": false,
+      "use_deform": true
+    },
+    {
+      "name": "upper_arm_R",
+      "head_local": [
+        -0.1,
+        0.3,
+        0.46
+      ],
+      "tail_local": [
+        -0.105,
+        0.34,
+        0.29
+      ],
+      "roll_radians": 0.0,
+      "parent": "scapula_R",
+      "use_connect": true,
+      "use_deform": true
+    },
+    {
+      "name": "forearm_R",
+      "head_local": [
+        -0.105,
+        0.34,
+        0.29
+      ],
+      "tail_local": [
+        -0.1,
+        0.3,
+        0.13
+      ],
+      "roll_radians": 0.0,
+      "parent": "upper_arm_R",
+      "use_connect": true,
+      "use_deform": true
+    },
+    {
+      "name": "front_paw_R",
+      "head_local": [
+        -0.1,
+        0.3,
+        0.13
+      ],
+      "tail_local": [
+        -0.1,
+        0.37,
+        0.02
+      ],
+      "roll_radians": 0.0,
+      "parent": "forearm_R",
+      "use_connect": true,
+      "use_deform": true
+    },
+    {
+      "name": "front_toe_R",
+      "head_local": [
+        -0.1,
+        0.37,
+        0.02
+      ],
+      "tail_local": [
+        -0.1,
+        0.43,
+        0.0
+      ],
+      "roll_radians": 0.0,
+      "parent": "front_paw_R",
+      "use_connect": true,
+      "use_deform": true
+    },
+    {
+      "name": "pelvis_R",
+      "head_local": [
+        -0.05,
+        -0.36,
+        0.58
+      ],
+      "tail_local": [
+        -0.1,
+        -0.3,
+        0.5
+      ],
+      "roll_radians": 0.0,
+      "parent": "sacrum",
+      "use_connect": false,
+      "use_deform": true
+    },
+    {
+      "name": "thigh_R",
+      "head_local": [
+        -0.1,
+        -0.3,
+        0.5
+      ],
+      "tail_local": [
+        -0.11,
+        -0.22,
+        0.33
+      ],
+      "roll_radians": 0.0,
+      "parent": "pelvis_R",
+      "use_connect": true,
+      "use_deform": true
+    },
+    {
+      "name": "shin_R",
+      "head_local": [
+        -0.11,
+        -0.22,
+        0.33
+      ],
+      "tail_local": [
+        -0.11,
+        -0.32,
+        0.17
+      ],
+      "roll_radians": 0.0,
+      "parent": "thigh_R",
+      "use_connect": true,
+      "use_deform": true
+    },
+    {
+      "name": "metatarsus_R",
+      "head_local": [
+        -0.11,
+        -0.32,
+        0.17
+      ],
+      "tail_local": [
+        -0.11,
+        -0.27,
+        0.02
+      ],
+      "roll_radians": 0.0,
+      "parent": "shin_R",
+      "use_connect": true,
+      "use_deform": true
+    },
+    {
+      "name": "rear_toe_R",
+      "head_local": [
+        -0.11,
+        -0.27,
+        0.02
+      ],
+      "tail_local": [
+        -0.11,
+        -0.21,
+        0.0
+      ],
+      "roll_radians": 0.0,
+      "parent": "metatarsus_R",
+      "use_connect": true,
+      "use_deform": true
+    }
+  ],
+  "control_bones": [
+    {
+      "name": "root",
+      "head_local": [
+        0,
+        0,
+        0.02
+      ],
+      "tail_local": [
+        0,
+        0,
+        0.18
+      ],
+      "roll_radians": 0.0,
+      "parent": null,
+      "use_connect": false,
+      "use_deform": false
+    },
+    {
+      "name": "foot_ik_front_L",
+      "head_local": [
+        0.1,
+        0.37,
+        0.0
+      ],
+      "tail_local": [
+        0.1,
+        0.47,
+        0.0
+      ],
+      "roll_radians": 0.0,
+      "parent": "root",
+      "use_connect": false,
+      "use_deform": false
+    },
+    {
+      "name": "foot_ik_rear_L",
+      "head_local": [
+        0.11,
+        -0.27,
+        0.0
+      ],
+      "tail_local": [
+        0.11,
+        -0.17,
+        0.0
+      ],
+      "roll_radians": 0.0,
+      "parent": "root",
+      "use_connect": false,
+      "use_deform": false
+    },
+    {
+      "name": "elbow_pole_L",
+      "head_local": [
+        0.11,
+        0.05,
+        0.3
+      ],
+      "tail_local": [
+        0.11,
+        0.05,
+        0.4
+      ],
+      "roll_radians": 0.0,
+      "parent": "root",
+      "use_connect": false,
+      "use_deform": false
+    },
+    {
+      "name": "knee_pole_L",
+      "head_local": [
+        0.11,
+        0.05,
+        0.33
+      ],
+      "tail_local": [
+        0.11,
+        0.05,
+        0.43
+      ],
+      "roll_radians": 0.0,
+      "parent": "root",
+      "use_connect": false,
+      "use_deform": false
+    },
+    {
+      "name": "foot_ik_front_R",
+      "head_local": [
+        -0.1,
+        0.37,
+        0.0
+      ],
+      "tail_local": [
+        -0.1,
+        0.47,
+        0.0
+      ],
+      "roll_radians": 0.0,
+      "parent": "root",
+      "use_connect": false,
+      "use_deform": false
+    },
+    {
+      "name": "foot_ik_rear_R",
+      "head_local": [
+        -0.11,
+        -0.27,
+        0.0
+      ],
+      "tail_local": [
+        -0.11,
+        -0.17,
+        0.0
+      ],
+      "roll_radians": 0.0,
+      "parent": "root",
+      "use_connect": false,
+      "use_deform": false
+    },
+    {
+      "name": "elbow_pole_R",
+      "head_local": [
+        -0.11,
+        0.05,
+        0.3
+      ],
+      "tail_local": [
+        -0.11,
+        0.05,
+        0.4
+      ],
+      "roll_radians": 0.0,
+      "parent": "root",
+      "use_connect": false,
+      "use_deform": false
+    },
+    {
+      "name": "knee_pole_R",
+      "head_local": [
+        -0.11,
+        0.05,
+        0.33
+      ],
+      "tail_local": [
+        -0.11,
+        0.05,
+        0.43
+      ],
+      "roll_radians": 0.0,
+      "parent": "root",
+      "use_connect": false,
+      "use_deform": false
+    },
+    {
+      "name": "head_target",
+      "head_local": [
+        0,
+        0.95,
+        0.8
+      ],
+      "tail_local": [
+        0,
+        1.05,
+        0.8
+      ],
+      "roll_radians": 0.0,
+      "parent": "root",
+      "use_connect": false,
+      "use_deform": false
+    }
+  ],
+  "twist_bones": [
+    {
+      "name": "upperarm_twist_L",
+      "head_local": [
+        0.1,
+        0.3,
+        0.46
+      ],
+      "tail_local": [
+        0.105,
+        0.34,
+        0.29
+      ],
+      "roll_radians": 0.0,
+      "parent_bone": "upper_arm_L",
+      "twist_share": 0.5,
+      "use_deform": true
+    },
+    {
+      "name": "forearm_twist_L",
+      "head_local": [
+        0.105,
+        0.34,
+        0.29
+      ],
+      "tail_local": [
+        0.1,
+        0.3,
+        0.13
+      ],
+      "roll_radians": 0.0,
+      "parent_bone": "forearm_L",
+      "twist_share": 0.5,
+      "use_deform": true
+    },
+    {
+      "name": "shin_twist_L",
+      "head_local": [
+        0.11,
+        -0.22,
+        0.33
+      ],
+      "tail_local": [
+        0.11,
+        -0.32,
+        0.17
+      ],
+      "roll_radians": 0.0,
+      "parent_bone": "shin_L",
+      "twist_share": 0.5,
+      "use_deform": true
+    },
+    {
+      "name": "upperarm_twist_R",
+      "head_local": [
+        -0.1,
+        0.3,
+        0.46
+      ],
+      "tail_local": [
+        -0.105,
+        0.34,
+        0.29
+      ],
+      "roll_radians": 0.0,
+      "parent_bone": "upper_arm_R",
+      "twist_share": 0.5,
+      "use_deform": true
+    },
+    {
+      "name": "forearm_twist_R",
+      "head_local": [
+        -0.105,
+        0.34,
+        0.29
+      ],
+      "tail_local": [
+        -0.1,
+        0.3,
+        0.13
+      ],
+      "roll_radians": 0.0,
+      "parent_bone": "forearm_R",
+      "twist_share": 0.5,
+      "use_deform": true
+    },
+    {
+      "name": "shin_twist_R",
+      "head_local": [
+        -0.11,
+        -0.22,
+        0.33
+      ],
+      "tail_local": [
+        -0.11,
+        -0.32,
+        0.17
+      ],
+      "roll_radians": 0.0,
+      "parent_bone": "shin_R",
+      "twist_share": 0.5,
+      "use_deform": true
+    }
+  ],
+  "ik_chains": [
+    {
+      "chain_id": "front_L",
+      "end_bone": "front_paw_L",
+      "ik_target_bone": "foot_ik_front_L",
+      "pole_target_bone": "elbow_pole_L",
+      "chain_length": 3,
+      "pole_angle_radians": -1.5707963267948966
+    },
+    {
+      "chain_id": "rear_L",
+      "end_bone": "metatarsus_L",
+      "ik_target_bone": "foot_ik_rear_L",
+      "pole_target_bone": "knee_pole_L",
+      "chain_length": 3,
+      "pole_angle_radians": -1.5707963267948966
+    },
+    {
+      "chain_id": "front_R",
+      "end_bone": "front_paw_R",
+      "ik_target_bone": "foot_ik_front_R",
+      "pole_target_bone": "elbow_pole_R",
+      "chain_length": 3,
+      "pole_angle_radians": -1.5707963267948966
+    },
+    {
+      "chain_id": "rear_R",
+      "end_bone": "metatarsus_R",
+      "ik_target_bone": "foot_ik_rear_R",
+      "pole_target_bone": "knee_pole_R",
+      "chain_length": 3,
+      "pole_angle_radians": -1.5707963267948966
+    }
+  ],
+  "bone_collections": {
+    "spine": [
+      "sacrum",
+      "spine_lumbar",
+      "spine_thorax",
+      "spine_chest",
+      "spine_shoulder",
+      "neck_1",
+      "neck_2",
+      "neck_3"
+    ],
+    "head": [
+      "head",
+      "jaw",
+      "ear_L",
+      "ear_R",
+      "head_target"
+    ],
+    "tail": [
+      "tail_0",
+      "tail_1",
+      "tail_2",
+      "tail_3",
+      "tail_4",
+      "tail_5",
+      "tail_6",
+      "tail_7",
+      "tail_8",
+      "tail_9",
+      "tail_10",
+      "tail_11"
+    ],
+    "legs_front": [
+      "scapula_L",
+      "upper_arm_L",
+      "forearm_L",
+      "front_paw_L",
+      "front_toe_L",
+      "scapula_R",
+      "upper_arm_R",
+      "forearm_R",
+      "front_paw_R",
+      "front_toe_R"
+    ],
+    "legs_rear": [
+      "pelvis_L",
+      "thigh_L",
+      "shin_L",
+      "metatarsus_L",
+      "rear_toe_L",
+      "pelvis_R",
+      "thigh_R",
+      "shin_R",
+      "metatarsus_R",
+      "rear_toe_R"
+    ],
+    "twist": [
+      "upperarm_twist_L",
+      "forearm_twist_L",
+      "shin_twist_L",
+      "upperarm_twist_R",
+      "forearm_twist_R",
+      "shin_twist_R"
+    ],
+    "controls": [
+      "root",
+      "foot_ik_front_L",
+      "foot_ik_rear_L",
+      "elbow_pole_L",
+      "knee_pole_L",
+      "foot_ik_front_R",
+      "foot_ik_rear_R",
+      "elbow_pole_R",
+      "knee_pole_R",
+      "head_target"
+    ]
+  },
+  "counts": {
+    "deform": 44,
+    "twist": 6,
+    "control": 10,
+    "total": 60
+  }
+}

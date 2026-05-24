@@ -1,0 +1,71 @@
+{
+  "budget_spec_version": "1.0",
+  "creature_id": "kurt_001",
+  "tier": "hero",
+  "stylization_level": "photoreal",
+  "fur_method": "geometry_nodes_hair",
+  "polygon_budget": {
+    "master_uncapped": true,
+    "master_note": "Foto-gercekci usta model. Geometry hair ayri sayilir. LOD0 bundan decimate edilir.",
+    "lod0_tris_target": 15000,
+    "lod0_tris_hard_max": 18000,
+    "head_share": 0.25,
+    "body_share": 0.30,
+    "limbs_share": 0.30,
+    "tail_share": 0.15
+  },
+  "bone_budget": {
+    "deform_bones_max": 52,
+    "deform_detail": "full_anatomy",
+    "twist_bones_allowed": true,
+    "twist_bones_max": 6,
+    "control_bones_max": 30,
+    "total_max_including_controls": 88,
+    "godot_caveat": "Godot 4 mobile shader 64 deform-bone/draw onerir. In-game LOD'da omur birlestirme ile <=64'e cekilecek; master full kalir."
+  },
+  "texture_budget": {
+    "atlas_strategy": "single_atlas",
+    "master_atlas_resolution": 4096,
+    "mobile_baked_resolution": 2048,
+    "channel_packing": "albedo + normal + ORM(occlusion/roughness/metallic)",
+    "compression_target": "astc_6x6",
+    "alpha_for_fur": false,
+    "fur_note": "LOD0 geometry hair; LOD1+ icin hair -> alpha-kart texture bake"
+  },
+  "lod_config": {
+    "strategy": "hero_master_plus_mobile_bake",
+    "levels": 4,
+    "lod_list": ["master_hifi", "lod0_ingame", "lod1", "lod2"],
+    "lod0_ratio": 1.0,
+    "lod1_ratio": 0.5,
+    "lod2_ratio": 0.25,
+    "hair_handling": {"master": "geometry_nodes", "lod0": "geometry_nodes_reduced", "lod1": "texture_cards", "lod2": "texture_cards"},
+    "lod_switch_distances_meters": [0, 6, 15, 30]
+  },
+  "animation_clips": [
+    {"name": "idle_breathe", "duration_sec": 4.0, "priority": "must_have"},
+    {"name": "idle_alert", "duration_sec": 3.0, "priority": "nice_to_have"},
+    {"name": "walk_loop", "duration_sec": 1.0, "priority": "must_have"},
+    {"name": "trot_loop", "duration_sec": 0.6, "priority": "must_have"},
+    {"name": "run_gallop_loop", "duration_sec": 0.45, "priority": "must_have"},
+    {"name": "attack_bite", "duration_sec": 1.2, "priority": "must_have"},
+    {"name": "howl", "duration_sec": 2.8, "priority": "nice_to_have"},
+    {"name": "hit_react", "duration_sec": 0.5, "priority": "nice_to_have"},
+    {"name": "death", "duration_sec": 2.2, "priority": "must_have"}
+  ],
+  "shape_key_budget": {
+    "muscle_bulge_count_max": 6,
+    "facial_expression_count_max": 0,
+    "blend_shape_locations": ["shoulder_L", "shoulder_R", "thigh_L", "thigh_R", "neck_stretch", "belly_expand"]
+  },
+  "in_game_camera": {"distance_meters": 8.0, "fov_degrees": 60, "aspect_ratio": "landscape_16_9"},
+  "runtime_limits": {"max_pipeline_minutes": null, "max_iterations_per_phase": 5, "auto_fix_minor_defects": false},
+  "trade_offs_user_made": [
+    "Hero + foto-gercekci + geometry hair + full anatomy: maksimum kalite, mobil performans master+bake ile uzlastiriliyor",
+    "4096 master texture (+2048 mobil bake)",
+    "6 shape key (full kas seti)",
+    "9 animasyon klip (tam AAA seti)"
+  ],
+  "deferred_to_skill": ["lod0_tris_target (preset'ten turetildi, onayda netlestir)", "max_pipeline_minutes (sinirsiz/null)"],
+  "decided_at": "2026-05-24T08:14:00Z"
+}

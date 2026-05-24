@@ -339,14 +339,17 @@ def build_flesh_modifier(curve_obj, radius_profile, profile_resolution=12,
     # Curve to Mesh
     n_ctm = nodes.new('GeometryNodeCurveToMesh')
     n_ctm.location = (300, 0)
+    # Fill Caps: tupleri kapali kati yap, yoksa acik tup -> voxel remesh delikli kabuk uretir
+    if 'Fill Caps' in n_ctm.inputs:
+        n_ctm.inputs['Fill Caps'].default_value = True
     
     # Set Shade Smooth
     n_shade = nodes.new('GeometryNodeSetShadeSmooth')
     n_shade.location = (600, 0)
     
     # Linkler
-    links.new(n_in.outputs[0], n_res.inputs['Curve'])
-    links.new(n_res.outputs['Curve'], n_sr.inputs['Curve'])
+    links.new(n_in.outputs[0], n_res.inputs['Geometry'])
+    links.new(n_res.outputs['Geometry'], n_sr.inputs['Curve'])
     links.new(n_sp.outputs['Factor'], n_fc.inputs['Value'])
     links.new(n_fc.outputs['Value'], n_sr.inputs['Radius'])
     links.new(n_sr.outputs['Curve'], n_ctm.inputs['Curve'])
@@ -420,8 +423,8 @@ def voxel_remesh(mesh_obj, voxel_size):
     bpy.context.view_layer.objects.active = mesh_obj
     mesh_obj.data.remesh_mode = 'VOXEL'
     mesh_obj.data.remesh_voxel_size = voxel_size
-    mesh_obj.data.use_remesh_smooth_normals = True
     mesh_obj.data.use_remesh_preserve_volume = True
+    mesh_obj.data.use_remesh_fix_poles = True
     
     bpy.ops.object.voxel_remesh()
 

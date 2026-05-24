@@ -1,0 +1,52 @@
+{
+  "creature_id": "kurt_001",
+  "common_name_tr": "Kurt",
+  "scientific_name": "Canis lupus",
+  "anatomy_class": "mammalia_quadruped",
+  "subfamily": "Canidae",
+  "stance": "digitigrade",
+  "stylization_level": "PENDING_USER",
+  "skeleton_anatomical_reference": {
+    "cervical": 7,
+    "thoracic": 13,
+    "lumbar": 7,
+    "sacral": 3,
+    "caudal": 20,
+    "total_vertebrae": 50,
+    "note": "Servikal omur 7 (tum memelilerde sabit). Mobil icin omur birlestirme P02 budget'ta kullaniciya sorulur."
+  },
+  "proportions_normalized_body_len_1_0": {
+    "head_length": 0.13,
+    "head_width": 0.08,
+    "neck_length": 0.12,
+    "shoulder_height": 0.57,
+    "hip_height": 0.55,
+    "leg_length_front": 0.52,
+    "leg_length_rear": 0.52,
+    "chest_width": 0.22,
+    "chest_depth": 0.28,
+    "tail_length": 0.40,
+    "ear_height": 0.06,
+    "paw_size": 0.09,
+    "note": "Canidae bandindan kurt degerleri. shoulder_height > hip_height (kurt karakteristik). Stilize edilebilir (head/eye/paw multiplier)."
+  },
+  "ik_chains": {
+    "front_leg": {"chain_len": 3, "bones": ["upper_arm", "forearm", "wrist"], "pole": "elbow_pole"},
+    "rear_leg": {"chain_len": 4, "bones": ["thigh", "shin", "ankle", "metatarsus"], "pole": "knee_pole", "note": "digitigrade -> chain 4"},
+    "spine": {"type": "spline_ik", "control_bones": ["spine_hip", "spine_middle", "spine_shoulder"]},
+    "tail": {"type": "damped_track+copy_rotation"}
+  },
+  "gaits_available": ["walk_4beat", "trot_2beat_diagonal", "gallop_asymmetric"],
+  "gait_cycle_seconds": {"walk": 1.0, "trot": 0.6, "gallop": 0.45},
+  "bone_naming_convention": "underscore_LR (shoulder_L / shoulder_R) - Godot 4 uyumlu, export oncesi .L/.R -> _L/_R rename",
+  "fur_method": "PENDING_USER",
+  "species_extensions_pending_user": {
+    "ear_type": ["dik (alert)", "yari-dik"],
+    "tail_bushiness": "PENDING",
+    "snout_length": "PENDING",
+    "tooth_emphasis": "PENDING",
+    "coat_pattern": "PENDING (gri kurt / siyah / kutup beyaz)"
+  },
+  "research_status": "draft_awaiting_user_approval",
+  "decided_at": null
+}
