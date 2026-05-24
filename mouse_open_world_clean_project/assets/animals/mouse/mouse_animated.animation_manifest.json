@@ -1,0 +1,61 @@
+{
+  "fps": 30,
+  "clips": [
+    {
+      "name": "idle",
+      "frames": [
+        1,
+        120
+      ],
+      "loop": true
+    },
+    {
+      "name": "walk",
+      "frames": [
+        1,
+        32
+      ],
+      "loop": true
+    },
+    {
+      "name": "sneak",
+      "frames": [
+        1,
+        64
+      ],
+      "loop": true
+    },
+    {
+      "name": "attack",
+      "frames": [
+        1,
+        26
+      ],
+      "loop": false
+    },
+    {
+      "name": "eat",
+      "frames": [
+        1,
+        120
+      ],
+      "loop": true
+    },
+    {
+      "name": "hole_slow",
+      "frames": [
+        1,
+        120
+      ],
+      "loop": false
+    },
+    {
+      "name": "hole_panic",
+      "frames": [
+        1,
+        46
+      ],
+      "loop": false
+    }
+  ]
+}
