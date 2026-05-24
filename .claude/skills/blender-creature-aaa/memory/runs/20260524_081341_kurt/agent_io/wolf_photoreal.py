@@ -115,8 +115,8 @@ try:
     wt.links.new(sky.outputs[0],wbg.inputs[0])
 except Exception as ex:
     print("SKY_FAIL",ex); wbg.inputs[0].default_value=(0.45,0.52,0.62,1)
-wbg.inputs[1].default_value=1.0; wt.links.new(wbg.outputs[0],wout.inputs['Surface'])
-sd=bpy.data.lights.new("sun",'SUN'); sd.energy=2.2; sd.angle=math.radians(1.5); sd.color=(1.0,0.95,0.86)
+wbg.inputs[1].default_value=0.45; wt.links.new(wbg.outputs[0],wout.inputs['Surface'])
+sd=bpy.data.lights.new("sun",'SUN'); sd.energy=1.25; sd.angle=math.radians(1.5); sd.color=(1.0,0.95,0.86)
 so=bpy.data.objects.new("sun",sd); bpy.context.collection.objects.link(so); so.rotation_euler=(math.radians(58),math.radians(6),math.radians(45))
 # ---- zemin (toprak) ----
 bpy.ops.mesh.primitive_plane_add(size=14,location=(0,0,0)); gp=bpy.context.view_layer.objects.active
@@ -133,6 +133,12 @@ cam=bpy.data.cameras.new("c"); co=bpy.data.objects.new("c",cam); bpy.context.col
 tg=bpy.data.objects.new("t",None); bpy.context.collection.objects.link(tg); co.constraints.new('TRACK_TO').target=tg
 sc=bpy.context.scene; sc.render.engine='CYCLES'; sc.cycles.device='CPU'; sc.cycles.samples=SAMP; sc.cycles.use_denoising=True
 sc.render.resolution_x=720; sc.render.resolution_y=560
+# pozlama/tonemap (asiri parlakligi engelle)
+try:
+    looks=[x.name for x in bpy.types.ColorManagedViewSettings.bl_rna.properties['view_transform'].enum_items]
+    sc.view_settings.view_transform='AgX' if 'AgX' in looks else 'Filmic'
+except Exception as ex: print("VT_FAIL",ex)
+sc.view_settings.exposure=-0.6; sc.view_settings.gamma=1.0
 allshots={"hero":(40,9,1.0,ctr+Vector((0,0,-0.02))),"head":(54,4,0.46,Vector((0,0.78,0.80))),"side":(90,6,1.0,ctr+Vector((0,0,-0.02)))}
 d=size*1.95
 for nm in SHOTS.split(","):
