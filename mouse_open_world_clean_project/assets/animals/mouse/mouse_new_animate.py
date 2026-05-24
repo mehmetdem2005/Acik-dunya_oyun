@@ -14,6 +14,7 @@ TAIL=[f"Tail_{i:02d}" for i in range(12)]
 SPX=[f"SpineX_{i}" for i in range(5)]      # 0=pelvis(+Y arka), 4=boyun(-Y on)
 LEGUP={'FL':'LegFL_up','FR':'LegFR_up','RL':'LegRL_up','RR':'LegRR_up'}
 LEGLO={'FL':'LegFL_lo','FR':'LegFR_lo','RL':'LegRL_lo','RR':'LegRR_lo'}
+LEGFT={'FL':'LegFL_ft','FR':'LegFR_ft','RL':'LegRL_ft','RR':'LegRR_ft'}
 _M3=arm.matrix_world.to_3x3()
 def _bl(n):
     pb=arm.pose.bones[n]; return (_M3@pb.bone.matrix_local.to_3x3()).inverted()
@@ -46,9 +47,10 @@ def ktail(f,t,side=10,up=0,freq=1.0,curl=0,amp_mod=1.0):
 DIAG={'FL':0.0,'RR':0.0,'FR':0.5,'RL':0.5}
 def gait(f,t,swing=15,knee=16,lift=10,stance=0):
     for leg,ph in DIAG.items():
-        p=(t+ph)%1.0; a=2*math.pi*p
-        kw(LEGUP[leg],f, rx=swing*math.sin(a)+stance)
-        kw(LEGLO[leg],f, rx=-(knee*0.35 + lift*max(0,math.sin(a))))
+        p=(t+ph)%1.0; a=2*math.pi*p; sw=math.sin(a)
+        kw(LEGUP[leg],f, rx=swing*sw+stance)
+        kw(LEGLO[leg],f, rx=-(knee*0.35 + lift*max(0,sw)))
+        kw(LEGFT[leg],f, rx=knee*0.3 + 6*max(0,sw))            # bilek telafi (ayak duz)
 def newact(n):
     if arm.animation_data is None: arm.animation_data_create()
     if n in bpy.data.actions: bpy.data.actions.remove(bpy.data.actions[n])
