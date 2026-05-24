@@ -4,6 +4,7 @@ Hepsinde dogal gecikmeli KUYRUK dalgasi. FK, olculmus local eksenler.
 blender --background <enh2.blend> --python mouse_animate.py -- <out.blend> [fps]
 """
 import bpy, sys, os, math
+from mathutils import Quaternion, Vector
 argv=sys.argv[sys.argv.index("--")+1:]
 outblend=argv[0]; FPS=int(argv[1]) if len(argv)>1 else 30
 arm=next(o for o in bpy.data.objects if o.type=='ARMATURE')
@@ -12,6 +13,19 @@ R=math.radians
 TAIL=[f"Tail_{i:02d}" for i in range(12)]
 LEGR={'FL':'bone_9','FR':'bone_13','RL':'bone_27','RR':'bone_17'}
 LEGM={'FL':'0_Left_Limb_1','FR':'0_Right_Limb_1','RL':'1_Left_Limb_1','RR':'1_Right_Limb_1'}
+# bacak kemiklerinin DUNYA-X (salinim ekseni) local karsiligi -> burkulmadan don
+_M3=arm.matrix_world.to_3x3()
+LEGAXIS={}
+for n in list(LEGR.values())+list(LEGM.values()):
+    if n in arm.pose.bones:
+        Rbw=_M3@arm.pose.bones[n].bone.matrix_local.to_3x3()
+        LEGAXIS[n]=(Rbw.inverted()@Vector((1,0,0))).normalized()
+def kwx(n,f,deg):   # bacak: dunya-X ekseni etrafinda temiz don (quaternion)
+    pb=arm.pose.bones.get(n)
+    if not pb or n not in LEGAXIS: return
+    pb.rotation_mode='QUATERNION'
+    pb.rotation_quaternion=Quaternion(LEGAXIS[n], R(deg))
+    pb.keyframe_insert('rotation_quaternion',frame=f)
 def has(n): return n in arm.pose.bones
 def kr(n,f,rx=0,ry=0,rz=0):
     pb=arm.pose.bones.get(n)
@@ -33,16 +47,17 @@ def newact(name):
     if name in bpy.data.actions: bpy.data.actions.remove(bpy.data.actions[name])
     a=bpy.data.actions.new(name); a.use_fake_user=True; arm.animation_data.action=a; return a
 def clearpose():
-    for pb in arm.pose.bones: pb.location=(0,0,0); pb.rotation_mode='XYZ'; pb.rotation_euler=(0,0,0)
+    for pb in arm.pose.bones:
+        pb.location=(0,0,0); pb.rotation_euler=(0,0,0); pb.rotation_quaternion=(1,0,0,0)
 
 def gait(f,t,phases,swing=14,bend=18,lift_bend=22):
     for leg,ph in phases.items():
         p=(t+ph)%1.0
         sw=swing*math.sin(2*math.pi*p)
-        kr(LEGR[leg],f, sw,0,0)
+        kwx(LEGR[leg],f, sw)
         # diz: salinim(swing) tepe noktasinda bukulme
         kn=bend + lift_bend*max(0,math.sin(2*math.pi*p))
-        kr(LEGM[leg],f, kn,0,0)
+        kwx(LEGM[leg],f, kn)
 
 DIAG={'FL':0.0,'RR':0.0,'FR':0.5,'RL':0.5}
 
@@ -116,9 +131,9 @@ def eat():
         kr('Spine_A',f, rx=-10); kr('Spine_B',f, rx=-12)   # govde dikilir
         kr('Head_0',f, rx=10+4*nib)             # bas kemirme bob
         kr('Nose',f, rx=6*abs(nib))
-        # on patiler agiza: front leg root yukari + diz buk
+        # on patiler agiza: front leg root yukari + diz buk (dunya-X)
         for leg in ('FL','FR'):
-            kr(LEGR[leg],f, rx=-30); kr(LEGM[leg],f, rx=55+5*nib)
+            kwx(LEGR[leg],f, -32); kwx(LEGM[leg],f, 58+5*nib)
         kr('bone_6',f, rz=8*math.sin(2*math.pi*t*0.5)); kr('bone_7',f, rz=-8*math.sin(2*math.pi*t*0.5))
         ktail(f,t, side=5, up=2, freq=0.5, curl=14)   # kuyruk yana kivrik, hafif
     return a,N,True
@@ -134,10 +149,10 @@ def hole_slow():
         kr('Spine_A',f, rx=12*min(1,enter*2)); kr('Spine_B',f, rx=12*min(1,enter*2))
         kr('Head_0',f, rx=16)
         kr('Nose',f, rx=8*max(0,math.sin(2*math.pi*t*4)))
-        # bacaklar surunme: on cek, arka it
+        # bacaklar surunme: on cek, arka it (dunya-X)
         push=math.sin(2*math.pi*t*4)
-        for leg in ('FL','FR'): kr(LEGR[leg],f, rx=-10*enter); kr(LEGM[leg],f, rx=25+8*push)
-        for leg in ('RL','RR'): kr(LEGR[leg],f, rx=12*push*enter); kr(LEGM[leg],f, rx=20+10*max(0,push))
+        for leg in ('FL','FR'): kwx(LEGR[leg],f, -10*enter); kwx(LEGM[leg],f, 22+8*push)
+        for leg in ('RL','RR'): kwx(LEGR[leg],f, 12*push*enter); kwx(LEGM[leg],f, 18+10*max(0,push))
         # kuyruk: once arkada surunur, son %15'te hizla iceri kivrilir
         tin=max(0,(t-0.85)/0.15)
         ktail(f,t, side=8*(1-tin), up=3, freq=0.8, curl=40*tin)
@@ -154,8 +169,8 @@ def hole_panic():
         kr('Head_0',f, rx=18)
         kr('bone_6',f, rz=-16); kr('bone_7',f, rz=16)    # kulak geri (panik)
         push=math.sin(2*math.pi*t*7)
-        for leg in ('FL','FR'): kr(LEGR[leg],f, rx=-12*enter); kr(LEGM[leg],f, rx=28+10*push)
-        for leg in ('RL','RR'): kr(LEGR[leg],f, rx=16*push*enter); kr(LEGM[leg],f, rx=24+14*max(0,push))
+        for leg in ('FL','FR'): kwx(LEGR[leg],f, -12*enter); kwx(LEGM[leg],f, 26+10*push)
+        for leg in ('RL','RR'): kwx(LEGR[leg],f, 16*push*enter); kwx(LEGM[leg],f, 22+14*max(0,push))
         tin=max(0,(t-0.8)/0.2)
         ktail(f,t, side=14*(1-tin), up=4, freq=1.6, curl=55*tin)   # whip sonra hizla iceri
     return a,N,False
