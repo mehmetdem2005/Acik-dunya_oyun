@@ -33,23 +33,23 @@ me.materials.append(skin)
 # ---- fur length / density vertex groups ----
 vg_len=mesh.vertex_groups.new(name="fur_len"); vg_den=mesh.vertex_groups.new(name="fur_den")
 for v in me.vertices:
-    co=v.co; h=(co.z-zmin)/(zmax-zmin+1e-9); yf=(co.y-ymin)/(ymax-ymin+1e-9)
-    L=0.5
-    # boyun yelesi (ruff): orta-on + ust
-    ruff=sstep(0.62,0.80,yf)*sstep(0.45,0.85,h); L+=0.55*ruff
-    # sirt/govde orta uzun
-    L+=0.25*sstep(0.45,0.85,h)*sstep(0.15,0.62,yf)
-    # kuyruk (arka, y dusuk) gur
-    L+=0.6*sstep(0.18,0.0,yf)
-    # yuz/burun kisa
-    face=sstep(0.82,0.97,yf)*sstep(0.5,0.85,h); L-=0.6*face
+    x,y,z=v.co.x,v.co.y,v.co.z
+    L=0.30  # kisa yalin post (base)
+    # sirt/govde orta (kisa-orta)
+    if -0.36<y<0.32 and z>0.50: L+=0.22
+    # boyun yelesi: SADECE boyun tabani (mutlak y), kafa haric
+    if 0.30<y<0.50 and z>0.46: L+=0.55*sstep(0.46,0.64,z)
+    # kuyruk gur (arka)
+    if y<-0.40: L+=0.62
+    # YUZ/KAFA cok kisa -> muzzle/goz/kulak/burun gorunsun
+    if y>0.52 and z>0.64: L=0.05
     # alt bacak/pati kisa
-    L-=0.5*sstep(0.30,0.08,h)
-    L=max(0.05,min(1.0,L))
+    if z<0.30: L=min(L,0.14)
+    L=max(0.04,min(1.0,L))
     vg_len.add([v.index], L, 'REPLACE')
-    # density: yuz ucu + pati biraz seyrek
-    den=1.0 - 0.7*face - 0.4*sstep(0.18,0.04,h)
-    vg_den.add([v.index], max(0.1,min(1.0,den)), 'REPLACE')
+    den=1.0
+    if y>0.60 and z>0.66: den=0.65   # yuz biraz seyrek
+    vg_den.add([v.index], den, 'REPLACE')
 
 # ---- hair material (agouti: koyu kok, acik bant, koyu uc) ----
 hair=bpy.data.materials.new("kurt_fur"); hair.use_nodes=True
@@ -79,10 +79,10 @@ hair_slot=len(me.materials)-1
 # ---- particle hair ----
 bpy.context.view_layer.objects.active=mesh
 ms=mesh.modifiers.new("fur",'PARTICLE_SYSTEM'); psys=mesh.particle_systems[-1]; ps=psys.settings
-ps.type='HAIR'; ps.count=12000; ps.hair_length=0.085; ps.use_advanced_hair=True
+ps.type='HAIR'; ps.count=16000; ps.hair_length=0.042; ps.use_advanced_hair=True
 ps.emit_from='FACE'; ps.distribution='RAND'; ps.use_modifier_stack=True
-ps.child_type='INTERPOLATED'; ps.child_percent=18; ps.rendered_child_count=55
-ps.clump_factor=0.55; ps.clump_shape=0.2
+ps.child_type='INTERPOLATED'; ps.child_percent=22; ps.rendered_child_count=66
+ps.clump_factor=0.68; ps.clump_shape=0.35
 ps.roughness_1=0.10; ps.roughness_1_size=0.6; ps.roughness_endpoint=0.20; ps.roughness_end_shape=1.0
 ps.kink='CURL'; ps.kink_amplitude=0.006; ps.kink_frequency=2.0
 ps.use_hair_bspline=True; ps.render_step=3; ps.display_step=2
@@ -128,10 +128,10 @@ cam.lens=70
 tg=bpy.data.objects.new("t",None); tg.location=ctr+Vector((0,0,-0.03)); bpy.context.collection.objects.link(tg); co.constraints.new('TRACK_TO').target=tg
 sc=bpy.context.scene; sc.render.engine='CYCLES'; sc.cycles.device='CPU'; sc.cycles.samples=samples
 sc.cycles.use_denoising=True
-sc.render.resolution_x=800; sc.render.resolution_y=800
+sc.render.resolution_x=640; sc.render.resolution_y=640
 os.makedirs(outdir,exist_ok=True)
 d=size*2.0
-for nm,az,el in [("front34",42,12),("head",58,4)]:
+for nm,az,el in [("side",92,7),("head",56,3)]:
     a=math.radians(az); e=math.radians(el)
     fac = 1.0 if nm!="head" else 0.5
     co.location=(ctr.x+d*fac*math.sin(a)*math.cos(e),ctr.y-d*fac*math.cos(a)*math.cos(e),ctr.z+d*fac*math.sin(e)+ (0.18 if nm=="head" else 0))
