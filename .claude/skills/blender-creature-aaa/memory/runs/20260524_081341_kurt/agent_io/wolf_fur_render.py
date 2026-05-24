@@ -128,14 +128,13 @@ cam.lens=70
 tg=bpy.data.objects.new("t",None); tg.location=ctr+Vector((0,0,-0.03)); bpy.context.collection.objects.link(tg); co.constraints.new('TRACK_TO').target=tg
 sc=bpy.context.scene; sc.render.engine='CYCLES'; sc.cycles.device='CPU'; sc.cycles.samples=samples
 sc.cycles.use_denoising=True
-sc.render.resolution_x=640; sc.render.resolution_y=640
+sc.render.resolution_x=820; sc.render.resolution_y=620
 os.makedirs(outdir,exist_ok=True)
-d=size*2.0
-for nm,az,el in [("side",92,7),("head",56,3)]:
+d=size*1.95
+for nm,az,el in [("hero",40,9),("headclose",62,5)]:
     a=math.radians(az); e=math.radians(el)
-    fac = 1.0 if nm!="head" else 0.5
-    co.location=(ctr.x+d*fac*math.sin(a)*math.cos(e),ctr.y-d*fac*math.cos(a)*math.cos(e),ctr.z+d*fac*math.sin(e)+ (0.18 if nm=="head" else 0))
-    if nm=="head": tg.location=Vector((0,0.7,0.78))
-    else: tg.location=ctr+Vector((0,0,-0.03))
+    fac = 1.0 if nm=="hero" else 0.62
+    co.location=(ctr.x+d*fac*math.sin(a)*math.cos(e),ctr.y-d*fac*math.cos(a)*math.cos(e),ctr.z+d*fac*math.sin(e))
+    tg.location = ctr+Vector((0,0,-0.02)) if nm=="hero" else Vector((0.0,0.72,0.80))
     sc.render.filepath=os.path.join(outdir,nm+".png"); bpy.ops.render.render(write_still=True)
 print("FUR_RENDER_DONE")
