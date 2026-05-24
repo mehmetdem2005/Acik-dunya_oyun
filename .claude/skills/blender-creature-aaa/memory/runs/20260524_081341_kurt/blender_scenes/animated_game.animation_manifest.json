@@ -1,0 +1,30 @@
+{
+  "fps": 30,
+  "clips": [
+    {
+      "name": "walk",
+      "frame_start": 1,
+      "frame_end": 30,
+      "loop": true
+    },
+    {
+      "name": "run",
+      "frame_start": 1,
+      "frame_end": 16,
+      "loop": true
+    },
+    {
+      "name": "crawl",
+      "frame_start": 1,
+      "frame_end": 40,
+      "loop": true
+    },
+    {
+      "name": "attack",
+      "frame_start": 1,
+      "frame_end": 48,
+      "loop": false
+    }
+  ],
+  "total_actions": 4
+}
