@@ -134,30 +134,65 @@ bpy.ops.object.mode_set(mode='OBJECT')
 bw={b.name:(arm.matrix_world@b.head_local, arm.matrix_world@b.tail_local) for b in arm_data.bones}
 print("BONES",len(arm_data.bones))
 
-# ================= PROXIMITY SKINNING =================
-def sigma(n):
-    if n.startswith("Tail"): return 0.024
-    if "_ft" in n: return 0.022
-    if n.startswith("Leg"): return 0.032
-    if n.startswith("Ear") or n=="Nose": return 0.026
-    if n.startswith("Head"): return 0.045
-    return 0.05
+# ================= REGION-BASED SKINNING =================
+# Govde (karin/yan/sirt) -> OMURGA (eksenel, Y'ye gore tum kesit) ; bacaklar SADECE uzuv verts'i;
+# kuyruk/bas kendi zincirleri. Boylece bacak hareketi govdeyi surukleMEZ.
 deform=[b.name for b in arm_data.bones if b.use_deform]
-H=np.array([list(bw[n][0]) for n in deform]); T=np.array([list(bw[n][1]) for n in deform])
-AB=T-H; L2=np.einsum('ij,ij->i',AB,AB)+1e-9
+bidx={n:i for i,n in enumerate(deform)}
+def segd(h,t):
+    h=np.array(h);t=np.array(t);ab=t-h;l2=ab@ab+1e-9
+    tt=np.clip(((co-h)@ab)/l2,0,1); proj=h[None,:]+tt[:,None]*ab[None,:]
+    return np.linalg.norm(co-proj,axis=1)
+D={n:segd(bw[n][0],bw[n][1]) for n in deform}
+spine_names=sp_names
+spineY=np.array([(bw[n][0].y+bw[n][1].y)/2 for n in spine_names])
+leg_segs={k:[LEGUP[k],LEGLO[k],LEGFT[k]] for k in feet if feet[k]}
+legmin={k:np.min([D[s] for s in segs],axis=0) for k,segs in leg_segs.items()}
+dlegmin=np.min(np.stack(list(legmin.values())),axis=0)
+core_r,cut_r=0.035,0.085
+Lmem=np.clip((cut_r-dlegmin)/(cut_r-core_r),0,1)        # bacak uyeligi 0..1 (uzuvda 1, govdede 0)
+headbones=['Head_0','Head_1','Head_2','Nose']+(['Ear_L'] if earL else [])+(['Ear_R'] if earR else [])
+def hsig(n): return 0.026 if (n=='Nose' or n.startswith('Ear')) else 0.045
 W=np.zeros((len(co),len(deform)))
-for bi,n in enumerate(deform):
-    h=H[bi]; ab=AB[bi]; tt=np.clip(((co-h)@ab)/L2[bi],0,1)
-    proj=h[None,:]+tt[:,None]*ab[None,:]; d=np.linalg.norm(co-proj,axis=1)
-    W[:,bi]=np.exp(-(d/sigma(n))**2)
-order=np.argsort(-W,axis=1); Wt=np.zeros_like(W)
+tail_mask=Y>(tailbaseY-0.012); head_mask=Y<neckY
 for vi in range(len(co)):
-    top=order[vi,:4]; Wt[vi,top]=W[vi,top]
-s=Wt.sum(axis=1,keepdims=True); s[s<1e-9]=1.0; Wt/=s
-for vi in np.where(Wt.sum(axis=1)<1e-6)[0]: Wt[vi,order[vi,0]]=1.0
+    y=Y[vi]
+    if tail_mask[vi]:
+        cand=tail_names+['SpineX_0']
+        ww=np.array([math.exp(-(D[n][vi]/(0.024 if n.startswith('Tail') else 0.05))**2) for n in cand])
+        if ww.sum()<1e-9: ww[0]=1.0
+        ww/=ww.sum()
+        for n,wv in zip(cand,ww):
+            if wv>1e-4: W[vi,bidx[n]]+=wv
+    elif head_mask[vi]:
+        cand=headbones+['SpineX_4']
+        ww=np.array([math.exp(-(D[n][vi]/(0.06 if n=='SpineX_4' else hsig(n)))**2) for n in cand])
+        if ww.sum()<1e-9: ww[0]=1.0
+        ww/=ww.sum()
+        for n,wv in zip(cand,ww):
+            if wv>1e-4: W[vi,bidx[n]]+=wv
+    else:
+        l=Lmem[vi]
+        dY=np.abs(y-spineY); sw=np.exp(-(dY/0.10)**2)
+        if sw.sum()<1e-9: sw[np.argmin(dY)]=1.0
+        sw=sw/sw.sum()*(1.0-l)
+        for i,nm in enumerate(spine_names):
+            if sw[i]>1e-4: W[vi,bidx[nm]]+=sw[i]
+        if l>1e-3:
+            k=min(legmin,key=lambda kk:legmin[kk][vi]); segs=leg_segs[k]
+            lw=np.array([math.exp(-(D[s][vi]/0.03)**2) for s in segs])
+            if lw.sum()<1e-9: lw=np.ones(len(segs))
+            lw=lw/lw.sum()*l
+            for j,s in enumerate(segs):
+                if lw[j]>1e-4: W[vi,bidx[s]]+=lw[j]
+sN=W.sum(axis=1,keepdims=True); sN[sN<1e-9]=1.0; W/=sN
+for vi in np.where(W.sum(axis=1)<1e-6)[0]:
+    W[vi,bidx[spine_names[int(np.argmin(np.abs(Y[vi]-spineY)))]]]=1.0
+Wt=W
 for vg in list(mesh.vertex_groups): mesh.vertex_groups.remove(vg)
 vgs={n:mesh.vertex_groups.new(name=n) for n in deform}
-for bi,n in enumerate(deform):
+for n in deform:
+    bi=bidx[n]
     for vi in np.where(Wt[:,bi]>1e-4)[0]: vgs[n].add([int(vi)],float(Wt[vi,bi]),'REPLACE')
 mod=next((m for m in mesh.modifiers if m.type=='ARMATURE'),None) or mesh.modifiers.new("Armature",'ARMATURE')
 mod.object=arm; mesh.parent=arm
