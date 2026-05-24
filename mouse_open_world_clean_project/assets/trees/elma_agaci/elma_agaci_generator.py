@@ -58,11 +58,15 @@ ROOT_DARKEN = 1.00               # Round 29: 0.92→1.00 (artık tier 1 base, ay
 ROOT_MOSS_TINT_MAX = 0.10        # Round 29: 0.20→0.10 (less green tint)
 ROOT_ATTACH_INSET = 0.45         # Round 29: 0.85→0.45 — attach point trunk içine (seam hide)
 
-# Round 26 — Gravimorphism (gravity sag) coefficients per tier
-GRAVITY_K_SCAFFOLD = 0.22
-GRAVITY_K_SECONDARY = 0.18
-GRAVITY_K_TWIG = 0.10
-GRAVITY_K_SUBTWIG = 0.05
+# Gravimorphism — Round 32: pomolog spec "yapısal dallar SARKMAZ, sadece dış uçlar"
+# Structural scaffolds/secondaries: ZERO sag (arch comes from growth curvature, not gravity)
+# Only fine outer twigs weep slightly under fruit.
+GRAVITY_K_SCAFFOLD = 0.0         # Round 32: 0.22→0.0 (yapısal sarkmaz, yere değmesin)
+GRAVITY_K_SECONDARY = 0.0        # Round 32: 0.18→0.0
+GRAVITY_K_TWIG = 0.04            # Round 32: 0.10→0.04 (sadece çok hafif)
+GRAVITY_K_SUBTWIG = 0.06         # outer fine tips: hafif weep
+# Round 32 — Crown bottom clamp: hiçbir dal/yaprak bu yükseklik altına inmez
+MIN_CROWN_Z = 0.75               # yerden 75cm — crown bottom (pomolog: 0.8-1.5m)
 
 # Round 26 — Branch collar swelling at junction (ilk ring radius bulge)
 COLLAR_BULGE_FACTOR = 0.55       # ilk ring radius × (1 + 0.55 × exp(-i/2))
@@ -89,10 +93,10 @@ TRUNK_HEIGHT_SEGS = 8            # ↓ from 10 — base sub-rings ile compensate
 N_SCAFFOLDS = 6                  # Round 27: 5→6 (daha çok primary spread için)
 N_CO_LEADERS = 2
 CO_LEADER_R_BOOST = 1.35
-CO_LEADER_CROTCH_DEG = (45.0, 56.0)   # ↓ Round 27: co-leaders daha dik (upward growth, tree shape)
-SCAFFOLD_PITCH_Z = 0.16          # ↓ from 0.18 — staggered scaffolds daha sıkı band
-SCAFFOLD_LENGTH_RANGE = (2.0, 2.7)    # ↑ from (1.7-2.4) — daha geniş spread
-SCAFFOLD_CROTCH_RANGE_DEG = (58.0, 74.0)   # ↑ from (42-58°) Round 27: scaffolds daha YATAY (spreading apple form)
+CO_LEADER_CROTCH_DEG = (40.0, 50.0)   # Round 32: real apple scaffold ~45° (up-and-out, arç yukarı)
+SCAFFOLD_PITCH_Z = 0.16
+SCAFFOLD_LENGTH_RANGE = (1.9, 2.5)
+SCAFFOLD_CROTCH_RANGE_DEG = (44.0, 56.0)   # Round 32: 58-74° YATAYDI → 44-56° (up-and-out, pomolog spec)
 SCAFFOLD_R_FACTOR = 0.52
 SCAFFOLD_TIP_R_FACTOR = 0.26
 SCAFFOLD_SEGMENTS = 5
@@ -194,7 +198,7 @@ CROWN_APEX_CARD_W = 0.22
 CROWN_APEX_CARD_H = 0.20
 CROWN_APEX_Z_OFFSET = 0.15           # trunk top'tan ne kadar yukarı
 
-GROUND_LITTER_CARDS = 40             # Round 29: 80→40 (less dark patches at base)
+GROUND_LITTER_CARDS = 0              # Round 32: kapatıldı — "yere sarkma" algısı yaratıyordu
 GROUND_LITTER_RADIUS = 0.85          # trunk merkezinden max yarıçap
 GROUND_LITTER_HEIGHT = 0.08          # zemine yakın hover
 GROUND_LITTER_CARD_W = 0.10
@@ -238,8 +242,9 @@ COLOR_APPLE_BLUSH = (0.80, 0.62, 0.12)
 
 # Gravity / fruit-load sag — must read in silhouette
 FRUIT_LOAD = 0.65
-SCAFFOLD_DROOP_TIP_M = 0.32
-SECONDARY_DROOP_TIP_M = 0.22
+# Round 32: droop azaltıldı — scaffold tips UP turn (pomolog: convex-up arch, tips upturned)
+SCAFFOLD_DROOP_TIP_M = -0.10     # NEGATİF = tip yukarı kalkar (upturned, real apple)
+SECONDARY_DROOP_TIP_M = 0.04     # ↓ from 0.22 — neredeyse düz, çok hafif
 
 # Material colors (placeholders, user will supply textures later)
 COLOR_BARK   = (0.26, 0.21, 0.17)   # fallback (used if vcolor missing)
@@ -1103,28 +1108,27 @@ class TreeBuilder:
             self._grow_twig(start_pos, base_dir, length, base_r, fork_depth=0)
 
     def _grow_twig(self, base_pos, base_dir, length, base_r, fork_depth):
-        """Round 31 — RECURSIVE twig with tip bifurcation (gerçek sympodial dallanma).
+        """Round 32 — MONOPODIAL twig with apical dominance (pomolog spec).
 
-        Her twig:
-        1. Kendi tube'unu çizer + yapraklanır (cards azalır derinlikle)
-        2. Tip'inde 2-3 çocuğa çatallanır (Y-fork) — her çocuk recurse
-        3. Bazen ek lateral twiglet ekler
-        Durma: fork_depth >= TWIG_MAX_DEPTH veya base_r < TWIG_MIN_R
+        Gerçek elma dallanması: eşit Y-fork DEĞİL. Bir DOMINANT continuation
+        (parent yönünde hafif sapma, %85 boy/%88 çap) + 1-2 küçük LATERAL
+        (45-70° sapma, %45 boy/%50 çap). Bu "yapay simetrik fork" sorununu çözer.
+
+        Laterals branch BOYUNCA çıkar (tip'te değil), dominant tip'ten devam eder.
         """
-        # Global budget guard (recursion explosion protection)
         if self._twig_count >= TWIG_GLOBAL_BUDGET:
             return
         self._twig_count += 1
         tip_r = base_r * TWIG_TIP_R_FACTOR
-        droop = 0.03 * FRUIT_LOAD * (0.6 ** fork_depth)
-        gravk = GRAVITY_K_TWIG * (0.7 ** fork_depth)
+        # Round 32: structural twigs no sag; only deepest fine tips weep slightly
+        gravk = GRAVITY_K_SUBTWIG if fork_depth >= TWIG_MAX_DEPTH - 1 else GRAVITY_K_TWIG
+        droop = 0.0   # twigs arch from growth, not gravity
         curve = branch_curve(base_pos, base_dir, length, base_r, tip_r,
-                             TWIG_SEGMENTS, droop, lateral_jitter=0.025, rng=self.rng,
+                             TWIG_SEGMENTS, droop, lateral_jitter=0.02, rng=self.rng,
                              gravity_k=gravk)
         radial_segs = max(3, TWIG_RADIAL_SEGS - (1 if fork_depth >= 2 else 0))
         build_tube(self.bm_wood, curve, radial_segs, 0, self.wood_faces, tier=3,
                    collar_bulge=COLLAR_BULGE_FACTOR * (0.5 ** fork_depth))
-        # Leaf cards: deeper forks carry fewer cards (outer canopy gets the leaves)
         cards_along = max(1, CARDS_PER_TWIG_ALONG - fork_depth)
         cards_terminal = max(1, CARDS_PER_TWIG_TERMINAL - (1 if fork_depth >= 2 else 0))
         self.twigs.append({
@@ -1133,41 +1137,43 @@ class TreeBuilder:
             "cards_terminal": cards_terminal,
         })
 
-        # Stop recursion
         if fork_depth >= TWIG_MAX_DEPTH or tip_r < TWIG_MIN_R:
             return
 
-        tip_pos = curve[-1][0]
-        tip_tan = curve[-1][2]
-        # Frame at tip for fork divergence
         up = Vector((0, 0, 1))
-        side = tip_tan.cross(up).normalized() if abs(tip_tan.z) < 0.95 else Vector((1, 0, 0))
-        forward = tip_tan.cross(side).normalized()
 
-        # Tip bifurcation: 2-3 children diverging from tip
-        n_fork = self.rng.randint(*TWIG_FORK_COUNT)
-        fork_phase = self.rng.uniform(0, 2 * math.pi)
-        for k in range(n_fork):
-            fork_az = fork_phase + (k / n_fork) * 2 * math.pi + self.rng.uniform(-0.3, 0.3)
-            fork_angle = math.radians(self.rng.uniform(*TWIG_FORK_ANGLE_DEG))
-            radial = math.cos(fork_az) * side + math.sin(fork_az) * forward
-            child_dir = (math.cos(fork_angle) * tip_tan + math.sin(fork_angle) * radial).normalized()
-            child_len = length * TWIG_FORK_LENGTH_DECAY * self.rng.uniform(0.85, 1.15)
-            child_r = tip_r * TWIG_FORK_R_DECAY
-            self._grow_twig(tip_pos, child_dir, child_len, child_r, fork_depth + 1)
-
-        # Occasional lateral twiglet mid-branch (extra density)
-        if fork_depth < TWIG_MAX_DEPTH - 1 and self.rng.random() < TWIG_FORK_LATERAL_PROB:
-            lat_frac = self.rng.uniform(0.45, 0.75)
+        # --- LATERALS along the branch length (subordinate, smaller) ---
+        n_lat = self.rng.randint(1, 2)
+        for li in range(n_lat):
+            lat_frac = self.rng.uniform(0.45, 0.80)
             lpos, lr, ltan = self._sample_branch_curve(curve, lat_frac)
-            laz = self.rng.uniform(0, 2 * math.pi)
+            # Spiral phyllotaxis azimuth (~137° + jitter) — pomolog spec
+            laz = (li * GOLDEN_ANGLE + self.rng.uniform(-0.35, 0.35)
+                   + fork_depth * 1.7)
             lside = ltan.cross(up).normalized() if abs(ltan.z) < 0.95 else Vector((1, 0, 0))
             lfwd = ltan.cross(lside).normalized()
             lradial = math.cos(laz) * lside + math.sin(laz) * lfwd
-            lang = math.radians(self.rng.uniform(40, 70))
+            # Lateral diverges 45-70° from parent (wider than dominant)
+            lang = math.radians(self.rng.uniform(45, 70))
             ldir = (math.cos(lang) * ltan + math.sin(lang) * lradial).normalized()
+            lat_len = length * self.rng.uniform(0.42, 0.55)   # subordinate length
+            lat_r = tip_r * self.rng.uniform(0.42, 0.55)      # subordinate radius
             self._grow_twig(lpos + lradial * (lr * 0.4), ldir,
-                            length * 0.55, lr * 0.7, fork_depth + 1)
+                            lat_len, lat_r, fork_depth + 1)
+
+        # --- DOMINANT continuation from tip (apical dominance) ---
+        tip_pos = curve[-1][0]
+        tip_tan = curve[-1][2]
+        side = tip_tan.cross(up).normalized() if abs(tip_tan.z) < 0.95 else Vector((1, 0, 0))
+        forward = tip_tan.cross(side).normalized()
+        # Dominant deviates only slightly (8-20°) — keeps the main axis
+        dom_az = self.rng.uniform(0, 2 * math.pi)
+        dom_angle = math.radians(self.rng.uniform(8, 20))
+        dom_radial = math.cos(dom_az) * side + math.sin(dom_az) * forward
+        dom_dir = (math.cos(dom_angle) * tip_tan + math.sin(dom_angle) * dom_radial).normalized()
+        dom_len = length * self.rng.uniform(0.78, 0.90)     # dominant keeps most length
+        dom_r = tip_r * self.rng.uniform(0.85, 0.92)        # dominant keeps most radius
+        self._grow_twig(tip_pos, dom_dir, dom_len, dom_r, fork_depth + 1)
 
     def _sprinkle_spurs_on_branch(self, parent_curve, count):
         for _ in range(count):
@@ -1391,6 +1397,9 @@ class TreeBuilder:
         Everything else (interior + outer shell) is kept. This matches SpeedTree's
         ~70% volume-fill default for broadleaves like apple.
         """
+        # Round 32: crown bottom clamp — yere yakın yaprak yok (pomolog: crown ≥0.8m)
+        if pos.z < MIN_CROWN_Z:
+            return True
         dx = pos.x - self.canopy_center.x
         dy = pos.y - self.canopy_center.y
         horiz_dist = math.hypot(dx, dy)
