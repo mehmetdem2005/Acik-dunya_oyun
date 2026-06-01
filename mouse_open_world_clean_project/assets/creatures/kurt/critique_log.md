@@ -59,3 +59,15 @@ Prosedürel tam-gövde kurt tabanı. Kasıtlı kaba; eleştiri döngüsünün ha
 - generator: kuyruk başlangıcı daha agresif gömüldü (by-0.11, bz+0.05) — kusur 2.
 **Sonuç render notu:** round_04_side/front.png — kulaklar artık kafaya bağlı görünüyor, kuyruk dibi rumpla kaynaştı. Mesh sağlam. Kuyruk arka kısmı hâlâ sarkık/ayrık, snout hafif aşağı.
 **Sonraki tura öncelik:** Göğüs derinliği (chest bot_z aşağı, dirsek seviyesi); snout'u düzleştir/yatay; kuyruk droop azalt; front bacak paralelliği.
+
+## Round 05 — 2026-06-01
+**Önceki (round 04) en büyük 3 kusur:**
+1. Göğüs sığ — referansta dirsek seviyesine kadar derin sarkmalı.
+2. Snout hafif aşağı eğik.
+3. Kuyruk arka kısmı sarkık.
+**Uygulanan parametre değişiklikleri:**
+- chest/withers bot_z 0.290/0.355→0.235/0.330, back_mid 0.350→0.300 (derin göğüs) — kusur 1.
+- snout istasyonları top_z +0.015..0.02 (burun düzleşti) — kusur 2.
+- tail droop 0.10→0.07, bush 1.35→1.32 — kusur 3.
+**Sonuç render notu:** round_05_side.png — göğüs ön bacaklar arasında derinleşti, kuyruk daha yatay. Mesh sağlam.
+**Sonraki tura öncelik:** Croup/kalça eğimi (rump çok yüksek/yuvarlak); boyun-omuz geçişi yumuşatma; pati tanımı (sivri uçlar); snout uç inceltme.
