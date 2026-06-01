@@ -333,3 +333,13 @@ Prosedürel tam-gövde kurt tabanı. Kasıtlı kaba; eleştiri döngüsünün ha
 - nose top_z 0.672→0.648, bot_z 0.588→0.580; muzzle top_z 0.710→0.698 (burun ucu hafif aşağı, doğal snout profili) — kusur 1.
 **Sonuç render notu:** round_30_side.png — snout ucu hafif aşağı eğildi, doğal profil, mesh sağlam.
 **Sonraki tura öncelik:** Gövde önden yuvarlak (waist/back_mid front genişlik); withers tepe three_q tümsek; ön bacak side dik; kalça (hip) side yuvarlaklık fazla.
+
+## Round 31 — 2026-06-01
+**Önceki (round 30) en büyük 3 kusur:**
+1. Hip/kalça side çok yuvarlak şişkin, croup eğimi yok.
+2. Gövde önden yuvarlak.
+3. Ön bacak side dik değil.
+**Uygulanan parametre değişiklikleri:**
+- hip hw 0.240→0.228, top_z 0.795→0.782; rump hw 0.190→0.186, top_z 0.735→0.722 (croup eğimi, kalça şişkinliği azaldı) — kusur 1.
+**Sonuç render notu:** round_31_side.png — croup doğal eğimle iniyor, kalça daha az şişkin, mesh sağlam.
+**Sonraki tura öncelik:** Gövde önden yuvarlak; ön bacak side dik (knee_y/ankle_y hizala); withers tepe belirgin; kuyruk gürlük biraz artır.
