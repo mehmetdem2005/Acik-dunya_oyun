@@ -1100,3 +1100,13 @@ Prosedürel tam-gövde kurt tabanı. Kasıtlı kaba; eleştiri döngüsünün ha
 - neck_base (y0.010) bot_z 0.358→0.338 (göğüs ön-altı dolgu, prosternum hissi, boyun tabanı→göğüs dolgun geçiş) — kusur 1.
 **Sonuç render notu:** round_104_side/front/three_q.png — göğüs ön kütlesi doldu, prosternum hissi, ön bacaklar arası derin göğüs; mesh sağlam 29472 tri.
 **Sonraki tura öncelik:** Topline son; pati denge; kafa alt çene; arka çeyrek kalça-uyluk side.
+
+## Round 105 — 2026-06-01
+**Önceki (round 104) en büyük 3 kusur:**
+1. Stop kırılması yumuşak (snout→alın geçişi subsurf'te fazla yumuşamış, kurt stop kontrastı zayıf).
+2. Yüz mikro-detay — kalıcı.
+3. Genel rötuş.
+**Uygulanan parametre değişiklikleri:**
+- muzzle_end (y-0.250) top_z 0.792→0.782 (snout üstü hafif iner), stop (y-0.225) top_z 0.882→0.894 (alın hafif yükselir) → stop kontrastı arttı. NOT: y konumları sabit, snout uzunluğu/oranı DOKUNULMADI (osilasyon önleme) — kusur 1.
+**Sonuç render notu:** round_105_head_side/side/three_q.png — stop kırılması belirginleşti, gözler önünde alın yükselişi net, karakterli kurt profili; snout uzunluk sabit; mesh sağlam 29472 tri.
+**Sonraki tura öncelik:** Topline son; pati denge; arka çeyrek kalça-uyluk; boyun side kalınlık.
