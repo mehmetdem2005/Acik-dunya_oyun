@@ -171,8 +171,8 @@ def _face_details(ob, P):
             ey = 1.0 - abs((y + 0.270) / 0.045)        # y merkez -0.270
             ez = 1.0 - abs((z - 0.795) / 0.065)        # z merkez ~0.795
             ew = max(0.0, min(ey, 1.0)) * max(0.0, min(ez, 1.0))
-            v.co.x -= 0.030 * ew * (1.0 if x > 0 else -1.0)  # içe (çukur)
-            v.co.y += 0.010 * ew                              # hafif geri (oyuk)
+            v.co.x -= 0.044 * ew * (1.0 if x > 0 else -1.0)  # içe (çukur)
+            v.co.y += 0.016 * ew                              # hafif geri (oyuk)
         # --- BURUN DELİĞİ İPUCU: snout ucu üst-yan (y -0.50..-0.43) ---
         if -0.505 < y < -0.430 and 0.02 < ax < 0.085 and z > 0.64:
             nf = 1.0 - abs((y + 0.468) / 0.038)

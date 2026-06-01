@@ -1271,3 +1271,15 @@ Prosedürel tam-gövde kurt tabanı. Kasıtlı kaba; eleştiri döngüsünün ha
   KUYRUK: geriye-yatık gür gövde + sivrilen uç, dipte rump'a kaynaşmış.
 **KALAN KALICI KUSUR:** yüz mikro-detay (göz çukuru/burun deliği belirgin oyuk) — seg16+subsurf2 vertex yoğunluğu sınırı; _face_details ile ağız hattı hafif var, göz/burun oyuğu modellenemiyor (genlik artışı kafayı bozar).
 **Sonraki tura öncelik:** İnce güvenli rötuşlar (osilasyondan kaçın); renk/roughness; mikro denge.
+
+## Round 121 — 2026-06-01
+**Önceki (round 120) en büyük 3 kusur:**
+1. Yüz mikro-detay göz çukuru — kalıcı kusur, son bir DENEME (genlik artışı).
+2. Genel geometri — dengeli, osilasyon riski.
+3. Kürk yüzey.
+**Uygulanan değişiklikler (kod):**
+- _face_details göz çukuru genliği 0.030→0.044 (içe), 0.010→0.016 (geri) — göz oyuğunu belirginleştirme denemesi.
+**Doğrulama (round_121 5 açı + head closeup):**
+- head_3q: göz bölgesinde hafif oyuk/düzleşme arttı ama belirgin göz çukuru OLUŞMADI; kafa YUMRULAŞMADI; gövde tüm açılarda sağlam; mesh 29472 tri.
+**KARAR:** 0.044 genlik TUTULDU (hafif kazanç, kafa bozulmadı). GÖZ ÇUKURU KALICI KUSUR TEYİT — seg16+subsurf2'de daha fazla genlik kafa yan profilini bozar, vertex yoğunluğu mikro oyuğu tutmuyor. Güvenli iyileştirmeye dönülüyor.
+**Sonraki tura öncelik:** Sadece güvenli geometrik denge rötuşları; osilasyondan kesin kaçın.
