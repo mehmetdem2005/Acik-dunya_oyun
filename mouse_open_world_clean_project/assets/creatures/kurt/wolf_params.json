@@ -26,8 +26,8 @@
     "knee_y": 0.155, "knee_z": 0.400, "ankle_y": 0.140, "ankle_z": 0.175,
     "paw_y": 0.130, "r_top": 0.130, "r_knee": 0.078, "r_ankle": 0.052, "r_paw": 0.070},
   "rear_leg": {"x": 0.180, "y_top": 0.780, "z_top": 0.690,
-    "knee_y": 0.700, "knee_z": 0.450, "hock_y": 0.852, "hock_z": 0.215,
-    "paw_y": 0.808, "r_top": 0.158, "r_knee": 0.096, "r_hock": 0.058, "r_paw": 0.072},
+    "knee_y": 0.700, "knee_z": 0.450, "hock_y": 0.860, "hock_z": 0.215,
+    "paw_y": 0.840, "r_top": 0.158, "r_knee": 0.096, "r_hock": 0.058, "r_paw": 0.072},
   "tail": {"segments": 10, "length": 0.58, "droop": 0.52, "base_r": 0.135, "tip_r": 0.060,
     "bush": 1.55, "tip_lift": 0.020},
   "material": {"fur_color": [0.20, 0.17, 0.14, 1.0], "roughness": 0.78}
