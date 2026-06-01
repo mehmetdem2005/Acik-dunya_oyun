@@ -699,3 +699,14 @@ Prosedürel tam-gövde kurt tabanı. Kasıtlı kaba; eleştiri döngüsünün ha
 - muzzle_base y -0.280→-0.300 (geçiş yumuşak) — kusur 1.
 **Sonuç render notu:** round_66_side/three_q/top.png — snout belirgin uzadı+inceldi, kurt benzeri uzun burun profili; "ayı yüzü" gitti; mesh sağlam, kopma yok.
 **Sonraki tura öncelik:** Kulaklar (boyut/açı/aralık); kuyruk uç kıvrım azalt; gövde top genişliği (top'tan oval/geniş — inceltme); göğüs front simetri.
+
+## Round 67 — 2026-06-01
+**Önceki (round 66) en büyük 3 kusur:**
+1. Kulaklar çok küçük ve yuvarlak (kurt kulağı büyük+dik+sivri üçgen olmalı).
+2. Kuyruk ucu fazla yukarı kıvrık.
+3. Gövde top'tan geniş/oval.
+**Uygulanan parametre değişiklikleri:**
+- ear height 0.224→0.280 (büyük dik kulak), width 0.100→0.094 (sivri üçgen), base x 0.090→0.108 (kulaklar daha açık/dışta), lean_out 12→13.
+- (İç deneme: width 0.114 yuvarlak çıktı → 0.094'e düşürüldü, daha sivri.) — kusur 1.
+**Sonuç render notu:** round_67_front/three_q.png — kulaklar belirgin büyüdü, daha dik+sivri, kulaklar arası doğal açıklık; mesh sağlam.
+**Sonraki tura öncelik:** Kuyruk uç kıvrım azalt (düz/aşağı); gövde top genişliği inceltme (oval→ince atletik); göğüs front simetri.
