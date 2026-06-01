@@ -343,3 +343,13 @@ Prosedürel tam-gövde kurt tabanı. Kasıtlı kaba; eleştiri döngüsünün ha
 - hip hw 0.240→0.228, top_z 0.795→0.782; rump hw 0.190→0.186, top_z 0.735→0.722 (croup eğimi, kalça şişkinliği azaldı) — kusur 1.
 **Sonuç render notu:** round_31_side.png — croup doğal eğimle iniyor, kalça daha az şişkin, mesh sağlam.
 **Sonraki tura öncelik:** Gövde önden yuvarlak; ön bacak side dik (knee_y/ankle_y hizala); withers tepe belirgin; kuyruk gürlük biraz artır.
+
+## Round 32 — 2026-06-01
+**Önceki (round 31) en büyük 3 kusur:**
+1. Kafa/boyun side'da çok alçak ve yatay uzanıyor (karınca yiyen/sırtlan profili) — kurt başını withers seviyesinde taşır.
+2. Snout side'da hâlâ uzun-ince.
+3. Bacaklar gövdeye gömük, hayvan çömelmiş.
+**Uygulanan parametre değişiklikleri:**
+- body_stations[0..6]: tüm baş+boyun istasyonları top_z +0.04~0.05 yukarı (occiput 0.884→0.930, neck_front 0.852→0.905, neck_base 0.872→0.892); bot_z'ler de +0.02~0.03; nose y -0.520→-0.490 (snout kısaldı) — kusur 1,2.
+**Sonuç render notu:** round_32_side/three_q.png — kafa/boyun belirgin yukarı kalktı, yatay uzanma gitti, withers tepesi güçlendi, snout kısaldı; mesh sağlam.
+**Sonraki tura öncelik:** Bacakları uzat+dikleştir (hayvan çömelmiş duruyor); gövde front yuvarlak fıçı; snout hâlâ biraz ince; boyun side hâlâ ince/uzun.
