@@ -1212,3 +1212,13 @@ Prosedürel tam-gövde kurt tabanı. Kasıtlı kaba; eleştiri döngüsünün ha
 **Doğrulama (round_115 5 açı + head closeup):**
 - Front/three_q/head_3q: kulak iç concha oyuğu belirgin, dış sırt dolgun, gerçek kurt kulağı; kulak bozulmadı; gövde sağlam; mesh 29472 tri.
 **Sonraki tura öncelik:** Genel rötuş; ön bacak side; kafa son; göğüs derinlik.
+
+## Round 116 — 2026-06-01
+**Önceki (round 115) en büyük 3 kusur:**
+1. Ön bacak pastern (bilek) side'da düz (digitigrade kırılma zayıf, referans kurt ön ayak bileği hafif öne eğik).
+2. Genel rötuş.
+3. Yüz mikro-detay göz/burun — kalıcı.
+**Uygulanan parametre değişiklikleri:**
+- front_leg ankle_y 0.148→0.144 (bilek öne), ankle_z 0.165→0.172 (bilek yükseldi) → pastern digitigrade kırılma belirgin (paw_y sabit, öne uzanma yok) — kusur 1.
+**Sonuç render notu:** round_116_side/three_q.png — ön bacak pastern öne eğik, belirgin digitigrade duruş, sleek atletik ön bacak; front paralel duruş korundu; mesh sağlam 29472 tri.
+**Sonraki tura öncelik:** Genel rötuş; arka bacak hock side; kafa son; göğüs.
