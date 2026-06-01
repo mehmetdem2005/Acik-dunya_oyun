@@ -117,7 +117,7 @@ def build_body(P, name="KurtGovde"):
             bm.faces.new((a[i], a[j], b[j], b[i]))
     # ön kapak (burun) — uç merkezi hafif aşağı, burun topuzu (nose) hissi
     f = rings[0]; s0 = P["body_stations"][0]
-    cf = bm.verts.new((0, s0[0] - 0.02, 0.5 * (s0[2] + s0[3]) - 0.022))
+    cf = bm.verts.new((0, s0[0] - 0.025, 0.5 * (s0[2] + s0[3]) - 0.034))
     for i in range(seg):
         bm.faces.new((f[(i + 1) % seg], f[i], cf))
     # arka kapak (kuyruk dibi)

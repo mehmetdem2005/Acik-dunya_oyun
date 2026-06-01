@@ -1222,3 +1222,14 @@ Prosedürel tam-gövde kurt tabanı. Kasıtlı kaba; eleştiri döngüsünün ha
 - front_leg ankle_y 0.148→0.144 (bilek öne), ankle_z 0.165→0.172 (bilek yükseldi) → pastern digitigrade kırılma belirgin (paw_y sabit, öne uzanma yok) — kusur 1.
 **Sonuç render notu:** round_116_side/three_q.png — ön bacak pastern öne eğik, belirgin digitigrade duruş, sleek atletik ön bacak; front paralel duruş korundu; mesh sağlam 29472 tri.
 **Sonraki tura öncelik:** Genel rötuş; arka bacak hock side; kafa son; göğüs.
+
+## Round 117 — 2026-06-01
+**Önceki (round 116) en büyük 3 kusur:**
+1. Burun ucu (rhinarium) head_side'da topuz belirgin değil (referans kurt siyah burun topuzu çıkıntı).
+2. Genel rötuş.
+3. Yüz mikro-detay göz/burun deliği — kalıcı.
+**Uygulanan değişiklikler (kod):**
+- nose cap vertex y -0.02→-0.025 (hafif öne), z offset -0.022→-0.034 (daha aşağı topuz) → rhinarium belirgin. Snout uzunluğu/profil değişmez (sadece uç merkez topuz).
+**Doğrulama (round_117 + head closeup):**
+- head_side/3q: burun ucu dolgun topuz, rhinarium hissi arttı; snout uzunluk/profil sabit; mesh sağlam 29472 tri.
+**Sonraki tura öncelik:** Genel rötuş; arka çeyrek; göğüs; bel.
