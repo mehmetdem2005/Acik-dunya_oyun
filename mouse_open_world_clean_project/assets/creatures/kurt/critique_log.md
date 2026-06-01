@@ -474,3 +474,13 @@ Prosedürel tam-gövde kurt tabanı. Kasıtlı kaba; eleştiri döngüsünün ha
 **Sonuç render notu:** round_44_front/three_q.png — kulaklar büyüdü, dik üçgen, öne bakar; mesh sağlam.
 **Kalıcı kusur notu:** Front-on görünümde kafa gövde arkasında perspektifle küçük kalıyor (kamera açısı doğal sonucu); takılmadan diğer eksenlerde ilerlenecek.
 **Sonraki tura öncelik:** Ön bacak side öne (knee hizala); göğüs side derinlik; gövde top omuz genişlik; snout front aşağı bakıyor (burun ucu hafif kaldır).
+
+## Round 45 — 2026-06-01
+**Önceki (round 44) en büyük 3 kusur:**
+1. Göğüs side derinliği yetersiz (kurt göğsü dirsek seviyesine iner).
+2. Ön bacak side hafif öne.
+3. Snout front aşağı bakıyor.
+**Uygulanan parametre değişiklikleri:**
+- chest bot_z 0.255→0.232 (göğüs derinleşti, dirsek hizasına yakın), hw 0.232→0.236 (dolgun göğüs); withers bot_z 0.350→0.335, back_mid 0.330→0.318 — kusur 1.
+**Sonuç render notu:** round_45_three_q/side.png — göğüs derinleşti, kürek/göğüs hacmi arttı, bacak arası temiz (sarkma yok); mesh sağlam.
+**Sonraki tura öncelik:** Ön bacak side hafif öne (knee_y); snout front aşağı (burun ucu kaldır); gövde top omuz genişlik; kalça/but kası side dolgunluk.
