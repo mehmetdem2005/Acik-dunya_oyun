@@ -238,7 +238,7 @@ def build_tail(P, name="KurtKuyruk"):
         t = i / n
         y = by + (T["length"] + 0.11) * t
         # droop ile aşağı sarkar, son ~%30'da uç hafif yukarı kıvrılır (kurt kuyruğu)
-        z = bz - T["droop"] * (t ** 1.6) + T.get("tip_lift", 0.0) * max(0.0, t - 0.7)
+        z = bz - T["droop"] * (t ** 1.25) + T.get("tip_lift", 0.0) * max(0.0, t - 0.75)
         r = (T["base_r"] * (1 - t) + T["tip_r"] * t) * (1 + (T["bush"] - 1) * math.sin(math.pi * min(t * 1.2, 1)))
         pts.append(((0.0, y, z), r))
     return tube_along_points(pts, name)
