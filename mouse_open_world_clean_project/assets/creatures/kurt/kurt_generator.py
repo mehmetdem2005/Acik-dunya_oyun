@@ -349,7 +349,7 @@ def build_ear(P, side, name):
     cz = bz + h * 0.46                        # kulak ortası yüksekliği
     cx = bx + math.sin(lo) * h * 0.5 * side   # eğimle hizalı
     # öne (-Y) doğru DEĞİL, içe (arkaya, +Y) çek → oyuk
-    cup = bm.verts.new((cx, cy + w * 0.55, cz))
+    cup = bm.verts.new((cx, cy + w * 0.75, cz))
     # ön yüz (concha tabanı 3 yüz): çukur etrafında
     bm.faces.new((b0, b1, cup))
     bm.faces.new((b1, tip, cup))

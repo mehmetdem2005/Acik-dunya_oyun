@@ -1201,3 +1201,14 @@ Prosedürel tam-gövde kurt tabanı. Kasıtlı kaba; eleştiri döngüsünün ha
 - waist (y0.485) hw 0.136→0.142 (yan karın/flank doğal dolgu; side tuck bot_z 0.528 korundu) — kusur 1.
 **Sonuç render notu:** round_114_three_q/side/top.png — yan karın doğal kaslı dolu, çöküklük gitti, side tuck korundu, top'ta bel atletik ince; göğüs→bel→kalça akıcı; mesh sağlam 29472 tri.
 **Sonraki tura öncelik:** Genel rötuş; kuyruk dibi; ön bacak side; kafa son.
+
+## Round 115 — 2026-06-01
+**Önceki (round 114) en büyük 3 kusur:**
+1. Kulak iç oyuk (concha) hafif sığ (kepçe derinliği zayıf, front'tan oyuk belirsiz).
+2. Genel rötuş.
+3. Yüz mikro-detay göz/burun — kalıcı.
+**Uygulanan değişiklikler (kod):**
+- build_ear concha cup içe çekim w*0.55→w*0.75 (kulak iç kepçesi derinleşti).
+**Doğrulama (round_115 5 açı + head closeup):**
+- Front/three_q/head_3q: kulak iç concha oyuğu belirgin, dış sırt dolgun, gerçek kurt kulağı; kulak bozulmadı; gövde sağlam; mesh 29472 tri.
+**Sonraki tura öncelik:** Genel rötuş; ön bacak side; kafa son; göğüs derinlik.
