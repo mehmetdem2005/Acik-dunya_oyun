@@ -126,8 +126,9 @@ func _setup_environment() -> void:
 	# Uzak mesafe sisi (ada hissi)
 	env.fog_enabled = true
 	env.fog_light_color = Color(0.72, 0.80, 0.88)
-	env.fog_density = 0.0015
-	env.fog_aerial_perspective = 0.4
+	# Sis yoğunluğunu harita boyutuna göre ölçekle (büyük haritada uzak görüş açık kalsın).
+	env.fog_density = clampf(0.6 / world_size, 0.0003, 0.0015)
+	env.fog_aerial_perspective = 0.25
 	var we := WorldEnvironment.new()
 	we.name = "WorldEnvironment"
 	we.environment = env
