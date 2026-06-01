@@ -184,6 +184,15 @@ def _paw_points(x, paw_y, r_paw, paw_len):
     ]
 
 
+def _flatten_paw(ob, z_thresh=0.085, floor=0.018, squash=0.45):
+    """Pati bölgesini (z < z_thresh) yere yassılaştır: küre yerine düz taban verir."""
+    me = ob.data
+    for v in me.vertices:
+        if v.co.z < z_thresh:
+            v.co.z = floor + (v.co.z - floor) * squash
+    return ob
+
+
 def build_front_leg(P, side, name):
     L = P["front_leg"]; x = L["x"] * side
     pts = [
@@ -192,7 +201,7 @@ def build_front_leg(P, side, name):
         ((x, L["ankle_y"], L["ankle_z"]), L["r_ankle"]),
     ]
     pts += _paw_points(x, L["paw_y"], L["r_paw"], L.get("paw_len", 0.10))
-    return tube_along_points(pts, name)
+    return _flatten_paw(tube_along_points(pts, name))
 
 
 def build_rear_leg(P, side, name):
@@ -203,7 +212,7 @@ def build_rear_leg(P, side, name):
         ((x, L["hock_y"], L["hock_z"]), L["r_hock"]),
     ]
     pts += _paw_points(x, L["paw_y"], L["r_paw"], L.get("paw_len", 0.11))
-    return tube_along_points(pts, name)
+    return _flatten_paw(tube_along_points(pts, name))
 
 
 def build_tail(P, name="KurtKuyruk"):
