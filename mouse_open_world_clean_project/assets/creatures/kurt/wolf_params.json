@@ -22,9 +22,9 @@
     "height": 0.190, "width": 0.115,
     "lean_out_deg": 12, "lean_back_deg": 10
   },
-  "front_leg": {"x": 0.150, "y_top": 0.130, "z_top": 0.620,
-    "knee_y": 0.150, "knee_z": 0.360, "ankle_y": 0.140, "ankle_z": 0.160,
-    "paw_y": 0.150, "r_top": 0.128, "r_knee": 0.085, "r_ankle": 0.062, "r_paw": 0.072},
+  "front_leg": {"x": 0.150, "y_top": 0.110, "z_top": 0.625,
+    "knee_y": 0.175, "knee_z": 0.355, "ankle_y": 0.150, "ankle_z": 0.160,
+    "paw_y": 0.135, "r_top": 0.132, "r_knee": 0.086, "r_ankle": 0.062, "r_paw": 0.072},
   "rear_leg": {"x": 0.168, "y_top": 0.815, "z_top": 0.625,
     "knee_y": 0.715, "knee_z": 0.400, "hock_y": 0.870, "hock_z": 0.190,
     "paw_y": 0.800, "r_top": 0.148, "r_knee": 0.096, "r_hock": 0.062, "r_paw": 0.074},
