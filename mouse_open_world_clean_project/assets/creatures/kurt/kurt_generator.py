@@ -136,6 +136,7 @@ def tube_along_points(points_radii, name, seg=12):
     """Polyline (xyz, r) listesinden konik tüp loft'lar (bacak/kuyruk)."""
     bm = bmesh.new()
     rings = []
+    prev_u = None  # parallel transport: bir önceki halkanın u eksenini taşı (twist'i önler)
     for k, (c, r) in enumerate(points_radii):
         c = Vector(c)
         # eksen yönü (komşu noktalardan)
@@ -146,12 +147,21 @@ def tube_along_points(points_radii, name, seg=12):
         else:
             axis = (Vector(points_radii[k + 1][0]) - Vector(points_radii[k - 1][0]))
         axis.normalize()
-        # eksene dik iki vektör
-        up = Vector((0, 0, 1))
-        if abs(axis.dot(up)) > 0.95:
-            up = Vector((0, 1, 0))
-        u = axis.cross(up).normalized()
+        # eksene dik iki vektör — ilk halkada sabit referans, sonra parallel transport
+        if prev_u is None:
+            up = Vector((0, 0, 1))
+            if abs(axis.dot(up)) > 0.95:
+                up = Vector((0, 1, 0))
+            u = axis.cross(up).normalized()
+        else:
+            # önceki u'yu yeni eksene dik düzleme yansıt (minimum dönme = twist yok)
+            u = (prev_u - axis * prev_u.dot(axis))
+            if u.length < 1e-6:
+                up = Vector((0, 1, 0)) if abs(axis.dot(Vector((0, 0, 1)))) > 0.95 else Vector((0, 0, 1))
+                u = axis.cross(up)
+            u.normalize()
         v = axis.cross(u).normalized()
+        prev_u = u
         ring = []
         for i in range(seg):
             th = 2 * math.pi * i / seg

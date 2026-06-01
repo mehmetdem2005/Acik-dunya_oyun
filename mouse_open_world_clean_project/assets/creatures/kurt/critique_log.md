@@ -242,3 +242,14 @@ Prosedürel tam-gövde kurt tabanı. Kasıtlı kaba; eleştiri döngüsünün ha
 - neck_base hw 0.205→0.228, top_z 0.862→0.872, bot_z 0.405→0.395 (boyun-göğüs geçişi) — kusur 1.
 **Sonuç render notu:** round_21_side/three_q.png — boyun belirgin dolgunlaştı, mesh sağlam. Kuyruk burgusu duruyor.
 **Sonraki tura öncelik:** Kuyruk twist düzelt (tube_along_points up-vektör tutarlılığı / droop azalt); pati önden parmak ayrımı; kafa front genişlik.
+
+## Round 22 — 2026-06-01
+**Önceki (round 21) en büyük 3 kusur:**
+1. Kuyruk three_q'da burgu/spiral (loft twist).
+2. Patiler hafif twistli/sivri (aynı loft sorunu).
+3. Kuyruk neredeyse yatay (droop düşük).
+**Uygulanan parametre değişiklikleri:**
+- generator tube_along_points: parallel-transport frame eklendi (prev_u'yu yeni eksene yansıt) → loft twist KÖKTEN gitti — kusur 1,2.
+- tail droop 0.045→0.18, base_r 0.118→0.120, tip_r 0.030→0.045, bush 1.42→1.25, tip_lift 0.085→0.045, segments 8→10 (düzgün konik, doğal sarkma) — kusur 1,3.
+**Sonuç render notu:** round_22_three_q/side.png — kuyruk burgusu TAMAMEN gitti, düzgün konik kuyruk; bacaklar da temizlendi. Mesh sağlam, tüm parçalar yerinde.
+**Sonraki tura öncelik:** Pati önden parmak ayrımı/sivrilik; gövde front armut (chest bot_z genişlet); kafa front genişlik; kuyruk gürlük (bush biraz artırılabilir).
