@@ -18,9 +18,9 @@
     [ 0.905, 0.092, 0.680, 0.520]
   ],
   "ear": {
-    "base": [0.092, -0.185, 0.818],
-    "height": 0.196, "width": 0.098,
-    "lean_out_deg": 16, "lean_back_deg": 11
+    "base": [0.090, -0.180, 0.860],
+    "height": 0.224, "width": 0.100,
+    "lean_out_deg": 12, "lean_back_deg": 9
   },
   "front_leg": {"x": 0.165, "y_top": 0.120, "z_top": 0.690,
     "knee_y": 0.155, "knee_z": 0.400, "ankle_y": 0.140, "ankle_z": 0.175,
