@@ -1283,3 +1283,13 @@ Prosedürel tam-gövde kurt tabanı. Kasıtlı kaba; eleştiri döngüsünün ha
 - head_3q: göz bölgesinde hafif oyuk/düzleşme arttı ama belirgin göz çukuru OLUŞMADI; kafa YUMRULAŞMADI; gövde tüm açılarda sağlam; mesh 29472 tri.
 **KARAR:** 0.044 genlik TUTULDU (hafif kazanç, kafa bozulmadı). GÖZ ÇUKURU KALICI KUSUR TEYİT — seg16+subsurf2'de daha fazla genlik kafa yan profilini bozar, vertex yoğunluğu mikro oyuğu tutmuyor. Güvenli iyileştirmeye dönülüyor.
 **Sonraki tura öncelik:** Sadece güvenli geometrik denge rötuşları; osilasyondan kesin kaçın.
+
+## Round 122 — 2026-06-01
+**Önceki (round 121) en büyük 3 kusur:**
+1. R118'de withers 0.962'ye yükseldi → withers-chest topline farkı arttı (0.090), geçiş hafif keskinleşti.
+2. Genel — dengeli.
+3. Yüz mikro-detay göz/burun — kalıcı.
+**Uygulanan parametre değişiklikleri:**
+- chest (y0.205) top_z 0.872→0.884 (withers-sırt geçişi kademeli, round 85 mantığı withers yükseldiği için) — kusur 1.
+**Sonuç render notu:** round_122_side/three_q.png — withers tepesi belirgin korundu, sırta iniş yumuşadı, topline pürüzsüz akıcı; mesh sağlam 29472 tri.
+**Sonraki tura öncelik:** Güvenli denge rötuşları; osilasyondan kaçın.
