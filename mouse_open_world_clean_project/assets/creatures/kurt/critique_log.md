@@ -208,3 +208,15 @@ Prosedürel tam-gövde kurt tabanı. Kasıtlı kaba; eleştiri döngüsünün ha
 - body_stations[0..3] y -0.520→-0.560 (snout uzadı), hw'ler hafif inceltildi, muzzle_base/stop top_z farkı 0.748→0.822 (stop keskinleşti) — kusur 1,2.
 **Sonuç render notu:** round_18_side.png — snout uzun, stop girinti belirgin. Mesh sağlam.
 **Sonraki tura öncelik:** Ön bacak pastern incelik (ankle r daralt); kuyruk gürlük (bush) artır; gövde alt karın hattı (waist bot_z tuck); kafa tepesi-kulak geçişi.
+
+## Round 19 — 2026-06-01
+**Önceki (round 18) en büyük 3 kusur:**
+1. Karın tuck zayıf (bel altı sarkık).
+2. Kuyruk ince (bush düşük).
+3. Ön bacak pastern kalın.
+**Uygulanan parametre değişiklikleri:**
+- waist bot_z 0.430→0.458 (karın tuck) — kusur 1.
+- tail bush 1.30→1.42 (kuyruk gür) — kusur 2.
+- front_leg r_ankle 0.062→0.056, r_knee 0.086→0.082 (pastern ince) — kusur 3.
+**Sonuç render notu:** round_19_side.png — karın tuck belirgin, kuyruk gür, pastern ince. Mesh sağlam.
+**Sonraki tura öncelik:** Kafa-kulak geçişi yumuşatma; arka bacak alt (metatarsus) incelik; göğüs en derin nokta öne kaydırma; genel siluet referansla karşılaştırma.
