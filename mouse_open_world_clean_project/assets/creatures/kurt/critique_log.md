@@ -156,3 +156,13 @@ Prosedürel tam-gövde kurt tabanı. Kasıtlı kaba; eleştiri döngüsünün ha
 - ear base z 0.805→0.818 (kafatası tepesine uyum).
 **Sonuç render notu:** round_13_side/front.png — boyun-omuz dolgun, kafatası kubbe. Mesh sağlam.
 **Sonraki tura öncelik:** Kuyruk-arka bacak çakışması (kuyruk droop/length ayar); gövde front'ta hafif armut (waist X daralt); göğüs ön (presternum) belirginliği; snout uç burun topuzu.
+
+## Round 14 — 2026-06-01
+**Önceki (round 13) en büyük 3 kusur:**
+1. Kuyruk arka bacakla çakışıyor (aşağı sallanıyor).
+2. Gövde front'ta armut.
+3. Snout uç burun topuzu yok.
+**Uygulanan parametre değişiklikleri:**
+- tail: droop 0.07→0.045, length 0.50→0.56, segments 7→8, tip_lift 0.10→0.085 (daha yatay, arkaya uzanan kuyruk, bacaktan ayrıldı) — kusur 1.
+**Sonuç render notu:** round_14_side.png — kuyruk yatay/arkaya, bacakla çakışma azaldı. Mesh sağlam.
+**Sonraki tura öncelik:** Snout uç burun topuzu (nose); göğüs ön çıkıntı (presternum); gövde front armut (waist hw); kafa-snout oran (snout biraz kısa olabilir).
