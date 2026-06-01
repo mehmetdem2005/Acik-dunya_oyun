@@ -1007,3 +1007,14 @@ Prosedürel tam-gövde kurt tabanı. Kasıtlı kaba; eleştiri döngüsünün ha
 - front_leg ayak geri/dik: ankle_y 0.140→0.148, paw_y 0.114→0.130, knee_y 0.122→0.124 (C korundu) — kusur 1.
 **Sonuç render notu:** round_96_side/three_q.png — ön bacak daha dik, ayak gövde altında, öne uzanma azaldı, dirsek C korundu; mesh sağlam 29376 tri.
 **Sonraki tura öncelik:** Boyun side kalınlık/boğaz; kafa profili son; göğüs derinlik side; ön bacak front "A" (omuz hacmi).
+
+## Round 97 — 2026-06-01
+**Önceki (round 96) en büyük 3 kusur:**
+1. Burun ucu (nose) önden/three_q sivri-konik (kurt burnu daha kütleli topuz).
+2. Snout uzunluk/profil — DOĞRU teyit edildi (orta-uzun, düz snout + belirgin stop), SABİT bırakılıyor.
+3. Yüz mikro-detay — kalıcı.
+**Uygulanan parametre değişiklikleri:**
+- nose_tip (y-0.510) hw 0.082→0.088 (burun ucu kütleli, sivrilik azaldı; snout uzunluğu/profil DOKUNULMADI) — kusur 1.
+**Sonuç render notu:** round_97_three_q/side/front.png — burun ucu daha dolu kurt burnu, sivri konik azaldı; snout uzunluk/stop profili sabit korundu (osilasyon yok); mesh sağlam 29376 tri.
+**SNOUT NOTU:** snout oranı bu turdan itibaren SABİT referans-doğru kabul edildi, sonraki turlarda dokunulmayacak (osilasyon önleme).
+**Sonraki tura öncelik:** Boyun side/boğaz; göğüs derinlik side; topline; arka çeyrek kas side.
