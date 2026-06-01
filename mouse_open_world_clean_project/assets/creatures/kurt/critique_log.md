@@ -793,3 +793,14 @@ Prosedürel tam-gövde kurt tabanı. Kasıtlı kaba; eleştiri döngüsünün ha
 - hip hw 0.220→0.206, rump bölgesi (y0.810) hw 0.198→0.190 (kalça yumru azaldı, akışkan atletik geçiş; side kalça kası korundu) — kusur 1.
 **Sonuç render notu:** round_75_top/rear_q.png — kalça yumru azaldı, gövde arkası akışkan/atletik, side kaslı kalça korundu; mesh sağlam.
 **Sonraki tura öncelik:** Genel uzunluk/yükseklik oranı; göğüs front dolgunluk; withers tepe belirginlik; snout-stop geçiş.
+
+## Round 76 — 2026-06-01
+**Önceki (round 75) en büyük 3 kusur:**
+1. Snout-alın geçişi (stop) belirsiz (snout düz alına akıyor, kurt "stop" kırılması yok).
+2. Göğüs front dolgunluk.
+3. Genel uzunluk/yükseklik.
+**Uygulanan parametre değişiklikleri:**
+- muzzle_base top_z 0.780→0.766 (snout düz devam).
+- YENİ ara istasyon y=-0.250 (snout sonu top_z 0.792), ardından stop top_z 0.882 → snout-alın arası belirgin stop kırılması — kusur 1.
+**Sonuç render notu:** round_76_side/three_q.png — stop belirgin, snout düz + gözler önünde alın yükselişi, karakterli kurt profili; mesh sağlam (29376 tri).
+**Sonraki tura öncelik:** Genel uzunluk/yükseklik oranı; göğüs front dolgunluk; withers tepe; alt çene/jaw hattı.
