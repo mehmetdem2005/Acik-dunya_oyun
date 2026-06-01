@@ -575,3 +575,13 @@ Prosedürel tam-gövde kurt tabanı. Kasıtlı kaba; eleştiri döngüsünün ha
 - muzzle top_z 0.750→0.744, muzzle_base 0.800→0.784 (snout sırtı düzleşti); stop top_z 0.858→0.868 (alın yükseldi) — snout-alın arası stop girintisi belirginleşti — kusur 1.
 **Sonuç render notu:** round_54_side/three_q.png — stop belirgin, düz snout + yükselen alın, kurt profili; mesh sağlam.
 **Sonraki tura öncelik:** Baş side alt çene/gıdı hattı (alt çene belirgin, gıdı dolgun); gövde top omuz dar; göz/kaş çıkıntısı; arka but side dolgunluk.
+
+## Round 55 — 2026-06-01
+**Önceki (round 54) en büyük 3 kusur:**
+1. Kafa side alt çene/gıdı hattı zayıf (çene altı yüzeysel).
+2. Gövde top omuz dar.
+3. Göz/kaş çıkıntısı.
+**Uygulanan parametre değişiklikleri:**
+- muzzle bot_z 0.592→0.580, muzzle_base 0.592→0.572, stop bot_z 0.625→0.598 (çene alt hattı snout boyunca düz+derin, gıdı dolgun) — kusur 1.
+**Sonuç render notu:** round_55_three_q/side.png — alt çene belirgin, çene altı dolgun, güçlü kafa profili; mesh sağlam.
+**Sonraki tura öncelik:** Gövde top omuz hafif dar; göz/kaş çıkıntısı (kafatası yan tümsek); arka but side dolgunluk; kuyruk dibi rumpla kaynaşma (kopuk muz hissi).
