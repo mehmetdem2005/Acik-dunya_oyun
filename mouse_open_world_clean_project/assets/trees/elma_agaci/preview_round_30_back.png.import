@@ -2,19 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://d03wwqm6txe00"
-path="res://.godot/imported/housemouse_npc_tripo_node_8e40822c-da26-4d2a-8902-6f12faa992df_BaseColor.jpg-54a54ff1739c20ca45d9e62bbfacfd97.ctex"
+uid="uid://cn2y1mpej8cmy"
+path="res://.godot/imported/preview_round_30_back.png-a192c435905bc5910ced0be7eda062c1.ctex"
 metadata={
 "vram_texture": false
-}
-generator_parameters={
-"md5": "e03d5f1e23d442cd0b4e4f63f2a867ab"
 }
 
 [deps]
 
-source_file="res://assets/mouse/housemouse_npc_tripo_node_8e40822c-da26-4d2a-8902-6f12faa992df_BaseColor.jpg"
-dest_files=["res://.godot/imported/housemouse_npc_tripo_node_8e40822c-da26-4d2a-8902-6f12faa992df_BaseColor.jpg-54a54ff1739c20ca45d9e62bbfacfd97.ctex"]
+source_file="res://assets/trees/elma_agaci/preview_round_30_back.png"
+dest_files=["res://.godot/imported/preview_round_30_back.png-a192c435905bc5910ced0be7eda062c1.ctex"]
 
 [params]
 
@@ -26,7 +23,7 @@ compress/rdo_quality_loss=0.0
 compress/hdr_compression=1
 compress/normal_map=0
 compress/channel_pack=0
-mipmaps/generate=true
+mipmaps/generate=false
 mipmaps/limit=-1
 roughness/mode=0
 roughness/src_normal=""

@@ -2,8 +2,8 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://d03wwqm6txe00"
-path="res://.godot/imported/housemouse_npc_tripo_node_8e40822c-da26-4d2a-8902-6f12faa992df_BaseColor.jpg-54a54ff1739c20ca45d9e62bbfacfd97.ctex"
+uid="uid://bw6brf35e8tg3"
+path="res://.godot/imported/housemouse_tripo_node_8e40822c-da26-4d2a-8902-6f12faa992df_BaseColor.jpg-ad7af28c78de6c2ed2671cee259a9772.ctex"
 metadata={
 "vram_texture": false
 }
@@ -13,8 +13,8 @@ generator_parameters={
 
 [deps]
 
-source_file="res://assets/mouse/housemouse_npc_tripo_node_8e40822c-da26-4d2a-8902-6f12faa992df_BaseColor.jpg"
-dest_files=["res://.godot/imported/housemouse_npc_tripo_node_8e40822c-da26-4d2a-8902-6f12faa992df_BaseColor.jpg-54a54ff1739c20ca45d9e62bbfacfd97.ctex"]
+source_file="res://assets/mouse/housemouse_tripo_node_8e40822c-da26-4d2a-8902-6f12faa992df_BaseColor.jpg"
+dest_files=["res://.godot/imported/housemouse_tripo_node_8e40822c-da26-4d2a-8902-6f12faa992df_BaseColor.jpg-ad7af28c78de6c2ed2671cee259a9772.ctex"]
 
 [params]
 
