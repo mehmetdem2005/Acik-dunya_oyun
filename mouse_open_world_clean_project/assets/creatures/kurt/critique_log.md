@@ -187,3 +187,14 @@ Prosedürel tam-gövde kurt tabanı. Kasıtlı kaba; eleştiri döngüsünün ha
 - waist hw 0.186→0.174 (bel daraldı) — kusur 2.
 **Sonuç render notu:** round_16_side.png — arka uyluk dolgun, bel daraldı. Mesh sağlam.
 **Sonraki tura öncelik:** Topline withers tepe belirginliği; göğüs ön presternum; snout uzunluğu/incelik; arka bacak hock-pati açısı ince ayar.
+
+## Round 17 — 2026-06-01
+**Önceki (round 16) en büyük 3 kusur:**
+1. Withers tepe düz (omuz tümseği zayıf).
+2. Göğüs ön presternum çıkıntısı yok.
+3. Snout oran.
+**Uygulanan parametre değişiklikleri:**
+- withers top_z 0.935→0.952 (omuz tümseği belirgin) — kusur 1.
+- neck_base bot_z 0.435→0.405 (göğüs önü dolgun, presternum) — kusur 2.
+**Sonuç render notu:** round_17_side.png — withers tümseği belirgin, göğüs önü dolu. Mesh sağlam.
+**Sonraki tura öncelik:** Snout uzunluğu (referansta uzun); kafa-snout geçişi (stop) keskinliği; ön bacak alt incelik (pastern); kuyruk gürlüğü (bush) referans gibi.
