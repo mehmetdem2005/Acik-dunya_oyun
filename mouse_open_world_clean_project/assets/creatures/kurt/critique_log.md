@@ -936,3 +936,14 @@ Prosedürel tam-gövde kurt tabanı. Kasıtlı kaba; eleştiri döngüsünün ha
 - muzzle_end (y-0.250) hw 0.152→0.156, stop/zygomatic (y-0.225) hw 0.158→0.166 (snout→yanak kademeli dolgun geçiş) — kusur 1.
 **Sonuç render notu:** round_89_three_q/front.png — snout tabanından yanağa akış yumuşadı, gözaltı/zygomatic bölge dolgun, keskin hat azaldı; kafa daha doğal kurt yüzü; mesh sağlam 29376 tri.
 **Sonraki tura öncelik:** Genel oran (gövde uzunluk/yükseklik) son kontrol; pati parmak son; göğüs front alt hattı; sırt-bel topline.
+
+## Round 90 — 2026-06-01
+**Önceki (round 89) en büyük 3 kusur:**
+1. Genel oran: gövde uzun-alçak (dachshund eğilimi), bacak/gövde oranı referansa göre kısa.
+2. Snout-yanak (iyileşti, sabit bırakılacak).
+3. Yüz mikro-detay — kalıcı.
+**Uygulanan parametre değişiklikleri:**
+- Arka gövde istasyonları öne çekildi (~%5 kısaltma): waist y0.500→0.485, hip 0.650→0.625, 0.810→0.775, tail_base 0.905→0.865.
+- rear_leg orantılı öne: y_top 0.770→0.745, knee_y 0.662→0.640, hock_y 0.884→0.852, paw_y 0.820→0.792 — kusur 1.
+**Sonuç render notu:** round_90_side/top/three_q.png — gövde kompaktlaştı, uzun-alçak hissi azaldı, daha atletik kurt oranı; arka çeyrek three_q/rear_q'da hafif toplandı (kabul edilebilir, side duruş dengeli); mesh sağlam 29376 tri.
+**Sonraki tura öncelik:** Arka bacak duruş açısı (gerekirse hafif geri); pati parmak son; göğüs front alt hattı; topline son kontrol.
