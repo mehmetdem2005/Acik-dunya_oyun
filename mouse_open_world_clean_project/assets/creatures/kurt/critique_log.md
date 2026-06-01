@@ -353,3 +353,13 @@ Prosedürel tam-gövde kurt tabanı. Kasıtlı kaba; eleştiri döngüsünün ha
 - body_stations[0..6]: tüm baş+boyun istasyonları top_z +0.04~0.05 yukarı (occiput 0.884→0.930, neck_front 0.852→0.905, neck_base 0.872→0.892); bot_z'ler de +0.02~0.03; nose y -0.520→-0.490 (snout kısaldı) — kusur 1,2.
 **Sonuç render notu:** round_32_side/three_q.png — kafa/boyun belirgin yukarı kalktı, yatay uzanma gitti, withers tepesi güçlendi, snout kısaldı; mesh sağlam.
 **Sonraki tura öncelik:** Bacakları uzat+dikleştir (hayvan çömelmiş duruyor); gövde front yuvarlak fıçı; snout hâlâ biraz ince; boyun side hâlâ ince/uzun.
+
+## Round 33 — 2026-06-01
+**Önceki (round 32) en büyük 3 kusur:**
+1. Bacaklar kısa, hayvan çömelmiş (gövde yere yakın).
+2. Gövde front yuvarlak fıçı.
+3. Snout hâlâ ince.
+**Uygulanan parametre değişiklikleri:**
+- front_leg z_top 0.625→0.690, knee_z 0.355→0.400, ankle_z 0.160→0.175; rear_leg z_top 0.625→0.690, knee_z 0.400→0.450, hock_z 0.195→0.215 (bacaklar uzadı, gövde yerden kalktı); radyuslar hafif inceltildi (r_top 0.132→0.130 vb.) — kusur 1.
+**Sonuç render notu:** round_33_side/three_q.png — bacaklar belirgin uzadı, dik duruş, çömelme gitti; mesh sağlam.
+**Sonraki tura öncelik:** Gövde front yuvarlak fıçı (göğüs alt bacaklar arasından sarkıyor, chest bot_z yukarı al / hw daralt); snout ince; boyun side hâlâ uzun; ön bacak side hafif öne eğik.
