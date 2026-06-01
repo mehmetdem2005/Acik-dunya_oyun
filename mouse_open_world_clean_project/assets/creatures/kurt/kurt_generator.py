@@ -228,7 +228,7 @@ def _flatten_paw(ob, z_thresh=0.095, floor=0.016, squash=0.38):
     return ob
 
 
-def _toe_grooves(ob, paw_x, paw_y, r_paw, paw_len, n_toes=3, depth=0.038):
+def _toe_grooves(ob, paw_x, paw_y, r_paw, paw_len, n_toes=3, depth=0.046):
     """Pati ön (parmak) bölgesinde parmak araları olukları aç: tabanı X yönünde
     n_toes loba böler. Sadece patinin ön yarısında (y < paw_y - 0.3*paw_len) ve
     yere yakın (z düşük) vertekslere uygulanır; üst geometri etkilenmez."""

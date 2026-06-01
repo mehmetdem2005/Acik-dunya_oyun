@@ -957,3 +957,13 @@ Prosedürel tam-gövde kurt tabanı. Kasıtlı kaba; eleştiri döngüsünün ha
 - rear_leg geriye açıldı (uyluk gövdede sabit): knee_y 0.640→0.648, hock_y 0.852→0.878, paw_y 0.792→0.818 (ayak kalça gerisine, doğal duruş açısı) — kusur 1.
 **Sonuç render notu:** round_91_side/three_q/rear_q.png — arka bacak doğal geriye duruş açısı, toplanma çözüldü, kuyruk-bacak sıkışması gitti, atletik stand; mesh sağlam 29376 tri.
 **Sonraki tura öncelik:** Pati parmak son; göğüs front alt hattı; topline son kontrol; kafa profili son.
+
+## Round 92 — 2026-06-01
+**Önceki (round 91) en büyük 3 kusur:**
+1. Patiler front/top'ta künt, parmak olukları subsurf'te fazla yumuşamış.
+2. Göğüs front yan duvarı düz (kalıcı sınıra yakın — ring ventral profil).
+3. Yüz mikro-detay — kalıcı.
+**Uygulanan parametre değişiklikleri:**
+- generator _toe_grooves depth 0.038→0.046 (parmak olukları belirginleşti, 4 pati birden) — kusur 1.
+**Sonuç render notu:** round_92_front/three_q.png — patiler daha tanımlı parmaklı, künt blok hissi azaldı; mesh sağlam 29376 tri, taşma yok.
+**Sonraki tura öncelik:** Göğüs front yan profil (dikkatli); topline son; kafa profili son; boyun side kalınlık.
