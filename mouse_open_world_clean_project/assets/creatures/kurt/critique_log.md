@@ -103,3 +103,14 @@ Prosedürel tam-gövde kurt tabanı. Kasıtlı kaba; eleştiri döngüsünün ha
 - generator _paw_points: parmak ucu r*0.62→0.50, z'ler düşürüldü (daha düz pati) — kusur 2.
 **Sonuç render notu:** round_08_side.png — snout dolgun, patiler düzleşti. Mesh sağlam.
 **Sonraki tura öncelik:** Genel duruş — gövde hâlâ yatay tüp; topline withers→croup eğimi güçlendir; arka bacak hock açısı (digitigrade); kuyruk arka ucu hafif yukarı kaldırma.
+
+## Round 09 — 2026-06-01
+**Önceki (round 08) en büyük 3 kusur:**
+1. Arka bacak düz — digitigrade hock açısı (Z formu) yok.
+2. Kuyruk ucu düz aşağı, hafif yukarı kıvrım yok.
+3. (sürüyor) gövde yatay.
+**Uygulanan parametre değişiklikleri:**
+- rear_leg: knee_y 0.730→0.715 (öne), hock_y 0.850→0.870 (geri), paw_y 0.820→0.800 (öne) — Z açısı belirginleşti (kusur 1).
+- generator tail: tip_lift parametresi eklendi (son %30 uç yukarı kıvrılır), tail.tip_lift=0.10 — kusur 2.
+**Sonuç render notu:** round_09_side.png — arka bacak hock açısı belirgin, kuyruk ucu yataylaştı. Mesh sağlam.
+**Sonraki tura öncelik:** Ön bacak dirsek bükümü (knee öne offset); gövdeyi kısaltıp dikleştirme; boyun açısını dikleştirme; pati X-genişliği.
