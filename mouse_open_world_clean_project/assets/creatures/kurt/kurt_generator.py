@@ -96,7 +96,7 @@ def ring_xz(hw, top_z, bot_z, segments):
         x = hw * math.sin(th)
         zu = math.cos(th)
         if zu < 0:
-            zu *= 0.82
+            zu *= 0.90
         pts.append((x, vc + vh * zu))
     return pts
 
