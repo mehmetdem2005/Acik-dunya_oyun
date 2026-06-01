@@ -504,3 +504,13 @@ Prosedürel tam-gövde kurt tabanı. Kasıtlı kaba; eleştiri döngüsünün ha
 - rear_leg r_top 0.158→0.176, r_knee 0.096→0.104 (uyluk/but kas hacmi arttı, kalçayla kaynaştı) — kusur 1.
 **Sonuç render notu:** round_47_side/rear_q.png — uyluk dolgun/kaslı, aşağı incelen güçlü arka bacak; mesh sağlam.
 **Sonraki tura öncelik:** Ön bacak side hafif öne (knee_y geri); ön bacak üst (omuz/humerus) kas hacmi (r_top); gövde top omuz genişlik; arka bacak side hock açısı (digitigrade belirgin).
+
+## Round 48 — 2026-06-01
+**Önceki (round 47) en büyük 3 kusur:**
+1. Ön bacak üst (omuz/humerus) kas hacmi zayıf (arka bacağa göre ince).
+2. Ön bacak side hafif öne.
+3. Arka bacak hock açısı (digitigrade belirgin değil).
+**Uygulanan parametre değişiklikleri:**
+- front_leg r_top 0.130→0.146, r_knee 0.078→0.084 (omuz/humerus kası dolgun, göğüse kaynaştı, ön-arka denge) — kusur 1.
+**Sonuç render notu:** round_48_side/three_q.png — ön bacak üstü dolgun kaslı omuz, göğüsle kaynaşma; mesh sağlam.
+**Sonraki tura öncelik:** Arka bacak hock açısı digitigrade belirginleştir (hock_z aşağı, paw öne); ön bacak side hafif öne; gövde top omuz genişlik; baş side kafatası tepesi (occiput tümseği).
