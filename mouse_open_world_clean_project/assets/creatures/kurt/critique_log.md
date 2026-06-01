@@ -977,3 +977,13 @@ Prosedürel tam-gövde kurt tabanı. Kasıtlı kaba; eleştiri döngüsünün ha
 - withers (y0.105) hw 0.226→0.214, chest (y0.205) hw 0.218→0.210 (omuz önden narinleşti, oval kesite yaklaştı; side kas/withers tepe top_z 0.952 korundu, hâlâ boyundan ~geniş) — kusur 1.
 **Sonuç render notu:** round_93_top/front/side.png — önden duvar hissi azaldı, omuz-bacak geçişi narin; side omuz kası korundu, withers tepe duruyor; atletik silüet; mesh sağlam 29376 tri.
 **Sonraki tura öncelik:** Topline (sırt-bel-kalça) son akıcılık; boyun side kalınlık dengesi; kafa profili son; kuyruk açısı.
+
+## Round 94 — 2026-06-01
+**Önceki (round 93) en büyük 3 kusur:**
+1. Front'ta kafa arkası/alın dome (kulaklar arası fazla geniş-yuvarlak), kurt üçgen kafa eksik.
+2. Topline (kabul edilebilir, akıcı).
+3. Yüz mikro-detay — kalıcı.
+**Uygulanan parametre değişiklikleri:**
+- occiput (y-0.160) hw 0.186→0.176 (kafa arkası önden daraldı, dome azaldı, daha üçgen kurt kafası) — kusur 1.
+**Sonuç render notu:** round_94_front/three_q.png — kafa arkası önden narinleşti, kulaklar arası dome azaldı, üçgen kurt kafası; boyun-kafa geçişi akıcı korundu; side etkilenmedi; mesh sağlam 29376 tri.
+**Sonraki tura öncelik:** Boyun side kalınlık dengesi; kuyruk açısı (side dik sarkık→hafif geri); kafa profili son; ön bacak side dirsek.
