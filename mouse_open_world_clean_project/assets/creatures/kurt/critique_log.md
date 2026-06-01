@@ -730,3 +730,14 @@ Prosedürel tam-gövde kurt tabanı. Kasıtlı kaba; eleştiri döngüsünün ha
 - neck_front hw 0.216→0.204, neck_base 0.244→0.222, withers 0.228→0.208, chest 0.236→0.214, back_mid 0.198→0.180, waist 0.150→0.140, hip 0.242→0.220 (gövde genişliği ~%8-10 inceltildi; top_z/bot_z korundu → side derin göğüs+tuck bozulmadı) — kusur 1.
 **Sonuç render notu:** round_69_top/three_q.png — gövde top'tan belirgin inceldi, oval kütle gitti, atletik sleek silüet; side derin göğüs korundu; mesh sağlam.
 **Sonraki tura öncelik:** Göğüs front simetri; boyun-kafa geçiş; bacaklar inceltmeyle orantı (biraz kalın kalmış olabilir); genel uzunluk/yükseklik.
+
+## Round 70 — 2026-06-01
+**Önceki (round 69) en büyük 3 kusur:**
+1. Bacaklar gövde inceltmesinden sonra orantısız kalın (kurt bacağı ince/uzun).
+2. Göğüs front simetri.
+3. Boyun-kafa geçiş.
+**Uygulanan parametre değişiklikleri:**
+- front_leg r_top 0.146→0.132, r_knee 0.084→0.076, r_ankle 0.052→0.050.
+- rear_leg r_top 0.176→0.158, r_knee 0.104→0.094, r_hock 0.058→0.056 (üst/orta bacak inceltildi, pati korundu) — kusur 1.
+**Sonuç render notu:** round_70_three_q/front.png — bacaklar narin/uzun, gövde-bacak orantısı atletik; bağlantı temiz; mesh sağlam.
+**Sonraki tura öncelik:** Göğüs front simetri; boyun-kafa geçiş yumuşatma; genel gövde uzunluk/yükseklik oranı.
