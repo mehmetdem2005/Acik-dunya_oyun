@@ -263,3 +263,13 @@ Prosedürel tam-gövde kurt tabanı. Kasıtlı kaba; eleştiri döngüsünün ha
 - generator ring_xz: alt-yarı (ventral) bastırma 0.82→0.90 (göğüs/karın altı dolgun, armut azalır) — kusur 1.
 **Sonuç render notu:** round_23_front/side.png — gövde alt dolgunlaştı, armut hafifledi, mesh sağlam.
 **Sonraki tura öncelik:** Pati parmak ayrımı (paw_points'e parmak çıkıntı/düzlük); kafa front genişlik (occiput/stop hw); gövde önden hâlâ yuvarlak (chest hw üst hafif daralt).
+
+## Round 24 — 2026-06-01
+**Önceki (round 23) en büyük 3 kusur:**
+1. Pati önden sivri damla, parmak ayrımı yok.
+2. Kafa front küçük.
+3. Gövde önden yuvarlak.
+**Uygulanan parametre değişiklikleri:**
+- generator _paw_points: 3→4 nokta, parmak bölgesi r*0.50→0.95 + ön kenar r*0.70 (yuvarlak bloky pati, sivrilik gitti) — kusur 1.
+**Sonuç render notu:** round_24_front/side.png — patiler bloky/yuvarlak, sivri damla gitti, mesh sağlam.
+**Sonraki tura öncelik:** Kafa front genişlik (occiput/stop hw artır, kafatası geniş); gövde önden yuvarlak (chest top_z hafif düşür / hw üst hafif daralt); snout side'da çok uzun-ince.

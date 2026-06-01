@@ -188,9 +188,10 @@ def _paw_points(x, paw_y, r_paw, paw_len):
     """Ayak ucunda öne (-Y) uzanan yatay pati: bilek altı + topuk + öne uzanan parmak ucu."""
     plen = paw_len if paw_len is not None else 0.0
     return [
-        ((x, paw_y, 0.075), r_paw * 0.88),           # bilek altı (metacarpus)
-        ((x, paw_y - plen * 0.50, 0.032), r_paw),     # pati gövdesi (en geniş)
-        ((x, paw_y - plen, 0.024), r_paw * 0.50),     # parmak ucu (düz, ince)
+        ((x, paw_y, 0.075), r_paw * 0.86),            # bilek altı (metacarpus)
+        ((x, paw_y - plen * 0.45, 0.030), r_paw),      # pati gövdesi (en geniş)
+        ((x, paw_y - plen * 0.85, 0.026), r_paw * 0.95),  # parmak bölgesi (yuvarlak, dolgun)
+        ((x, paw_y - plen, 0.024), r_paw * 0.70),      # ön kenar (hafif yuvarlatılmış, bloky)
     ]
 
 
