@@ -273,3 +273,13 @@ Prosedürel tam-gövde kurt tabanı. Kasıtlı kaba; eleştiri döngüsünün ha
 - generator _paw_points: 3→4 nokta, parmak bölgesi r*0.50→0.95 + ön kenar r*0.70 (yuvarlak bloky pati, sivrilik gitti) — kusur 1.
 **Sonuç render notu:** round_24_front/side.png — patiler bloky/yuvarlak, sivri damla gitti, mesh sağlam.
 **Sonraki tura öncelik:** Kafa front genişlik (occiput/stop hw artır, kafatası geniş); gövde önden yuvarlak (chest top_z hafif düşür / hw üst hafif daralt); snout side'da çok uzun-ince.
+
+## Round 25 — 2026-06-01
+**Önceki (round 24) en büyük 3 kusur:**
+1. Snout side'da çok uzun-ince (anteater).
+2. Kafatası front küçük/dar.
+3. Çene zayıf.
+**Uygulanan parametre değişiklikleri:**
+- body_stations[0..4]: nose y -0.560→-0.520 (snout kısaldı), hw'ler 0.064→0.078, 0.086→0.100, 0.104→0.120, 0.122→0.150, 0.156→0.178 (snout+kafatası kalınlaştı, güçlü çene) — kusur 1,2,3.
+**Sonuç render notu:** round_25_side/front.png — snout kısaldı/kalınlaştı, kafa dolgunlaştı, mesh sağlam.
+**Sonraki tura öncelik:** Kafa side'da hâlâ snout'a düz iniyor (stop/brow tümseği belirginleştir); gövde önden yuvarlak; kulak biraz büyük olabilir; arka bacak side'da öne eğik.
