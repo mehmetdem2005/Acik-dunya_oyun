@@ -1233,3 +1233,13 @@ Prosedürel tam-gövde kurt tabanı. Kasıtlı kaba; eleştiri döngüsünün ha
 **Doğrulama (round_117 + head closeup):**
 - head_side/3q: burun ucu dolgun topuz, rhinarium hissi arttı; snout uzunluk/profil sabit; mesh sağlam 29472 tri.
 **Sonraki tura öncelik:** Genel rötuş; arka çeyrek; göğüs; bel.
+
+## Round 118 — 2026-06-01
+**Önceki (round 117) en büyük 3 kusur:**
+1. Withers (omuz tepe/skapula çıkıntısı) three_q'da belirgin değil (referans kurt skapula tepesi net).
+2. Genel rötuş.
+3. Yüz mikro-detay göz/burun — kalıcı.
+**Uygulanan parametre değişiklikleri:**
+- withers (y0.105) top_z 0.952→0.962 (omuz tepesi/skapula çıkıntısı vurgu) — kusur 1.
+**Sonuç render notu:** round_118_side/three_q/top.png — withers omuz tepesi belirgin skapula çıkıntısı, klasik kurt topline (kafa-boyun-omuz tepe-sırt iniş); topline pürüzsüz; mesh sağlam 29472 tri.
+**Sonraki tura öncelik:** Genel rötuş; göğüs; kafa; bel.
