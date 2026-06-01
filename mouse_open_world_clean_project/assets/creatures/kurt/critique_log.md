@@ -1140,3 +1140,14 @@ Prosedürel tam-gövde kurt tabanı. Kasıtlı kaba; eleştiri döngüsünün ha
 - tail tip_r 0.048→0.042 (uç sivri), bush 1.48→1.52 (orta gür korundu) — kusur 1.
 **Sonuç render notu:** round_108_three_q/rear_q/side.png — kuyruk gür gövde + doğal sivrilen uç, referans kurt kuyruk silüeti; mesh sağlam 29472 tri.
 **Sonraki tura öncelik:** Genel rötuş; kafa orantı (gövdeye göre); topline; ön bacak side dirsek.
+
+## Round 109 — 2026-06-01
+**Önceki (round 108) en büyük 3 kusur:**
+1. Kaş kemeri (göz üstü brow ridge) subtle (referans kurt belirgin göz üstü çıkıntı).
+2. Kafa orantı (kabul edilebilir).
+3. Yüz mikro-detay göz/burun — kalıcı.
+**Uygulanan değişiklikler (kod):**
+- _brow_ridge bump 0.026→0.034 (göz üstü kaş kemeri belirgin, kurt karakteri). Lokal, kafa bölgesi.
+**Doğrulama (round_109 + head closeup):**
+- head_3q/front: kaş kemeri belirginleşti, göz üstü çıkıntı arttı; kafa YUMRULAŞMADI; gövde sağlam, mesh 29472 tri.
+**Sonraki tura öncelik:** Genel rötuş; topline; ön bacak side; arka çeyrek.

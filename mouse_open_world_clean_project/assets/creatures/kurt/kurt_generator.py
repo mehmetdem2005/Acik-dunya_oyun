@@ -150,7 +150,7 @@ def _brow_ridge(ob, P):
             continue
         # y profili: stop-occiput ortasında en güçlü
         ty = 1.0 - abs((v.co.y - 0.5 * (y_lo + y_hi)) / (0.5 * (y_hi - y_lo)))
-        bump = 0.026 * ty
+        bump = 0.034 * ty
         v.co.z += bump * 0.5            # kaş hafif yukarı
         v.co.x += bump * 1.3 * (1.0 if v.co.x > 0 else -1.0)  # kaş dışa (göz üstü çıkıntı)
         v.co.y += 0.010 * ty            # kaş hafif öne (göz üstü kemer)
