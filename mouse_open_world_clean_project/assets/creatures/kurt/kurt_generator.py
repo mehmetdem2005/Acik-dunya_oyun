@@ -174,14 +174,24 @@ def tube_along_points(points_radii, name, seg=12):
     return ob
 
 
+def _paw_points(x, paw_y, r_paw, paw_len):
+    """Ayak ucunda öne (-Y) uzanan yatay pati: bilek altı + topuk + öne uzanan parmak ucu."""
+    plen = paw_len if paw_len is not None else 0.0
+    return [
+        ((x, paw_y, 0.085), r_paw * 0.95),          # bilek altı (metacarpus)
+        ((x, paw_y - plen * 0.35, 0.045), r_paw),    # pati gövdesi
+        ((x, paw_y - plen, 0.030), r_paw * 0.80),    # parmak ucu (öne uzanır)
+    ]
+
+
 def build_front_leg(P, side, name):
     L = P["front_leg"]; x = L["x"] * side
     pts = [
         ((x, L["y_top"], L["z_top"]), L["r_top"]),
         ((x, L["knee_y"], L["knee_z"]), L["r_knee"]),
         ((x, L["ankle_y"], L["ankle_z"]), L["r_ankle"]),
-        ((x, L["paw_y"], 0.02), L["r_paw"]),
     ]
+    pts += _paw_points(x, L["paw_y"], L["r_paw"], L.get("paw_len", 0.10))
     return tube_along_points(pts, name)
 
 
@@ -191,8 +201,8 @@ def build_rear_leg(P, side, name):
         ((x, L["y_top"], L["z_top"]), L["r_top"]),
         ((x, L["knee_y"], L["knee_z"]), L["r_knee"]),
         ((x, L["hock_y"], L["hock_z"]), L["r_hock"]),
-        ((x, L["paw_y"], 0.02), L["r_paw"]),
     ]
+    pts += _paw_points(x, L["paw_y"], L["r_paw"], L.get("paw_len", 0.11))
     return tube_along_points(pts, name)
 
 
