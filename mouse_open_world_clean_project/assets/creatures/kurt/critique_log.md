@@ -855,3 +855,13 @@ Prosedürel tam-gövde kurt tabanı. Kasıtlı kaba; eleştiri döngüsünün ha
 - front_leg z_top 0.690→0.710 (omuz bağlantısı gövde içine yukarı), y_top 0.125→0.135 (skapula geriye eğim), r_top 0.132→0.146 (omuz dolgun) — kusur 1.
 **Sonuç render notu:** round_81_side/three_q.png — ön bacak omuz bağlantısı dolgun+kaynaşmış, ayrık boyun gitti, skapula gövdeye doğal giriyor, kaslı omuz-kol geçişi; mesh sağlam.
 **Sonraki tura öncelik:** Genel oran son rötuş; arka bacak gövde (uyluk) bağlantısı kontrol; snout-yanak; pati son.
+
+## Round 82 — 2026-06-01
+**Önceki (round 81) en büyük 3 kusur:**
+1. Arka bacak uyluk (thigh) gövde bağlantısı ön bacağa göre zayıf kaynaşmış.
+2. Genel oran son rötuş.
+3. Snout-yanak geçiş.
+**Uygulanan parametre değişiklikleri:**
+- rear_leg z_top 0.690→0.705 (gövde içine), y_top 0.780→0.770 (uyluk kalçayla hizalı), r_top 0.158→0.168 (dolgun uyluk) — kusur 1.
+**Sonuç render notu:** round_82_side/rear_q/three_q.png — uyluk gövdeye dolgun kaynaştı, kalça-bacak geçişi sürekli, kaslı güçlü arka çeyrek; mesh sağlam.
+**Sonraki tura öncelik:** Genel oran son rötuş; snout-yanak (zygomatic) geçiş; ön/arka bacak duruş (side x mesafe); pati parmak son.
