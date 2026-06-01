@@ -1050,3 +1050,19 @@ Prosedürel tam-gövde kurt tabanı. Kasıtlı kaba; eleştiri döngüsünün ha
 **KILOMETRE TAŞI:** Round 100 tamamlandı. Genel silüet referans gri-kurt anatomisine güçlü yakınlık: üçgen kafa+dik kulaklar, orta-uzun düz snout+stop, kaslı boyun, derin göğüs, ince bel tuck, kaslı arka çeyrek, geriye-yatık gür kuyruk, digitigrade bacaklar.
 **KALAN KALICI KUSUR:** yüz mikro-detay (göz çukuru/burun deliği/ağız hattı) — seg16+subsurf2'de modellenemiyor.
 **Sonraki tura öncelik:** Topline son; boğaz side; kafa alt çene son; pati son denge.
+
+## Round 101 — 2026-06-01
+**Önceki (round 100) en büyük 3 kusur:**
+1. Yüz mikro-detay (göz çukuru/burun deliği/ağız hattı) — kalıcı kusur, bu turda DENEME yapıldı (brief opsiyonu).
+2. Topline (kabul edilebilir).
+3. Genel rötuş.
+**Uygulanan değişiklikler (kod):**
+- generator'a _face_details(ob, P) eklendi: göz çukuru (içe girinti), burun deliği ipucu (nostril içe+girinti), ağız hattı oluğu (snout yan-alt). Mevcut vertekleri ölçülü iter, TOPOLOJİ değişmez (parça yapısı korunur). build_body'den _brow_ridge sonrası çağrılır.
+- İç deneme: genlikler ~%60 artırıldı (göz 0.018→0.030, burun 0.010→0.016, ağız 0.010).
+**Doğrulama (yakın kafa render eklendi: round_101_head_{3q,front,side}.png):**
+- Ağız hattı oluğu: head_side'da HAFIF görünür kazanç (snout altı ince çizgi).
+- Göz çukuru: head_3q'da çok hafif gölge/düzleşme — belirgin oyuk OLUŞMADI.
+- Burun deliği: görünmüyor (seg16 çözünürlük yetersiz).
+- Kafa YUMRULAŞMADI, gövde silüeti tamamen sağlam (5 açı regresyon yok), mesh 29376 tri.
+**KARAR:** _face_details TUTULDU (ağız hattı hafif fayda, göz/burun zararsız-etkisiz). Yüz mikro-detay KALICI KUSUR olarak işaretlendi — seg16+subsurf2'de vertex yoğunluğu mikro yüz oyuklarını tutmuyor, genlik artışı kafayı bozma riski taşır. Güvenli iyileştirmeye dönülüyor.
+**Sonraki tura öncelik:** Güvenli gövde rötuşları — boğaz side; topline; pati denge; kulak iç oyuk.

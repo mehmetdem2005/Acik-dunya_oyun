@@ -129,6 +129,7 @@ def build_body(P, name="KurtGovde"):
     me = bpy.data.meshes.new(name); bm.to_mesh(me); bm.free()
     ob = bpy.data.objects.new(name, me); bpy.context.collection.objects.link(ob)
     _brow_ridge(ob, P)
+    _face_details(ob, P)
     for p in me.polygons:
         p.use_smooth = True
     return ob
@@ -153,6 +154,36 @@ def _brow_ridge(ob, P):
         v.co.z += bump * 0.5            # kaş hafif yukarı
         v.co.x += bump * 1.3 * (1.0 if v.co.x > 0 else -1.0)  # kaş dışa (göz üstü çıkıntı)
         v.co.y += 0.010 * ty            # kaş hafif öne (göz üstü kemer)
+    return ob
+
+
+def _face_details(ob, P):
+    """Yüz mikro-detay (göz çukuru + burun deliği ipucu + ağız hattı oluğu).
+    Mevcut vertekleri ölçülü iter (topoloji değişmez). Seg16 kaba kalır ama
+    subsurf yumuşatır; genlikler küçük tutuldu ki kafa yumrulaşmasın.
+    Kurt -Y'ye bakar: snout ucu y~-0.51, stop y~-0.225, gözler stop önünde."""
+    me = ob.data
+    for v in me.vertices:
+        x, y, z = v.co.x, v.co.y, v.co.z
+        ax = abs(x)
+        # --- GÖZ ÇUKURU: stop'un hemen önü-yanı (y -0.31..-0.225), göz hizası z ---
+        if -0.315 < y < -0.225 and 0.05 < ax < 0.17 and 0.72 < z < 0.86:
+            ey = 1.0 - abs((y + 0.270) / 0.045)        # y merkez -0.270
+            ez = 1.0 - abs((z - 0.795) / 0.065)        # z merkez ~0.795
+            ew = max(0.0, min(ey, 1.0)) * max(0.0, min(ez, 1.0))
+            v.co.x -= 0.030 * ew * (1.0 if x > 0 else -1.0)  # içe (çukur)
+            v.co.y += 0.010 * ew                              # hafif geri (oyuk)
+        # --- BURUN DELİĞİ İPUCU: snout ucu üst-yan (y -0.50..-0.43) ---
+        if -0.505 < y < -0.430 and 0.02 < ax < 0.085 and z > 0.64:
+            nf = 1.0 - abs((y + 0.468) / 0.038)
+            nf = max(0.0, min(nf, 1.0))
+            v.co.x -= 0.016 * nf * (1.0 if x > 0 else -1.0)  # nostril hafif içe
+            v.co.z -= 0.010 * nf                              # üstte hafif girinti
+        # --- AĞIZ HATTI OLUĞU: snout yan-alt boyunca (y -0.47..-0.27), düşük z ---
+        if -0.47 < y < -0.27 and ax > 0.05 and 0.55 < z < 0.64:
+            ml = 1.0 - abs((z - 0.595) / 0.045)
+            ml = max(0.0, min(ml, 1.0))
+            v.co.z -= 0.010 * ml                              # dudak hattı hafif oluk
     return ob
 
 
