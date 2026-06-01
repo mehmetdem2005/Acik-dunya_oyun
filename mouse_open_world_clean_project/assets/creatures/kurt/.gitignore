@@ -2,3 +2,4 @@
 *.blend2
 kurt_hifi.blend
 kurt.blend
+__pycache__/
