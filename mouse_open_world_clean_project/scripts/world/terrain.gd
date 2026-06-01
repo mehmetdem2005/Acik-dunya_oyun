@@ -374,7 +374,7 @@ func slope_at(wx: float, wz: float) -> float:
 # Karada (su değil + eğim uygun) rastgele bir nokta döndür. Bulamazsa y çok düşük.
 func get_random_land_point(margin: float = 20.0) -> Vector3:
 	var half := world_size * 0.5 - margin
-	var slope_max := tan(deg_to_rad(slope_limit_deg)) / (PI * 0.5)
+	var slope_max := deg_to_rad(slope_limit_deg) / (PI * 0.5)
 	for _i in 40:
 		var wx := _rng.randf_range(-half, half)
 		var wz := _rng.randf_range(-half, half)

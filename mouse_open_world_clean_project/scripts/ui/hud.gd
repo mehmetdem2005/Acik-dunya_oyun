@@ -35,9 +35,15 @@ func _ready() -> void:
 	_ceviz_label.position = Vector2(24, 18)
 	_fistik_label.position = Vector2(24, 54)
 	set_nuts(0, 0)
-	# Boyut 0 iken çizilen butonların görünmemesi için yeniden boyutlanınca çiz.
-	resized.connect(queue_redraw)
+	# CanvasLayer altındaki Control anchor ile otomatik boyutlanmaz (size=0 kalır).
+	# Bu yüzden tüm geometriyi _vp() = görünüm boyutundan hesaplarız ve pencere
+	# yeniden boyutlanınca yeniden çizeriz.
+	get_viewport().size_changed.connect(queue_redraw)
 	queue_redraw.call_deferred()
+
+# Gerçek çizilebilir alan (Control.size'a güvenmeden).
+func _vp() -> Vector2:
+	return get_viewport_rect().size
 
 func set_nuts(ceviz: int, fistik: int) -> void:
 	_ceviz_label.text = "🌰 Ceviz: %d" % ceviz
@@ -45,10 +51,12 @@ func set_nuts(ceviz: int, fistik: int) -> void:
 
 # --- Buton dikdörtgenleri (sağ alt) ---
 func _jump_rect() -> Rect2:
-	return Rect2(size.x - BTN - BTN_MARGIN, size.y - BTN - BTN_MARGIN, BTN, BTN)
+	var v := _vp()
+	return Rect2(v.x - BTN - BTN_MARGIN, v.y - BTN - BTN_MARGIN, BTN, BTN)
 
 func _attack_rect() -> Rect2:
-	return Rect2(size.x - BTN * 2 - BTN_MARGIN * 1.6, size.y - BTN - BTN_MARGIN, BTN, BTN)
+	var v := _vp()
+	return Rect2(v.x - BTN * 2 - BTN_MARGIN * 1.6, v.y - BTN - BTN_MARGIN, BTN, BTN)
 
 # --- Giriş ---
 func _input(event: InputEvent) -> void:
@@ -69,7 +77,7 @@ func _handle_press(idx: int, pos: Vector2, pressed: bool) -> void:
 		if _attack_rect().has_point(pos):
 			_attack_latch = true
 			return
-		if pos.x < size.x * 0.5 and _move_idx == -100:
+		if pos.x < _vp().x * 0.5 and _move_idx == -100:
 			_move_idx = idx
 			_move_origin = pos
 			_move_pos = pos

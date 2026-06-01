@@ -48,7 +48,9 @@ func _ready() -> void:
 	cam_pivot = Node3D.new()
 	cam_pivot.name = "CamPivot"
 	add_child(cam_pivot)
-	cam_pivot.position.y = cam_height
+	# Kamera direği oyuncunun dönüşünü MİRAS ALMAMALI (yoksa oyuncu yöne
+	# dönünce kamera da döner). top_level + her karede elle konumlandır.
+	cam_pivot.top_level = true
 	spring = SpringArm3D.new()
 	cam_pivot.add_child(spring)
 	spring.spring_length = cam_distance
@@ -68,6 +70,7 @@ func _physics_process(delta: float) -> void:
 	var look := _get_look_delta()
 	cam_yaw -= look.x * 0.005
 	cam_pitch = clampf(cam_pitch - look.y * 0.005, -1.2, 0.2)
+	cam_pivot.global_position = global_position + Vector3(0, cam_height, 0)
 	cam_pivot.rotation.y = cam_yaw
 	spring.rotation.x = cam_pitch
 
