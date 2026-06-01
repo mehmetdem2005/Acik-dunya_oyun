@@ -687,3 +687,15 @@ Prosedürel tam-gövde kurt tabanı. Kasıtlı kaba; eleştiri döngüsünün ha
 - _toe_grooves depth 0.030→0.038, parmak ucu forward 0.045→0.052, oluk geri 0.018→0.022 (parmak lobları belirgin ayrı çıkıntı) — kusur 1.
 **Sonuç render notu:** round_65_front/three_q.png — 3 parmak lobu net ayrı, öne uzanan parmaklar, açıdan da belirgin; mesh sağlam.
 **Sonraki tura öncelik:** Boyun-kafa geçiş (ense yumuşaklık); genel oran ince ayar (gövde uzunluk/yükseklik); arka bacak side son hizalama; göğüs front simetri.
+
+## Round 66 — 2026-06-01
+**Önceki (round 65) en büyük 3 kusur:**
+1. Snout/burun çok kısa+küt (side/three_q/top "ayı/jenerik" yüz, kurt uzun snout'u yok).
+2. Kulaklar çok küçük ve birbirine yakın.
+3. Kuyruk ucu fazla yukarı kıvrık (referans daha düz/aşağı).
+**Uygulanan parametre değişiklikleri:**
+- nose_tip y -0.435→-0.510 (snout öne uzadı), hw 0.100→0.078 (inceldi), top_z 0.706→0.690, bot_z 0.602→0.612 (snout düz/ince).
+- muzzle y -0.360→-0.400, hw 0.122→0.108, top_z 0.744→0.730 (uzun konik snout).
+- muzzle_base y -0.280→-0.300 (geçiş yumuşak) — kusur 1.
+**Sonuç render notu:** round_66_side/three_q/top.png — snout belirgin uzadı+inceldi, kurt benzeri uzun burun profili; "ayı yüzü" gitti; mesh sağlam, kopma yok.
+**Sonraki tura öncelik:** Kulaklar (boyut/açı/aralık); kuyruk uç kıvrım azalt; gövde top genişliği (top'tan oval/geniş — inceltme); göğüs front simetri.
