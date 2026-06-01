@@ -906,3 +906,13 @@ Prosedürel tam-gövde kurt tabanı. Kasıtlı kaba; eleştiri döngüsünün ha
 - ear base x 0.108→0.090 (içe, birbirine yakın), z 0.860→0.902 (kafa tepesine), width 0.094→0.086 (dar/üçgen), lean_out_deg 13→7 (daha dik), lean_back_deg 8→10 (hafif geri) — kusur 1.
 **Sonuç render notu:** round_86_front/three_q/side.png — kulaklar dik üçgen, içe çekik, kafa tepesinde; ayı kulağı hissi belirgin azaldı, dik kurt kulağı profili. Top'ta hafif yuvarlaklık kaldı (piramit mesh sınırı, kabul edilebilir). Snout'a dokunulmadı (osilasyon önleme). Mesh sağlam 29376 tri.
 **Sonraki tura öncelik:** Snout DOĞRU kurt oranına sabitleme kontrol; kuyruk gürlük dengesi; boyun-kafa geçiş; genel oran.
+
+## Round 87 — 2026-06-01
+**Önceki (round 86) en büyük 3 kusur:**
+1. Kuyruk dip/orta fazla şişkin "topak" (bush patlaması), sonra aniden inceliyor.
+2. Snout oranı (sabit bırakılacak — osilasyon önleme).
+3. Yüz mikro-detay — kalıcı.
+**Uygulanan parametre değişiklikleri:**
+- tail base_r 0.132→0.120 (dip topağı azaldı), tip_r 0.050→0.048, bush 1.62→1.48 (gürlük dengeli, kademeli incelme) — kusur 1.
+**Sonuç render notu:** round_87_three_q/side/rear_q.png — kuyruk dipten uca dengeli gür silindirik profil, topak gitti, referans kurt kuyruğuna yakın sarkık doluluk; mesh sağlam 29376 tri.
+**Sonraki tura öncelik:** Boyun-kafa geçiş yumuşatma; snout-yanak (zygomatic) geçiş; genel oran; arka bacak duruş.
