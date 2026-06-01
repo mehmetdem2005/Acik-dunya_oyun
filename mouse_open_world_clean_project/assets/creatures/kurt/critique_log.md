@@ -1090,3 +1090,13 @@ Prosedürel tam-gövde kurt tabanı. Kasıtlı kaba; eleştiri döngüsünün ha
 - ear width 0.086→0.078 (taban dar, top'tan ince), height 0.280→0.290 (zarif yüksek), lean_back_deg 10→12 (hafif arkaya) — kusur 1.
 **Sonuç render notu:** round_103_front/three_q.png — kulaklar ince+sivri+dik zarif kurt kulağı, concha korundu; top'ta dış sırt hafif yuvarlak (kabul edilebilir); side dik; mesh sağlam 29472 tri.
 **Sonraki tura öncelik:** Boğaz side; topline son; pati denge; göğüs prosternum.
+
+## Round 104 — 2026-06-01
+**Önceki (round 103) en büyük 3 kusur:**
+1. Göğüs prosternum side zayıf (ön bacaklar önü/altı göğüs ön kütlesi yetersiz).
+2. Yüz mikro-detay — kalıcı.
+3. Genel rötuş.
+**Uygulanan parametre değişiklikleri:**
+- neck_base (y0.010) bot_z 0.358→0.338 (göğüs ön-altı dolgu, prosternum hissi, boyun tabanı→göğüs dolgun geçiş) — kusur 1.
+**Sonuç render notu:** round_104_side/front/three_q.png — göğüs ön kütlesi doldu, prosternum hissi, ön bacaklar arası derin göğüs; mesh sağlam 29472 tri.
+**Sonraki tura öncelik:** Topline son; pati denge; kafa alt çene; arka çeyrek kalça-uyluk side.
