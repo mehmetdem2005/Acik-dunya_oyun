@@ -198,3 +198,13 @@ Prosedürel tam-gövde kurt tabanı. Kasıtlı kaba; eleştiri döngüsünün ha
 - neck_base bot_z 0.435→0.405 (göğüs önü dolgun, presternum) — kusur 2.
 **Sonuç render notu:** round_17_side.png — withers tümseği belirgin, göğüs önü dolu. Mesh sağlam.
 **Sonraki tura öncelik:** Snout uzunluğu (referansta uzun); kafa-snout geçişi (stop) keskinliği; ön bacak alt incelik (pastern); kuyruk gürlüğü (bush) referans gibi.
+
+## Round 18 — 2026-06-01
+**Önceki (round 17) en büyük 3 kusur:**
+1. Snout kısa.
+2. Stop (kafa-burun geçişi) yumuşak.
+3. Pastern (ön bacak alt) kalın.
+**Uygulanan parametre değişiklikleri:**
+- body_stations[0..3] y -0.520→-0.560 (snout uzadı), hw'ler hafif inceltildi, muzzle_base/stop top_z farkı 0.748→0.822 (stop keskinleşti) — kusur 1,2.
+**Sonuç render notu:** round_18_side.png — snout uzun, stop girinti belirgin. Mesh sağlam.
+**Sonraki tura öncelik:** Ön bacak pastern incelik (ankle r daralt); kuyruk gürlük (bush) artır; gövde alt karın hattı (waist bot_z tuck); kafa tepesi-kulak geçişi.
