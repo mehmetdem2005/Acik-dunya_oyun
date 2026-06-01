@@ -1120,3 +1120,13 @@ Prosedürel tam-gövde kurt tabanı. Kasıtlı kaba; eleştiri döngüsünün ha
 - front_leg r_paw 0.063→0.068 (ön pati iri), r_ankle 0.050→0.053 (bilek-pati geçiş dengeli) — kusur 1.
 **Sonuç render notu:** round_106_front/side.png — ön patiler dolgun/iri, kurt ön ayağı hissi, bilek-pati dengeli; mesh sağlam 29472 tri.
 **Sonraki tura öncelik:** Boyun side kalınlık; arka çeyrek kalça side; topline withers; genel rötuş.
+
+## Round 107 — 2026-06-01
+**Önceki (round 106) en büyük 3 kusur:**
+1. Boyun side biraz ince (referans kurt güçlü kaslı boyun, kafa-omuz dolu geçiş).
+2. Topline (kabul edilebilir).
+3. Yüz mikro-detay — kalıcı.
+**Uygulanan parametre değişiklikleri:**
+- neck (y-0.120) hw 0.202→0.208, neck_front (y-0.085) hw 0.214→0.220 (boyun side kaslı, kafa-omuz dolu geçiş) — kusur 1.
+**Sonuç render notu:** round_107_three_q/side/top.png — boyun side kalınlaştı, kaslı güçlü kurt boynu, kafa-omuz dolu geçiş; mesh sağlam 29472 tri.
+**Sonraki tura öncelik:** Arka bacak metatarsus side açı; topline withers; genel rötuş; kafa orantı.
