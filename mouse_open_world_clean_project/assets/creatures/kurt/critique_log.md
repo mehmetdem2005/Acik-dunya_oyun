@@ -637,3 +637,13 @@ Prosedürel tam-gövde kurt tabanı. Kasıtlı kaba; eleştiri döngüsünün ha
 **Sonuç render notu:** round_60_three_q/side.png — kaş bölgesi hafif kemerli, kafa üst-yanı şekillendi; etki SUBTLE (subsurf+seg16 yumuşatıyor). Mesh sağlam, kafa formu bozulmadı.
 **KALICI KUSUR:** Göz/kaş ve yüz mikro-detayı bu loft+subsurf çözünürlüğünde belirgin yapılamıyor (abartınca kafa yumrulaşır). Hafif kemer bırakıldı, zarar yok. Yüz detayı için ileride gövde seg artışı/ayrı kafa mesh gerekebilir.
 **Sonraki tura öncelik:** Gövde top omuz hafif dar; pati boyut orantı; kuyruk uç toparlama; bel side tuck belirginlik.
+
+## Round 61 — 2026-06-01
+**Önceki (round 60) en büyük 3 kusur:**
+1. Karın/bel side tuck-up belirgin değil (alt çizgi düz, atletik karın yok).
+2. Pati boyut orantı.
+3. Kuyruk uç toparlama.
+**Uygulanan parametre değişiklikleri:**
+- waist bot_z 0.470→0.508, hw 0.156→0.150 (karın yukarı çekildi, tuck-up + yanlardan ince); back_mid bot_z 0.318→0.345 (göğüs-karın geçişi yumuşak yükseliş) — kusur 1.
+**Sonuç render notu:** round_61_side/three_q.png — karın tuck-up belirgin, atletik ince bel, derin göğüs→çekik karın→kaslı kalça silüeti; mesh sağlam.
+**Sonraki tura öncelik:** Pati boyut orantı (biraz büyük olabilir); kuyruk uç toparlama; sırt topline son rötuş; baş-boyun three_q geçiş.
