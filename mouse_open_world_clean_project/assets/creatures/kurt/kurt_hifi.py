@@ -88,6 +88,69 @@ def hair_material():
     return mat
 
 
+def pelt_material():
+    """Prosedürel kürk SHADER'ı (kıl geometrisi YOK) — CPU'da temiz+hızlı.
+
+    Agouti renk (büyük noise → koyu↔tan rampa) + iki kademe kürk mikro-bump
+    (ince noise = tek tel hissi, uzun-streç noise = kürk akış yönü) + sheen.
+    """
+    mat = bpy.data.materials.new("KurtPost")
+    mat.use_nodes = True
+    nt = mat.node_tree
+    nt.nodes.clear()
+    out = nt.nodes.new("ShaderNodeOutputMaterial")
+    bsdf = nt.nodes.new("ShaderNodeBsdfPrincipled")
+    bsdf.inputs["Roughness"].default_value = 0.72
+    if "Sheen Weight" in bsdf.inputs:
+        bsdf.inputs["Sheen Weight"].default_value = 0.35
+    elif "Sheen" in bsdf.inputs:
+        bsdf.inputs["Sheen"].default_value = 0.35
+    coord = nt.nodes.new("ShaderNodeTexCoord")
+
+    # --- AGOUTI RENK ---
+    big = nt.nodes.new("ShaderNodeTexNoise")
+    big.inputs["Scale"].default_value = 6.0
+    big.inputs["Detail"].default_value = 8.0
+    big.inputs["Roughness"].default_value = 0.7
+    ramp = nt.nodes.new("ShaderNodeValToRGB")
+    ramp.color_ramp.elements[0].position = 0.30
+    ramp.color_ramp.elements[0].color = (0.030, 0.026, 0.020, 1)   # koyu uç (sırt)
+    ramp.color_ramp.elements[1].position = 0.70
+    ramp.color_ramp.elements[1].color = (0.34, 0.30, 0.24, 1)       # açık tan (yan/karın)
+    e2 = ramp.color_ramp.elements.new(0.50)
+    e2.color = (0.13, 0.11, 0.085, 1)                                # orta grizzled
+    nt.links.new(coord.outputs["Object"], big.inputs["Vector"])
+    nt.links.new(big.outputs["Fac"], ramp.inputs["Fac"])
+    nt.links.new(ramp.outputs["Color"], bsdf.inputs["Base Color"])
+
+    # --- KÜRK AKIŞ BUMP (uzun streç noise = yön) ---
+    mapping = nt.nodes.new("ShaderNodeMapping")
+    mapping.inputs["Scale"].default_value = (3.0, 60.0, 3.0)   # Y boyunca uzun → kürk akışı
+    flow = nt.nodes.new("ShaderNodeTexNoise")
+    flow.inputs["Scale"].default_value = 4.0
+    flow.inputs["Detail"].default_value = 6.0
+    b1 = nt.nodes.new("ShaderNodeBump")
+    b1.inputs["Strength"].default_value = 0.85
+    b1.inputs["Distance"].default_value = 0.035
+    nt.links.new(coord.outputs["Object"], mapping.inputs["Vector"])
+    nt.links.new(mapping.outputs["Vector"], flow.inputs["Vector"])
+    nt.links.new(flow.outputs["Fac"], b1.inputs["Height"])
+
+    # --- KÜRK MİKRO BUMP (ince noise = tek tel) ---
+    micro = nt.nodes.new("ShaderNodeTexNoise")
+    micro.inputs["Scale"].default_value = 140.0
+    micro.inputs["Detail"].default_value = 4.0
+    b2 = nt.nodes.new("ShaderNodeBump")
+    b2.inputs["Strength"].default_value = 0.55
+    b2.inputs["Distance"].default_value = 0.008
+    nt.links.new(micro.outputs["Fac"], b2.inputs["Height"])
+    nt.links.new(b1.outputs["Normal"], b2.inputs["Normal"])
+    nt.links.new(b2.outputs["Normal"], bsdf.inputs["Normal"])
+
+    nt.links.new(bsdf.outputs[0], out.inputs[0])
+    return mat
+
+
 def add_displace_relief(ob):
     tex = bpy.data.textures.new("furrelief", "CLOUDS")
     tex.noise_scale = 0.05
@@ -159,13 +222,18 @@ def setup_cycles(samples, w, h):
 
 
 def add_lights():
-    for loc, e, sz in (((2.4, -2.2, 2.6), 900, 1.4),
-                       ((-2.4, -1.4, 1.0), 280, 2.2),
-                       ((0.0, 2.8, 2.0), 520, 1.0)):
+    # key (sıcak, güçlü), fill (zayıf soğuk), rim (arka-üst, kürk kenarını yakar)
+    specs = [
+        ((2.6, -2.4, 2.4), 1100, 1.2, (1.0, 0.96, 0.9)),    # key
+        ((-2.6, -1.2, 0.8), 180, 2.4, (0.8, 0.85, 1.0)),     # fill (düşük → form okusun)
+        ((-1.2, 2.8, 2.4), 900, 0.8, (1.0, 0.98, 0.95)),     # rim/back (kürk silüeti)
+    ]
+    for loc, e, sz, col in specs:
         bpy.ops.object.light_add(type="AREA", location=loc)
         L = bpy.context.object
         L.data.energy = e
         L.data.size = sz
+        L.data.color = col
 
 
 VIEWS = {
@@ -215,6 +283,7 @@ def parse_args():
     p.add_argument("--height", type=int, default=640)
     p.add_argument("--views", default="three_q")
     p.add_argument("--tag", default="hifi_01")
+    p.add_argument("--mode", default="hair", choices=["hair", "pelt"])
     p.add_argument("--save-blend", action="store_true")
     return p.parse_args(argv)
 
@@ -225,23 +294,22 @@ def main():
     G.fresh_scene()
     parts = G.build_wolf(P)
     ob = join_parts(parts)
-
-    # materyaller: slot1 deri, slot2 kürk
     ob.data.materials.clear()
-    ob.data.materials.append(agouti_skin_material())
-    ob.data.materials.append(hair_material())
 
-    add_displace_relief(ob)
-    add_subsurf_hi(ob, view_lvl=min(2, a.subsurf), render_lvl=a.subsurf)
-    add_fur(ob, a.hair, a.children, a.length)
-
-    # poligon raporu (render seviyesinde)
-    deps = bpy.context.evaluated_depsgraph_get()
-    ev = ob.evaluated_get(deps)
-    me = ev.to_mesh()
-    print(f"=== {a.tag}: yüzey {len(me.polygons)} poligon (subsurf {a.subsurf}), "
-          f"kürk {a.hair} parent x {a.children} child ===")
-    ev.to_mesh_clear()
+    if a.mode == "pelt":
+        # prosedürel kürk shader'ı — CPU'da temiz+hızlı (kıl geometrisi yok)
+        ob.data.materials.append(pelt_material())
+        add_displace_relief(ob)
+        add_subsurf_hi(ob, view_lvl=min(2, a.subsurf), render_lvl=a.subsurf)
+        print(f"=== {a.tag}: PELT shader, subsurf {a.subsurf} ===")
+    else:
+        # gerçek kıl geometrisi (yavaş, gren riski)
+        ob.data.materials.append(agouti_skin_material())
+        ob.data.materials.append(hair_material())
+        add_displace_relief(ob)
+        add_subsurf_hi(ob, view_lvl=min(2, a.subsurf), render_lvl=a.subsurf)
+        add_fur(ob, a.hair, a.children, a.length)
+        print(f"=== {a.tag}: HAIR {a.hair}x{a.children}, subsurf {a.subsurf} ===")
 
     if a.save_blend:
         bpy.ops.wm.save_as_mainfile(filepath=os.path.join(DIR, "kurt_hifi.blend"))
