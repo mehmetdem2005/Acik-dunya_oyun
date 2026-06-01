@@ -128,8 +128,31 @@ def build_body(P, name="KurtGovde"):
     bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
     me = bpy.data.meshes.new(name); bm.to_mesh(me); bm.free()
     ob = bpy.data.objects.new(name, me); bpy.context.collection.objects.link(ob)
+    _brow_ridge(ob, P)
     for p in me.polygons:
         p.use_smooth = True
+    return ob
+
+
+def _brow_ridge(ob, P):
+    """Kafatası göz üstü (stop-occiput arası) bölgesine hafif kaş tümseği:
+    üst-yan vertekleri hafif yukarı+dışa iter. Sadece kafa bölgesinde, ölçülü."""
+    me = ob.data
+    y_lo, y_hi = -0.260, -0.150        # stop..occiput arası (göz/kaş bölgesi)
+    for v in me.vertices:
+        if not (y_lo < v.co.y < y_hi):
+            continue
+        if v.co.z < 0.78:               # sadece üst yarı (kaş hizası ve üstü)
+            continue
+        ax = abs(v.co.x)
+        if ax < 0.04:                   # tam tepe (orta) hafif, yanlar (kaş) belirgin
+            continue
+        # y profili: stop-occiput ortasında en güçlü
+        ty = 1.0 - abs((v.co.y - 0.5 * (y_lo + y_hi)) / (0.5 * (y_hi - y_lo)))
+        bump = 0.026 * ty
+        v.co.z += bump * 0.5            # kaş hafif yukarı
+        v.co.x += bump * 1.3 * (1.0 if v.co.x > 0 else -1.0)  # kaş dışa (göz üstü çıkıntı)
+        v.co.y += 0.010 * ty            # kaş hafif öne (göz üstü kemer)
     return ob
 
 

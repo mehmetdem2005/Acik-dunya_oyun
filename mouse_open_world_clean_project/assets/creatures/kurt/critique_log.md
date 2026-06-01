@@ -625,3 +625,15 @@ Prosedürel tam-gövde kurt tabanı. Kasıtlı kaba; eleştiri döngüsünün ha
 - front_leg ankle_y 0.128→0.138 (bilek geri), ankle_z 0.175→0.165, paw_y 0.122→0.112 (pati öne) — hafif pastern açısı, doğal ön bacak — kusur 1.
 **Sonuç render notu:** round_59_side/three_q.png — ön bacak bilek açısı doğal, pati öne basar, dümdüz kolon hissi gitti; mesh sağlam.
 **Sonraki tura öncelik:** Göz/kaş çıkıntısı (post-process kaş tümseği, dikkatli); gövde top omuz hafif dar; pati boyut orantı; kuyruk uç hafif sivri.
+
+## Round 60 — 2026-06-01
+**Önceki (round 59) en büyük 3 kusur:**
+1. Göz/kaş çıkıntısı yok (kafa yan-üst tamamen düz, yüz özelliği yok).
+2. Gövde top omuz dar.
+3. Pati boyut orantı.
+**Uygulanan generator değişikliği:**
+- yeni _brow_ridge(): kafatası stop-occiput arası (y -0.26..-0.15) üst-yan vertekleri hafif yukarı+dışa+öne iter (bump 0.026, kaş kemeri). build_body sonunda çağrılır — kusur 1.
+- (İç deneme: bump 0.014 etkisiz; 0.026'ya çıkarıldı + dışa 1.3x + öne 0.010.)
+**Sonuç render notu:** round_60_three_q/side.png — kaş bölgesi hafif kemerli, kafa üst-yanı şekillendi; etki SUBTLE (subsurf+seg16 yumuşatıyor). Mesh sağlam, kafa formu bozulmadı.
+**KALICI KUSUR:** Göz/kaş ve yüz mikro-detayı bu loft+subsurf çözünürlüğünde belirgin yapılamıyor (abartınca kafa yumrulaşır). Hafif kemer bırakıldı, zarar yok. Yüz detayı için ileride gövde seg artışı/ayrı kafa mesh gerekebilir.
+**Sonraki tura öncelik:** Gövde top omuz hafif dar; pati boyut orantı; kuyruk uç toparlama; bel side tuck belirginlik.
