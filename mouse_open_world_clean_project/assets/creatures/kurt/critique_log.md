@@ -1181,3 +1181,13 @@ Prosedürel tam-gövde kurt tabanı. Kasıtlı kaba; eleştiri döngüsünün ha
 - rump (y0.775) hw 0.190→0.196 (sağrı yan kası dolgun, kuyruk dibi kaynaşma kütleli) — kusur 1.
 **Sonuç render notu:** round_112_rear_q/side/top.png — sağrı dolgun güçlü arka çeyrek, kuyruk dibi-sağrı kütleli kaynaşma; croup eğimi korundu; mesh sağlam 29472 tri.
 **Sonraki tura öncelik:** Genel rötuş; ön bacak side; kafa orantı; bel flank.
+
+## Round 113 — 2026-06-01
+**Önceki (round 112) en büyük 3 kusur:**
+1. Kafatası üstü front'ta hafif dome/yuvarlak (referans kurt kafatası daha düz).
+2. Genel rötuş.
+3. Yüz mikro-detay — kalıcı.
+**Uygulanan parametre değişiklikleri:**
+- occiput (y-0.160) top_z 0.934→0.924 (kafatası üstü düzleşti, dome hafifledi) — kusur 1.
+**Sonuç render notu:** round_113_front/head_side/side.png — kafatası üstü daha düz kurt kafatası, dome hafifledi; boyun-kafa geçişi pürüzsüz korundu (regresyon yok); mesh sağlam 29472 tri.
+**Sonraki tura öncelik:** Genel rötuş; ön bacak pastern side; bel flank; kuyruk dibi.
