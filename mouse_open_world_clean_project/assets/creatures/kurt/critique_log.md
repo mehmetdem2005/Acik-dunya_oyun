@@ -896,3 +896,13 @@ Prosedürel tam-gövde kurt tabanı. Kasıtlı kaba; eleştiri döngüsünün ha
 - chest top_z 0.852→0.872 (omuz-sırt geçiş kademeli), back_mid top_z 0.814→0.820 (sırt hattı pürüzsüz) — kusur 1.
 **Sonuç render notu:** round_85_side/three_q.png — topline pürüzsüz (omuz tepe→düz sırt→bel→kalça akıcı), ani düşüş yumuşadı; omuz tepesi korundu; mesh sağlam.
 **Sonraki tura öncelik:** Genel oran son rötuş; snout-yanak; pati parmak son; kuyruk gürlük dengesi.
+
+## Round 86 — 2026-06-01
+**Önceki (round 85) en büyük 3 kusur:**
+1. Kulaklar front/top'ta fazla yanlara açık + yuvarlak (ayı kulağı hissi), kafa yan-üst köşesinde.
+2. Snout uç side'da hafif ince/aşağı (osilasyon riski — bu turda DOKUNULMADI, sabit bırakıldı).
+3. Yüz mikro-detay (burun/ağız front) — kalıcı sınır.
+**Uygulanan parametre değişiklikleri:**
+- ear base x 0.108→0.090 (içe, birbirine yakın), z 0.860→0.902 (kafa tepesine), width 0.094→0.086 (dar/üçgen), lean_out_deg 13→7 (daha dik), lean_back_deg 8→10 (hafif geri) — kusur 1.
+**Sonuç render notu:** round_86_front/three_q/side.png — kulaklar dik üçgen, içe çekik, kafa tepesinde; ayı kulağı hissi belirgin azaldı, dik kurt kulağı profili. Top'ta hafif yuvarlaklık kaldı (piramit mesh sınırı, kabul edilebilir). Snout'a dokunulmadı (osilasyon önleme). Mesh sağlam 29376 tri.
+**Sonraki tura öncelik:** Snout DOĞRU kurt oranına sabitleme kontrol; kuyruk gürlük dengesi; boyun-kafa geçiş; genel oran.
