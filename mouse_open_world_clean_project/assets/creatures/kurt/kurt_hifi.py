@@ -73,11 +73,15 @@ def hair_material():
     out = nt.nodes.new("ShaderNodeOutputMaterial")
     try:
         h = nt.nodes.new("ShaderNodeBsdfHairPrincipled")
-        # renk
+        # doğrudan renk modu (melanin değil) — yoksa renk soluk çıkar
+        try:
+            h.parametrization = "COLOR"
+        except Exception:
+            pass
         if "Color" in h.inputs:
-            h.inputs["Color"].default_value = (0.14, 0.115, 0.092, 1)
+            h.inputs["Color"].default_value = (0.105, 0.088, 0.070, 1)  # grizzled kahve-gri
         if "Roughness" in h.inputs:
-            h.inputs["Roughness"].default_value = 0.55
+            h.inputs["Roughness"].default_value = 0.48
     except Exception:
         h = nt.nodes.new("ShaderNodeBsdfHair")
     nt.links.new(h.outputs[0], out.inputs[0])
