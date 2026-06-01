@@ -514,3 +514,13 @@ Prosedürel tam-gövde kurt tabanı. Kasıtlı kaba; eleştiri döngüsünün ha
 - front_leg r_top 0.130→0.146, r_knee 0.078→0.084 (omuz/humerus kası dolgun, göğüse kaynaştı, ön-arka denge) — kusur 1.
 **Sonuç render notu:** round_48_side/three_q.png — ön bacak üstü dolgun kaslı omuz, göğüsle kaynaşma; mesh sağlam.
 **Sonraki tura öncelik:** Arka bacak hock açısı digitigrade belirginleştir (hock_z aşağı, paw öne); ön bacak side hafif öne; gövde top omuz genişlik; baş side kafatası tepesi (occiput tümseği).
+
+## Round 49 — 2026-06-01
+**Önceki (round 48) en büyük 3 kusur:**
+1. Arka bacak hock açısı digitigrade belirgin değil (düz kolon gibi).
+2. Ön bacak side hafif öne.
+3. Gövde top omuz genişlik.
+**Uygulanan parametre değişiklikleri:**
+- rear_leg knee_y 0.700→0.690 (diz öne), knee_z 0.450→0.455, hock_y 0.852→0.868 (hock geri), hock_z 0.215→0.198 (aşağı), paw_y 0.840→0.822 (pati öne) — belirgin Z digitigrade açısı — kusur 1.
+**Sonuç render notu:** round_49_side/three_q.png — arka bacak Z digitigrade kıvrımı belirgin, doğal kurt duruşu; mesh sağlam.
+**Sonraki tura öncelik:** Ön bacak side hafif öne (knee geri hizala); gövde top omuz genişlik; baş side occiput/kafatası tepesi tümseği; göğüs front V/keel daralma.
