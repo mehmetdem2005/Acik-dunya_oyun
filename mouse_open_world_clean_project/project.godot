@@ -1,11 +1,12 @@
-; Godot 4.x project file
-; Açık Dünya Fare Simülasyonu - temiz chunk tabanlı proje iskeleti
+; Godot 4.6 project file
+; Açık Dünya Fare Oyunu — heightmap ada, rig'li fare, NPC sürüsü, su sistemi.
+; Tüm sahne ve giriş haritası KODLA kurulur (veri gömülmez). Mobile renderer.
 
 config_version=5
 
 [application]
-config/name="Mouse Open World Clean"
-run/main_scene="res://scenes/world/pine_tree_scene.tscn"
+config/name="Acik Dunya Fare Oyunu"
+run/main_scene="res://scenes/world/game.tscn"
 config/features=PackedStringArray("4.6", "Mobile")
 config/icon="res://icon.svg"
 
