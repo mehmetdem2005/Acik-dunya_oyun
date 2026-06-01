@@ -10,10 +10,10 @@ const PINE_SCENE := "res://scenes/world/pine_tree.tscn"
 const CEVIZ_GLB := "res://assets/nuts/ceviz.glb"
 const FISTIK_GLB := "res://assets/nuts/fistik.glb"
 
-@export var pine_count: int = 22
-@export var apple_count: int = 32
-@export var ceviz_count: int = 220
-@export var fistik_count: int = 220
+@export var pine_count: int = 32
+@export var apple_count: int = 60
+@export var ceviz_count: int = 450
+@export var fistik_count: int = 450
 @export var apple_scale: float = 1.0
 @export var nut_scale: float = 0.13
 @export var collect_radius: float = 0.7

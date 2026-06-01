@@ -5,9 +5,9 @@ class_name Game
 # ortam/ışık -> arazi (heightmap + su) -> ağaç/fındık serpme -> oyuncu + HUD
 # -> yoğun NPC fareler. Mobil renderer için ayarlanmıştır.
 
-@export var world_size: float = 480.0
-@export var height_scale: float = 60.0
-@export var npc_count: int = 50
+@export var world_size: float = 1250.0   # harita büyüklüğü (metre)
+@export var height_scale: float = 120.0   # max yükseklik (metre)
+@export var npc_count: int = 90
 @export var player_scale: float = 1.15
 
 var terrain: Terrain

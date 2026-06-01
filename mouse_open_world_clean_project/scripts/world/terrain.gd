@@ -16,9 +16,9 @@ class_name Terrain
 const HEIGHTMAP_PATH := "res://assets/heightmap/yarimada_16bit.exr"
 const WATER_SHADER_PATH := "res://shaders/water.gdshader"
 
-@export var world_size: float = 600.0      # X ve Z'de metre cinsinden genişlik
-@export var height_scale: float = 80.0      # max yükselti (metre)
-@export var grid_res: int = 192             # mesh/collision/analiz ızgara çözünürlüğü
+@export var world_size: float = 1250.0      # X ve Z'de metre cinsinden genişlik
+@export var height_scale: float = 120.0     # max yükselti (metre)
+@export var grid_res: int = 256             # mesh/collision/analiz ızgara çözünürlüğü
 @export_range(0.0, 0.5, 0.001) var water_level: float = 0.075  # normalize su eşiği (deniz + iç göller + dar nehir kanalları)
 @export var slope_limit_deg: float = 38.0   # bu eğimden dik yerler "ekilemez"
 
