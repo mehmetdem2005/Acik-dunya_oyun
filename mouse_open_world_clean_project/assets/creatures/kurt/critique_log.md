@@ -231,3 +231,14 @@ Prosedürel tam-gövde kurt tabanı. Kasıtlı kaba; eleştiri döngüsünün ha
 - generator _flatten_paw: z_thresh 0.085→0.095, floor 0.018→0.016, squash 0.45→0.38 (pati daha düz) — kusur 2.
 **Sonuç render notu:** round_20_front/side.png — bacaklar dik/paralel, patiler daha düz. Mesh sağlam.
 **Sonraki tura öncelik:** Boyun three_q kalınlık; kafa front'ta dar (kafatası genişlik); göğüs front armut (chest hw front'ta genişlet); kulak kafaya tam oturtma.
+
+## Round 21 — 2026-06-01
+**Önceki (round 20) en büyük 3 kusur:**
+1. Boyun front/three_q ince (kafa-gövde geçişi zayıf).
+2. Kuyruk three_q'da burgu/spiral (twist) görünüyor.
+3. Gövde front armut.
+**Uygulanan parametre değişiklikleri:**
+- neck_front hw 0.166→0.186, top_z 0.838→0.852, bot_z 0.500→0.470 (boyun dolgun) — kusur 1.
+- neck_base hw 0.205→0.228, top_z 0.862→0.872, bot_z 0.405→0.395 (boyun-göğüs geçişi) — kusur 1.
+**Sonuç render notu:** round_21_side/three_q.png — boyun belirgin dolgunlaştı, mesh sağlam. Kuyruk burgusu duruyor.
+**Sonraki tura öncelik:** Kuyruk twist düzelt (tube_along_points up-vektör tutarlılığı / droop azalt); pati önden parmak ayrımı; kafa front genişlik.
