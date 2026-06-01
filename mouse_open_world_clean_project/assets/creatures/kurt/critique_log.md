@@ -534,3 +534,13 @@ Prosedürel tam-gövde kurt tabanı. Kasıtlı kaba; eleştiri döngüsünün ha
 - front_leg y_top 0.120→0.125, knee_y 0.155→0.135, ankle_y 0.140→0.128, paw_y 0.130→0.122 (bacak segment y daraldı, dikey kolon, pati omuz altına) — kusur 1.
 **Sonuç render notu:** round_50_side/three_q.png — ön bacak dikey, öne eğim gitti, pati omuz altında; mesh sağlam. Genel silüet net kurt.
 **Sonraki tura öncelik:** Baş side kafatası tepesi (occiput) hafif tümsek; gövde top omuz genişlik; göğüs front V/keel; boyun-kafa side geçiş (ense yelesi hacmi).
+
+## Round 51 — 2026-06-01
+**Önceki (round 50) en büyük 3 kusur:**
+1. Boyun üstü (ense) side'da çukur (occiput-withers arası iniyor, yele yok).
+2. Gövde top omuz genişlik.
+3. Göğüs front V/keel.
+**Uygulanan parametre değişiklikleri:**
+- neck_front top_z 0.905→0.922, hw 0.212→0.216; neck_base top_z 0.892→0.916, hw 0.240→0.244 (boyun üstü çukur doldu, ense yelesi dolgun, occiput-withers düz akış) — kusur 1.
+**Sonuç render notu:** round_51_side/three_q.png — ense yelesi dolgun, boyun üstü kaslı, occiput-withers hattı güçlü; mesh sağlam.
+**Sonraki tura öncelik:** Gövde top omuz genişlik (omuz top'tan dar); göğüs front V/keel daralma; baş side çene/gıdı (alt çene hattı); pati parmak ayrımı (kalıcı, generator).
