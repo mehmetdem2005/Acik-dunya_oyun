@@ -313,3 +313,13 @@ Prosedürel tam-gövde kurt tabanı. Kasıtlı kaba; eleştiri döngüsünün ha
 - withers hw 0.252→0.242, bot_z 0.330→0.320; chest hw 0.262→0.250, bot_z 0.235→0.205 (front genişlik azaldı, göğüs derinleşti) — kusur 1,2.
 **Sonuç render notu:** round_28_front/side.png — göğüs side derin, front daha az şişman, mesh sağlam.
 **Sonraki tura öncelik:** Kulak boyut/açı (referans dik üçgen, biraz küçült); gövde önden hâlâ hafif yuvarlak; sırt topline withers tepe three_q; snout side hafif aşağı eğim.
+
+## Round 29 — 2026-06-01
+**Önceki (round 28) en büyük 3 kusur:**
+1. Kulaklar yuvarlak topak (referans dik sivri üçgen, ayrık).
+2. Gövde önden hafif yuvarlak.
+3. Snout side hafif düz.
+**Uygulanan parametre değişiklikleri:**
+- ear base x 0.078→0.092 (ayrık), height 0.190→0.196, width 0.115→0.098 (sivri), lean_out 12→16, lean_back 10→11 (dik+dışa) — kusur 1.
+**Sonuç render notu:** round_29_front/three_q.png — kulaklar daha sivri, ayrık, dik; mesh sağlam.
+**Sonraki tura öncelik:** Gövde önden yuvarlak (back_mid/waist front genişlik kontrol); snout side hafif aşağı eğim (nose top_z düşür); withers tepe three_q belirginlik; ön bacak side hafif dik.
