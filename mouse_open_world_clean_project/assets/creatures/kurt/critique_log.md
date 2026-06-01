@@ -845,3 +845,13 @@ Prosedürel tam-gövde kurt tabanı. Kasıtlı kaba; eleştiri döngüsünün ha
 - withers hw 0.208→0.226 (omuz boyundan geniş, kaslı), neck_base hw 0.222→0.216 (boyun hafif ince) — kusur 1.
 **Sonuç render notu:** round_80_top/three_q.png — omuz belirgin genişledi (boyundan geniş), kaslı omuz; silüet dar boyun→geniş omuz→ince bel→kaslı kalça atletik kurt profili; mesh sağlam.
 **Sonraki tura öncelik:** Genel oran son rötuş; pati son kontrol; snout-yanak geçiş; ön bacak omuz (skapula) side bağlantı.
+
+## Round 81 — 2026-06-01
+**Önceki (round 80) en büyük 3 kusur:**
+1. Ön bacak omuz bağlantısında ayrık "boyun"/incelme (skapula gövdeden kopuk hissi).
+2. Genel oran son rötuş.
+3. Snout-yanak geçiş.
+**Uygulanan parametre değişiklikleri:**
+- front_leg z_top 0.690→0.710 (omuz bağlantısı gövde içine yukarı), y_top 0.125→0.135 (skapula geriye eğim), r_top 0.132→0.146 (omuz dolgun) — kusur 1.
+**Sonuç render notu:** round_81_side/three_q.png — ön bacak omuz bağlantısı dolgun+kaynaşmış, ayrık boyun gitti, skapula gövdeye doğal giriyor, kaslı omuz-kol geçişi; mesh sağlam.
+**Sonraki tura öncelik:** Genel oran son rötuş; arka bacak gövde (uyluk) bağlantısı kontrol; snout-yanak; pati son.
