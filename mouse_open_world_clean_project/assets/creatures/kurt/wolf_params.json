@@ -32,5 +32,5 @@
     "paw_y": 0.818, "r_top": 0.176, "r_knee": 0.098, "r_hock": 0.056, "r_paw": 0.065},
   "tail": {"segments": 10, "length": 0.62, "droop": 0.54, "base_r": 0.120, "tip_r": 0.042,
     "bush": 1.52, "tip_lift": 0.0},
-  "material": {"fur_color": [0.20, 0.17, 0.14, 1.0], "roughness": 0.78}
+  "material": {"fur_color": [0.27, 0.255, 0.235, 1.0], "roughness": 0.82}
 }

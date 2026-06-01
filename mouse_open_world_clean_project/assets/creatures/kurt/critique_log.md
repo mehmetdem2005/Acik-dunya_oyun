@@ -1253,3 +1253,21 @@ Prosedürel tam-gövde kurt tabanı. Kasıtlı kaba; eleştiri döngüsünün ha
 - chest (y0.205) bot_z 0.216→0.226 (keel hafif yukarı, front orta çıkıntı azaldı; side göğüs derinliği korundu) — kusur 1.
 **Sonuç render notu:** round_119_front/side/three_q.png — front bacak arası temizlendi, sternum çıkıntısı yumuşadı, side derin göğüs korundu; mesh sağlam 29472 tri.
 **Sonraki tura öncelik:** Genel rötuş; kafa; arka çeyrek; kuyruk.
+
+## Round 120 — 2026-06-01 (KILOMETRE TAŞI)
+**Önceki (round 119) en büyük 3 kusur:**
+1. Kürk rengi fazla kahverengimsi-koyu (referans gri-kurt daha nötr açık-gri ton).
+2. Genel geometri — tüm bölgeler dengeli, zorlama değişiklik osilasyon riski.
+3. Yüz mikro-detay göz/burun — kalıcı.
+**Uygulanan parametre değişiklikleri:**
+- material fur_color [0.20,0.17,0.14]→[0.27,0.255,0.235] (nötr açık gri-kurt ton), roughness 0.78→0.82 (mat kürk) — kusur 1.
+**Sonuç render notu:** round_120 5 açı — renk gri-kurt tonuna yaklaştı; geometri tamamen sağlam (sadece material); silüet referans gri-kurt anatomisine güçlü yakınlık; mesh 29472 tri.
+**DURUM ROUND 120:** Kurt modeli olgun. Round 86-120 (35 tur) boyunca sistematik iyileştirme:
+  KAFA: üçgen kafatası (düz), orta-uzun düz snout + belirgin stop, kütleli burun topuzu, kaş kemeri, dolgun alt çene, snout-yanak akıcı geçiş.
+  KULAK: dik sivri üçgen + iç concha oyuğu (gerçek kurt kulağı).
+  BOYUN: kaslı kalın, kafa-omuz dolgun geçiş.
+  GÖVDE: belirgin withers/skapula tepe, derin göğüs+prosternum, ince bel tuck + dolu flank, güçlü sağrı/kalça, akıcı topline.
+  BACAKLAR: ön paralel-dikey + pastern digitigrade, arka kaslı uyluk + hock Z, dengeli iri ön pati + parmak olukları.
+  KUYRUK: geriye-yatık gür gövde + sivrilen uç, dipte rump'a kaynaşmış.
+**KALAN KALICI KUSUR:** yüz mikro-detay (göz çukuru/burun deliği belirgin oyuk) — seg16+subsurf2 vertex yoğunluğu sınırı; _face_details ile ağız hattı hafif var, göz/burun oyuğu modellenemiyor (genlik artışı kafayı bozar).
+**Sonraki tura öncelik:** İnce güvenli rötuşlar (osilasyondan kaçın); renk/roughness; mikro denge.
