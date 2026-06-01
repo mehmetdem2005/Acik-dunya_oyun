@@ -443,3 +443,13 @@ Prosedürel tam-gövde kurt tabanı. Kasıtlı kaba; eleştiri döngüsünün ha
 - rear_leg hock_y 0.852→0.860, paw_y 0.808→0.840 (pati hock altına yaklaştı, dik hock-pati hizası) — kusur 1.
 **Sonuç render notu:** round_41_three_q/rear_q.png — arka bacak dikleşti, pati hock altına hizalandı, dikey kolon; mesh sağlam.
 **Sonraki tura öncelik:** Gövde top view fıçı (waist daralt, karın tuck belirgin); sırt topline withers-kalça hafif kavis; ön bacak side hafif öne; kafa top genişlik.
+
+## Round 42 — 2026-06-01
+**Önceki (round 41) en büyük 3 kusur:**
+1. Gövde top view fıçı/tüpsel (bel daralması yok).
+2. Sırt topline withers-kalça.
+3. Ön bacak side hafif öne.
+**Uygulanan parametre değişiklikleri:**
+- back_mid hw 0.210→0.196; waist hw 0.174→0.156, bot_z 0.458→0.470; hip hw 0.228→0.226 (bel belirgin daralma, top'tan kum saati silüeti) — kusur 1.
+**Sonuç render notu:** round_42_top/three_q.png — bel daralması belirgin, omuz-bel-kalça kum saati, karın atletik; mesh sağlam.
+**Sonraki tura öncelik:** Sırt topline withers tepe-kalça hafif düz/kavis; ön bacak side hafif öne; kafa top dar (kafatası genişlik); göğüs side derinlik.
