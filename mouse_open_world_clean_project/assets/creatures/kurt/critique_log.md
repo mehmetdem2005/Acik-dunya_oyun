@@ -876,3 +876,13 @@ Prosedürel tam-gövde kurt tabanı. Kasıtlı kaba; eleştiri döngüsünün ha
 - (İç deneme: bacak x'leri 0.174/0.188 açıldı → front'ta fazla genişledi, 0.166/0.182'ye geri çekildi, paralel duruş korundu.) — kusur 1.
 **Sonuç render notu:** round_83_side/three_q.png — ön bacak doğal C eğrisi (dirsek önde, bilek geride), atletik dinamik duruş; front paralel; mesh sağlam.
 **Sonraki tura öncelik:** Genel oran son rötuş; snout-yanak; arka bacak hock-pati metatarsus side açı; pati parmak son kontrol.
+
+## Round 84 — 2026-06-01
+**Önceki (round 83) en büyük 3 kusur:**
+1. Boyun/ense side'da hafif ince (güçlü kaslı kurt ensesi değil).
+2. Genel oran son rötuş.
+3. Snout-yanak geçiş (yüz mikro, kalıcı sınır).
+**Uygulanan parametre değişiklikleri:**
+- neck ara (-0.120) hw 0.196→0.202, bot_z 0.560→0.548; neck_front (-0.085) hw 0.206→0.214, bot_z 0.475→0.468 (güçlü kaslı ense + dolgun boğaz) — kusur 1.
+**Sonuç render notu:** round_84_side/three_q.png — boyun/ense kalın+kaslı, kafadan omuza dolu güçlü geçiş, boğaz dolgun; mesh sağlam.
+**Sonraki tura öncelik:** Genel oran son rötuş; snout-yanak; pati son; sırt-bel topline pürüzsüzlük.
