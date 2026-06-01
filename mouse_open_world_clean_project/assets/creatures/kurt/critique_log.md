@@ -544,3 +544,14 @@ Prosedürel tam-gövde kurt tabanı. Kasıtlı kaba; eleştiri döngüsünün ha
 - neck_front top_z 0.905→0.922, hw 0.212→0.216; neck_base top_z 0.892→0.916, hw 0.240→0.244 (boyun üstü çukur doldu, ense yelesi dolgun, occiput-withers düz akış) — kusur 1.
 **Sonuç render notu:** round_51_side/three_q.png — ense yelesi dolgun, boyun üstü kaslı, occiput-withers hattı güçlü; mesh sağlam.
 **Sonraki tura öncelik:** Gövde top omuz genişlik (omuz top'tan dar); göğüs front V/keel daralma; baş side çene/gıdı (alt çene hattı); pati parmak ayrımı (kalıcı, generator).
+
+## Round 52 — 2026-06-01
+**Önceki (round 51) en büyük 3 kusur:**
+1. Pati parmak ayrımı YOK (düz bloky uç) — brief kalıcı kusur.
+2. Gövde top omuz genişlik.
+3. Göğüs front V/keel.
+**Uygulanan parametre/generator değişiklikleri:**
+- generator: yeni _toe_grooves() fonksiyonu — pati ön bölgesini X yönünde 3 parmak lobuna böler (oluk derinliği depth=0.030, parmak uçları öne 0.045, oluklar geri 0.018, parmak ucuna doğru artan t profili). build_front/rear_leg toe_grooves çağırır + pati tüpü seg 12→20 (parmak çözünürlüğü) — kusur 1.
+- (İç deneme: ilk depth=0.012/seg=12 etkisiz kaldı; depth 0.030 + seg 20 + toe forward 0.045 ile belirgin parmak ayrımı.)
+**Sonuç render notu:** round_52_front/three_q.png — ön ve arka patilerde belirgin 3 parmak ayrımı, gerçek ayak hissi; mesh sağlam, kopma yok. tri 21696→28352.
+**Sonraki tura öncelik:** Gövde top omuz genişlik; göğüs front V/keel daralma; baş side çene/gıdı; parmak ayrımı ince ayar (gerekirse derinlik).

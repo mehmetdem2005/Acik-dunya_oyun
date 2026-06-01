@@ -204,6 +204,34 @@ def _flatten_paw(ob, z_thresh=0.095, floor=0.016, squash=0.38):
     return ob
 
 
+def _toe_grooves(ob, paw_x, paw_y, r_paw, paw_len, n_toes=3, depth=0.030):
+    """Pati ön (parmak) bölgesinde parmak araları olukları aç: tabanı X yönünde
+    n_toes loba böler. Sadece patinin ön yarısında (y < paw_y - 0.3*paw_len) ve
+    yere yakın (z düşük) vertekslere uygulanır; üst geometri etkilenmez."""
+    me = ob.data
+    y_front = paw_y - 0.30 * paw_len           # parmak bölgesinin başladığı y
+    span = r_paw * 1.4                          # parmaklar X yönünde bu genişliğe yayılır
+    for v in me.vertices:
+        if v.co.z > 0.060:
+            continue
+        if v.co.y > y_front:                    # sadece ön (parmak) bölge
+            continue
+        xl = (v.co.x - paw_x)
+        if abs(xl) > span:
+            continue
+        # ön bölgede normalize ilerleme (0=parmak başı, 1=ön kenar)
+        t = min(1.0, (y_front - v.co.y) / max(1e-5, paw_len * 0.7))
+        # X boyunca n_toes loblu kosinüs profili: oluk hatlarında 0, lob tepesinde 1
+        u = (xl / span) * n_toes                # -n..+n
+        groove = 0.5 * (1.0 + math.cos(2 * math.pi * u))  # 1 lob merkezi, 0 oluk
+        # oluk derinliği parmak ucuna doğru artar
+        v.co.z += depth * (1.0 - groove) * (-1.0) * t  # oluklarda tabanı hafif yukarı (girinti)
+        # parmak uçlarını öne doğru uzat (lob tepelerinde), oluklarda geri çek
+        v.co.y -= 0.045 * groove * t
+        v.co.y += 0.018 * (1.0 - groove) * t
+    return ob
+
+
 def build_front_leg(P, side, name):
     L = P["front_leg"]; x = L["x"] * side
     pts = [
@@ -211,8 +239,10 @@ def build_front_leg(P, side, name):
         ((x, L["knee_y"], L["knee_z"]), L["r_knee"]),
         ((x, L["ankle_y"], L["ankle_z"]), L["r_ankle"]),
     ]
-    pts += _paw_points(x, L["paw_y"], L["r_paw"], L.get("paw_len", 0.10))
-    return _flatten_paw(tube_along_points(pts, name))
+    pl = L.get("paw_len", 0.10)
+    pts += _paw_points(x, L["paw_y"], L["r_paw"], pl)
+    ob = _flatten_paw(tube_along_points(pts, name, seg=20))
+    return _toe_grooves(ob, x, L["paw_y"], L["r_paw"], pl)
 
 
 def build_rear_leg(P, side, name):
@@ -222,8 +252,10 @@ def build_rear_leg(P, side, name):
         ((x, L["knee_y"], L["knee_z"]), L["r_knee"]),
         ((x, L["hock_y"], L["hock_z"]), L["r_hock"]),
     ]
-    pts += _paw_points(x, L["paw_y"], L["r_paw"], L.get("paw_len", 0.11))
-    return _flatten_paw(tube_along_points(pts, name))
+    pl = L.get("paw_len", 0.11)
+    pts += _paw_points(x, L["paw_y"], L["r_paw"], pl)
+    ob = _flatten_paw(tube_along_points(pts, name, seg=20))
+    return _toe_grooves(ob, x, L["paw_y"], L["r_paw"], pl)
 
 
 def build_tail(P, name="KurtKuyruk"):
