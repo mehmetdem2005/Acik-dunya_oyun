@@ -1028,3 +1028,13 @@ Prosedürel tam-gövde kurt tabanı. Kasıtlı kaba; eleştiri döngüsünün ha
 - waist (y0.485) bot_z 0.508→0.528 (karın yukarı çekik, tuck belirgin), hw 0.140→0.136 (bel ince) — kusur 1.
 **Sonuç render notu:** round_98_side/three_q.png — bel tuck belirginleşti, derin göğüs→ince bel→dolu kalça atletik kurt silüeti; mesh sağlam 29376 tri.
 **Sonraki tura öncelik:** Boyun side/boğaz; arka çeyrek kas side; topline son; kafa alt çene.
+
+## Round 99 — 2026-06-01
+**Önceki (round 98) en büyük 3 kusur:**
+1. Arka uyluk (femur) side'da yeterince kaslı değil (referans kurt güçlü arka çeyrek).
+2. Boğaz/boyun side (kabul edilebilir).
+3. Yüz mikro-detay — kalıcı.
+**Uygulanan parametre değişiklikleri:**
+- rear_leg r_top 0.168→0.176, r_knee 0.094→0.098 (uyluk kaslı/dolgun, güçlü arka çeyrek; hock daralması korundu) — kusur 1.
+**Sonuç render notu:** round_99_side/rear_q/three_q.png — arka uyluk kaslı, kaslı femur→ince hock daralması belirgin, güçlü atletik arka çeyrek; kalça-uyluk kesintisiz; mesh sağlam 29376 tri.
+**Sonraki tura öncelik:** Ön kol (humerus) side kas dengesi (arka ile uyum); topline son; kafa alt çene; boğaz.
