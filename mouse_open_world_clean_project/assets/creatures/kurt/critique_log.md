@@ -423,3 +423,13 @@ Prosedürel tam-gövde kurt tabanı. Kasıtlı kaba; eleştiri döngüsünün ha
 - tail droop 0.18→0.52, length 0.56→0.58, tip_lift 0.045→0.020 (kuyruk belirgin aşağı sarkar); generator droop eğrisi t^1.6→t^1.25 + tip_lift eşiği 0.7→0.75 (sarkma kuyruk başından itibaren etki eder) — kusur 1. (İç deneme: ilk droop 0.34 yetersizdi, 0.52'ye çıkarıldı + eğri düzeltildi.)
 **Sonuç render notu:** round_39_three_q/rear_q.png — kuyruk artık belirgin aşağı sarkıyor, doğal rahat duruş; gür+sarkık; mesh sağlam.
 **Sonraki tura öncelik:** Snout uzun (kademeli kısalt); arka pati side arkaya kaçık (paw_y öne); sırt topline withers-kalça; gövde top view fıçı genişlik.
+
+## Round 40 — 2026-06-01
+**Önceki (round 39) en büyük 3 kusur:**
+1. Snout uzun (kafanın ~%79'u, fazla çıkık burun).
+2. Arka pati side arkaya kaçık.
+3. Sırt topline.
+**Uygulanan parametre değişiklikleri:**
+- nose y -0.470→-0.435, muzzle -0.385→-0.360, muzzle_base -0.295→-0.280 (snout %14 kısaldı, kafatası korundu); hw'ler hafif +0.002-0.004 — kusur 1.
+**Sonuç render notu:** round_40_side/three_q.png — snout kısaldı, kafa kompakt/oranlı, hortum hissi azaldı; mesh sağlam.
+**Sonraki tura öncelik:** Arka pati side arkaya kaçık (paw_y öne, hock altına); sırt topline withers-kalça hafif kavis; gövde top fıçı; ön bacak side hafif öne.
