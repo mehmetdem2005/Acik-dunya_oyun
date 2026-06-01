@@ -1066,3 +1066,17 @@ Prosedürel tam-gövde kurt tabanı. Kasıtlı kaba; eleştiri döngüsünün ha
 - Kafa YUMRULAŞMADI, gövde silüeti tamamen sağlam (5 açı regresyon yok), mesh 29376 tri.
 **KARAR:** _face_details TUTULDU (ağız hattı hafif fayda, göz/burun zararsız-etkisiz). Yüz mikro-detay KALICI KUSUR olarak işaretlendi — seg16+subsurf2'de vertex yoğunluğu mikro yüz oyuklarını tutmuyor, genlik artışı kafayı bozma riski taşır. Güvenli iyileştirmeye dönülüyor.
 **Sonraki tura öncelik:** Güvenli gövde rötuşları — boğaz side; topline; pati denge; kulak iç oyuk.
+
+## Round 102 — 2026-06-01
+**Önceki (round 101) en büyük 3 kusur:**
+1. Kulaklar düz piramit → subsurf'te yuvarlak topak (iç oyuk/concha yok, kepçe eksik).
+2. Yüz mikro-detay — kalıcı.
+3. Genel rötuş.
+**Uygulanan değişiklikler (kod):**
+- build_ear yeniden modellendi: ön (-Y bakan) yüze içe çökük concha vertex (cup) eklendi, ön üçgen 3 yüze bölündü → iç kepçe oyuğu; arka/dış yüzler dolgun sırt. Parça yapısı korundu (hâlâ 1 kulak mesh/parça). Tri 29376→29472.
+**Doğrulama (round_102 5 açı + head closeup):**
+- Front/three_q: kulaklar artık DİK SİVRİ ÜÇGEN, iç oyuk görünür, yuvarlak topak hissi gitti — gerçek kurt kulağı.
+- head_3q: concha oyuğu + sivri uç net.
+- Gövde silüeti sağlam, mesh sağlam, regresyon yok.
+**KARAR:** Kulak iç oyuk TUTULDU — belirgin kazanç. (Top'ta hafif doluluk kaldı, kabul edilebilir.)
+**Sonraki tura öncelik:** Boğaz side; topline son; pati denge; kulak top'tan hafif inceltme.

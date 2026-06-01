@@ -337,16 +337,29 @@ def build_ear(P, side, name):
     lo = math.radians(E["lean_out_deg"]); lb = math.radians(E["lean_back_deg"])
     bm = bmesh.new()
     t = 0.025
-    base = [
-        bm.verts.new((bx - w * side, by - w * 0.6, bz)),
-        bm.verts.new((bx + w * side, by - w * 0.4, bz)),
-        bm.verts.new((bx + w * side, by + w * 0.6, bz + t)),
-        bm.verts.new((bx - w * side, by + w * 0.4, bz + t)),
-    ]
+    # taban dörtgeni (b0,b1 = ön/dış-iç ön kenar; b2,b3 = arka kenar)
+    b0 = bm.verts.new((bx - w * side, by - w * 0.6, bz))   # ön-iç
+    b1 = bm.verts.new((bx + w * side, by - w * 0.4, bz))   # ön-dış
+    b2 = bm.verts.new((bx + w * side, by + w * 0.6, bz + t))  # arka-dış
+    b3 = bm.verts.new((bx - w * side, by + w * 0.4, bz + t))  # arka-iç
     tip = bm.verts.new((bx + math.sin(lo) * h * side, by + math.sin(lb) * h, bz + h))
-    bm.faces.new((base[0], base[1], tip)); bm.faces.new((base[1], base[2], tip))
-    bm.faces.new((base[2], base[3], tip)); bm.faces.new((base[3], base[0], tip))
-    bm.faces.new((base[3], base[2], base[1], base[0]))
+    # CONCHA (iç kepçe): ön yüze (-Y bakan b0-b1-tip üçgeni) içe çökük orta nokta;
+    # ön üçgeni bu çukur vertex etrafında 3 yüze böler → kepçe oyuğu.
+    cy = by - w * 0.20                       # çukur merkezi (öne yakın)
+    cz = bz + h * 0.46                        # kulak ortası yüksekliği
+    cx = bx + math.sin(lo) * h * 0.5 * side   # eğimle hizalı
+    # öne (-Y) doğru DEĞİL, içe (arkaya, +Y) çek → oyuk
+    cup = bm.verts.new((cx, cy + w * 0.55, cz))
+    # ön yüz (concha tabanı 3 yüz): çukur etrafında
+    bm.faces.new((b0, b1, cup))
+    bm.faces.new((b1, tip, cup))
+    bm.faces.new((tip, b0, cup))
+    # dış/arka yüzler (dolgun sırt)
+    bm.faces.new((b1, b2, tip))
+    bm.faces.new((b2, b3, tip))
+    bm.faces.new((b3, b0, tip))
+    # taban kapağı
+    bm.faces.new((b3, b2, b1, b0))
     bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
     me = bpy.data.meshes.new(name); bm.to_mesh(me); bm.free()
     ob = bpy.data.objects.new(name, me); bpy.context.collection.objects.link(ob)
