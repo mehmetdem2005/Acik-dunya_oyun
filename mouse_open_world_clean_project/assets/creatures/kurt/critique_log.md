@@ -814,3 +814,14 @@ Prosedürel tam-gövde kurt tabanı. Kasıtlı kaba; eleştiri döngüsünün ha
 - withers top_z 0.930→0.952 (omuz sırt hattının tepesi), chest top_z 0.856→0.852 (omuzdan sırta düşüş belirgin) — kusur 1.
 **Sonuç render notu:** round_77_side/three_q.png — withers belirgin omuz tepesi, klasik kurt topline (kafa-vadi-omuz tepe-sırt düşüş); omuz kası three_q'da görünür; mesh sağlam.
 **Sonraki tura öncelik:** Göğüs front dolgunluk/keel; alt çene jaw hattı; genel oran son rötuş; pati son kontrol.
+
+## Round 78 — 2026-06-01
+**Önceki (round 77) en büyük 3 kusur:**
+1. Göğüs front'ta ön bacaklar arası keel/dolgunluk subtle.
+2. Alt çene jaw hattı.
+3. Genel oran son rötuş.
+**Uygulanan parametre değişiklikleri:**
+- chest bot_z 0.232→0.216 (göğüs keel aşağı uzandı, derin), hw 0.214→0.218 (yanlardan dolgun).
+- withers bot_z 0.300→0.288 (göğüs üst geçiş uyumlu) — kusur 1.
+**Sonuç render notu:** round_78_front/side.png — göğüs ön bacaklar arası dolgun+derin keel, prosternum doğal; bacak arası temiz (sarkma yok); mesh sağlam.
+**Sonraki tura öncelik:** Alt çene jaw hattı; genel oran; snout-yanak geçiş; kuyruk dibi-rump kaynaşma.
