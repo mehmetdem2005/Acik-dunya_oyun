@@ -124,3 +124,14 @@ Prosedürel tam-gövde kurt tabanı. Kasıtlı kaba; eleştiri döngüsünün ha
 - front_leg: knee_y 0.150→0.175 (dirsek geriye), paw_y 0.150→0.135 (pati öne), y_top 0.130→0.110, r_top hafif arttı — hafif dirsek açısı (kusur 1).
 **Sonuç render notu:** round_10_side.png — ön bacakta dirsek bükümü oluştu. Mesh sağlam (8 parça, ~19k tri).
 **Sonraki tura öncelik:** Boyun açısını dikleştirme (kafa yukarı bakmalı); gövde uzunluğunu hafif kısaltma; pati yanal genişlik; kuyruk-bacak çakışması (3/4'te).
+
+## Round 11 — 2026-06-01
+**Önceki (round 10) en büyük 3 kusur:**
+1. Snout aşağı eğik (kafa yukarı bakmalı).
+2. Gövde fazla uzun.
+3. Patiler küre.
+**Uygulanan parametre değişiklikleri:**
+- body_stations[0..2] z'leri +0.04..0.045 (snout yatay/yukarı, kafa kalktı) — kusur 1.
+- back_mid/waist/hip y 0.360/0.520/0.680→0.355/0.500/0.650 (gövde ~%4 kısaldı); rear_leg y'leri 0.815→0.780 hizalandı — kusur 2.
+**Sonuç render notu:** round_11_side.png — snout yatay/hafif yukarı, gövde kompakt, arka bacak hip altında. Mesh sağlam.
+**Sonraki tura öncelik:** Pati yanal genişlik/yataylık; kuyruk arka ucu bacakla çakışması; chest-front bacak omuz kası bağlantısı; kafa tepesi (kulak arası) dolgunluğu.
