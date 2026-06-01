@@ -1151,3 +1151,13 @@ Prosedürel tam-gövde kurt tabanı. Kasıtlı kaba; eleştiri döngüsünün ha
 **Doğrulama (round_109 + head closeup):**
 - head_3q/front: kaş kemeri belirginleşti, göz üstü çıkıntı arttı; kafa YUMRULAŞMADI; gövde sağlam, mesh 29472 tri.
 **Sonraki tura öncelik:** Genel rötuş; topline; ön bacak side; arka çeyrek.
+
+## Round 110 — 2026-06-01
+**Önceki (round 109) en büyük 3 kusur:**
+1. Front'ta ön bacaklar omuzdan "A" açılması (ayaklar omuzdan dar, paralel değil).
+2. Genel rötuş.
+3. Yüz mikro-detay — kalıcı.
+**Uygulanan parametre değişiklikleri:**
+- front_leg x 0.166→0.174 (ayaklar omuzla hizalı, front paralel-dikey duruş) — kusur 1.
+**Sonuç render notu:** round_110_front/side/three_q.png — ön bacaklar daha paralel-dikey, "A" açılması azaldı, referans kurt front duruşu; side duruş doğal korundu; mesh sağlam 29472 tri.
+**Sonraki tura öncelik:** Genel rötuş; topline; arka bacak front paralellik; kafa.

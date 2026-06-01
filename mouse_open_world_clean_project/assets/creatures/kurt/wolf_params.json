@@ -24,7 +24,7 @@
     "height": 0.290, "width": 0.078,
     "lean_out_deg": 7, "lean_back_deg": 12
   },
-  "front_leg": {"x": 0.166, "y_top": 0.135, "z_top": 0.710,
+  "front_leg": {"x": 0.174, "y_top": 0.135, "z_top": 0.710,
     "knee_y": 0.124, "knee_z": 0.400, "ankle_y": 0.148, "ankle_z": 0.165,
     "paw_y": 0.130, "r_top": 0.154, "r_knee": 0.080, "r_ankle": 0.053, "r_paw": 0.068},
   "rear_leg": {"x": 0.182, "y_top": 0.745, "z_top": 0.705,
