@@ -926,3 +926,13 @@ Prosedürel tam-gövde kurt tabanı. Kasıtlı kaba; eleştiri döngüsünün ha
 - occiput (y-0.160) top_z 0.944→0.934, neck_front (y-0.120) top_z 0.938→0.926 (kafa-boyun üstü kademeli, kambur yumuşadı) — kusur 1.
 **Sonuç render notu:** round_88_side/three_q/front.png — kafa arkasından boyna akış pürüzsüz, occiput kamburu hafifledi, ense vadisi doğal korundu; mesh sağlam 29376 tri.
 **Sonraki tura öncelik:** Snout-yanak (zygomatic) geçiş; genel oran (gövde uzunluk/yükseklik); arka bacak hock açı; pati parmak son.
+
+## Round 89 — 2026-06-01
+**Önceki (round 88) en büyük 3 kusur:**
+1. Snout-yanak (zygomatic) geçişi three_q'da keskin hatlı (snout yan duvarı→yanak ani).
+2. Genel oran (kabul edilebilir).
+3. Yüz mikro-detay — kalıcı.
+**Uygulanan parametre değişiklikleri:**
+- muzzle_end (y-0.250) hw 0.152→0.156, stop/zygomatic (y-0.225) hw 0.158→0.166 (snout→yanak kademeli dolgun geçiş) — kusur 1.
+**Sonuç render notu:** round_89_three_q/front.png — snout tabanından yanağa akış yumuşadı, gözaltı/zygomatic bölge dolgun, keskin hat azaldı; kafa daha doğal kurt yüzü; mesh sağlam 29376 tri.
+**Sonraki tura öncelik:** Genel oran (gövde uzunluk/yükseklik) son kontrol; pati parmak son; göğüs front alt hattı; sırt-bel topline.
