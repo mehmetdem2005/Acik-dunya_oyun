@@ -184,7 +184,7 @@ def _paw_points(x, paw_y, r_paw, paw_len):
     ]
 
 
-def _flatten_paw(ob, z_thresh=0.085, floor=0.018, squash=0.45):
+def _flatten_paw(ob, z_thresh=0.095, floor=0.016, squash=0.38):
     """Pati bölgesini (z < z_thresh) yere yassılaştır: küre yerine düz taban verir."""
     me = ob.data
     for v in me.vertices:
