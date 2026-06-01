@@ -1080,3 +1080,13 @@ Prosedürel tam-gövde kurt tabanı. Kasıtlı kaba; eleştiri döngüsünün ha
 - Gövde silüeti sağlam, mesh sağlam, regresyon yok.
 **KARAR:** Kulak iç oyuk TUTULDU — belirgin kazanç. (Top'ta hafif doluluk kaldı, kabul edilebilir.)
 **Sonraki tura öncelik:** Boğaz side; topline son; pati denge; kulak top'tan hafif inceltme.
+
+## Round 103 — 2026-06-01
+**Önceki (round 102) en büyük 3 kusur:**
+1. Kulaklar top/front'ta hâlâ biraz kalın-dolu (zarif kurt kulağı için inceltme gerek).
+2. Yüz mikro-detay — kalıcı.
+3. Genel rötuş.
+**Uygulanan parametre değişiklikleri:**
+- ear width 0.086→0.078 (taban dar, top'tan ince), height 0.280→0.290 (zarif yüksek), lean_back_deg 10→12 (hafif arkaya) — kusur 1.
+**Sonuç render notu:** round_103_front/three_q.png — kulaklar ince+sivri+dik zarif kurt kulağı, concha korundu; top'ta dış sırt hafif yuvarlak (kabul edilebilir); side dik; mesh sağlam 29472 tri.
+**Sonraki tura öncelik:** Boğaz side; topline son; pati denge; göğüs prosternum.
