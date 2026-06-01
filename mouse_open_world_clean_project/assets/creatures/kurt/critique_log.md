@@ -555,3 +555,13 @@ Prosedürel tam-gövde kurt tabanı. Kasıtlı kaba; eleştiri döngüsünün ha
 - (İç deneme: ilk depth=0.012/seg=12 etkisiz kaldı; depth 0.030 + seg 20 + toe forward 0.045 ile belirgin parmak ayrımı.)
 **Sonuç render notu:** round_52_front/three_q.png — ön ve arka patilerde belirgin 3 parmak ayrımı, gerçek ayak hissi; mesh sağlam, kopma yok. tri 21696→28352.
 **Sonraki tura öncelik:** Gövde top omuz genişlik; göğüs front V/keel daralma; baş side çene/gıdı; parmak ayrımı ince ayar (gerekirse derinlik).
+
+## Round 53 — 2026-06-01
+**Önceki (round 52) en büyük 3 kusur:**
+1. Göğüs/karın front'ta alttan yuvarlak şişman (keel/V yok).
+2. Gövde top omuz genişlik.
+3. Baş side çene/gıdı.
+**Uygulanan parametre/generator değişiklikleri:**
+- generator ring_xz: ventral (zu<0) bölgede x *= 1+0.18*zu (alt gövde %16'ya kadar daralır) — göğüs/karın keel (V) hissi, alttan dar — kusur 1.
+**Sonuç render notu:** round_53_front/three_q.png — göğüs alt kısmı daraldı, keel hissi, daha az şişman fıçı; mesh sağlam.
+**Sonraki tura öncelik:** Baş side çene/gıdı (alt çene hattı belirgin); gövde top omuz hafif dar; kafa side stop (alın-burun açısı) belirgin; göz çukuru/kaş hafif.

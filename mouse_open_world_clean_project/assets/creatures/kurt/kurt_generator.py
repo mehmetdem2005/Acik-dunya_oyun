@@ -97,6 +97,7 @@ def ring_xz(hw, top_z, bot_z, segments):
         zu = math.cos(th)
         if zu < 0:
             zu *= 0.90
+            x *= 1.0 + 0.18 * zu  # ventral (alt) hafif daralt: göğüs/karın keel (V) hissi
         pts.append((x, vc + vh * zu))
     return pts
 
