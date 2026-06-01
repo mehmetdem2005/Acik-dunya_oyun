@@ -1243,3 +1243,13 @@ Prosedürel tam-gövde kurt tabanı. Kasıtlı kaba; eleştiri döngüsünün ha
 - withers (y0.105) top_z 0.952→0.962 (omuz tepesi/skapula çıkıntısı vurgu) — kusur 1.
 **Sonuç render notu:** round_118_side/three_q/top.png — withers omuz tepesi belirgin skapula çıkıntısı, klasik kurt topline (kafa-boyun-omuz tepe-sırt iniş); topline pürüzsüz; mesh sağlam 29472 tri.
 **Sonraki tura öncelik:** Genel rötuş; göğüs; kafa; bel.
+
+## Round 119 — 2026-06-01
+**Önceki (round 118) en büyük 3 kusur:**
+1. Front'ta göğüs ön bacaklar arası keel/sternum çıkıntısı hafif fazla (orta sarkık nokta).
+2. Genel rötuş.
+3. Yüz mikro-detay göz/burun — kalıcı.
+**Uygulanan parametre değişiklikleri:**
+- chest (y0.205) bot_z 0.216→0.226 (keel hafif yukarı, front orta çıkıntı azaldı; side göğüs derinliği korundu) — kusur 1.
+**Sonuç render notu:** round_119_front/side/three_q.png — front bacak arası temizlendi, sternum çıkıntısı yumuşadı, side derin göğüs korundu; mesh sağlam 29472 tri.
+**Sonraki tura öncelik:** Genel rötuş; kafa; arka çeyrek; kuyruk.
