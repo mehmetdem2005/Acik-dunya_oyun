@@ -1038,3 +1038,15 @@ Prosedürel tam-gövde kurt tabanı. Kasıtlı kaba; eleştiri döngüsünün ha
 - rear_leg r_top 0.168→0.176, r_knee 0.094→0.098 (uyluk kaslı/dolgun, güçlü arka çeyrek; hock daralması korundu) — kusur 1.
 **Sonuç render notu:** round_99_side/rear_q/three_q.png — arka uyluk kaslı, kaslı femur→ince hock daralması belirgin, güçlü atletik arka çeyrek; kalça-uyluk kesintisiz; mesh sağlam 29376 tri.
 **Sonraki tura öncelik:** Ön kol (humerus) side kas dengesi (arka ile uyum); topline son; kafa alt çene; boğaz.
+
+## Round 100 — 2026-06-01
+**Önceki (round 99) en büyük 3 kusur:**
+1. Ön kol (humerus/omuz) side'da arka uyluğa göre ince kaldı (R99 sonrası denge bozuldu).
+2. Topline (kabul edilebilir).
+3. Yüz mikro-detay — kalıcı.
+**Uygulanan parametre değişiklikleri:**
+- front_leg r_top 0.146→0.154, r_knee 0.076→0.080 (ön kol kaslı, arka uylukla dengeli) — kusur 1.
+**Sonuç render notu:** round_100_side/three_q/front.png — ön kol dolgun, omuz-kol kaslı, ön/arka çeyrek kas dengesi atletik kurt; mesh sağlam 29376 tri.
+**KILOMETRE TAŞI:** Round 100 tamamlandı. Genel silüet referans gri-kurt anatomisine güçlü yakınlık: üçgen kafa+dik kulaklar, orta-uzun düz snout+stop, kaslı boyun, derin göğüs, ince bel tuck, kaslı arka çeyrek, geriye-yatık gür kuyruk, digitigrade bacaklar.
+**KALAN KALICI KUSUR:** yüz mikro-detay (göz çukuru/burun deliği/ağız hattı) — seg16+subsurf2'de modellenemiyor.
+**Sonraki tura öncelik:** Topline son; boğaz side; kafa alt çene son; pati son denge.
