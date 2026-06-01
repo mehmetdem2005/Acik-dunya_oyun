@@ -710,3 +710,13 @@ Prosedürel tam-gövde kurt tabanı. Kasıtlı kaba; eleştiri döngüsünün ha
 - (İç deneme: width 0.114 yuvarlak çıktı → 0.094'e düşürüldü, daha sivri.) — kusur 1.
 **Sonuç render notu:** round_67_front/three_q.png — kulaklar belirgin büyüdü, daha dik+sivri, kulaklar arası doğal açıklık; mesh sağlam.
 **Sonraki tura öncelik:** Kuyruk uç kıvrım azalt (düz/aşağı); gövde top genişliği inceltme (oval→ince atletik); göğüs front simetri.
+
+## Round 68 — 2026-06-01
+**Önceki (round 67) en büyük 3 kusur:**
+1. Kuyruk ucu fazla yukarı kıvrık (referans düz/aşağı sarkık).
+2. Gövde top'tan geniş/oval.
+3. Göğüs front simetri.
+**Uygulanan parametre değişiklikleri:**
+- tail tip_lift 0.018→0.0 (uç yukarı kıvrımı kaldırıldı), droop 0.54→0.62 (kuyruk daha aşağı sarkar) — kusur 1.
+**Sonuç render notu:** round_68_side/rear_q.png — kuyruk düz/aşağı sarkık, doğal gür süpürge; uç kıvrımı gitti; mesh sağlam.
+**Sonraki tura öncelik:** Gövde top genişliği inceltme (oval→atletik); göğüs front simetri; boyun-kafa geçiş; genel uzunluk/yükseklik oranı.
