@@ -752,3 +752,14 @@ Prosedürel tam-gövde kurt tabanı. Kasıtlı kaba; eleştiri döngüsünün ha
 - neck_front top_z 0.922→0.918 (uyumlu) — kusur 1.
 **Sonuç render notu:** round_71_three_q/side.png — boyun-kafa geçişi yumuşak, ense ani kırılma gitti, doğal kavis; yeni istasyon temiz kaynaştı; mesh sağlam (28864 tri).
 **Sonraki tura öncelik:** Göğüs front simetri/dolgunluk; genel uzunluk/yükseklik; arka bacak side açı; snout uç (burun topuzu).
+
+## Round 72 — 2026-06-01
+**Önceki (round 71) en büyük 3 kusur:**
+1. Burun ucu hafif yukarı kalkık+sivri konik (referans düz/hafif aşağı + nose pad topuzu).
+2. Göğüs front simetri.
+3. Genel uzunluk/yükseklik.
+**Uygulanan parametre değişiklikleri:**
+- nose_tip top_z 0.690→0.668, bot_z 0.612→0.598 (burun ucu hafif aşağı eğildi), hw 0.078→0.082 (uç dolgun, nose pad).
+- muzzle top_z 0.730→0.726, hw 0.108→0.110 (uyumlu geçiş) — kusur 1.
+**Sonuç render notu:** round_72_side/three_q.png — burun ucu doğal hafif aşağı, nose pad dolgunluğu, yukarı kalkıklık gitti; mesh sağlam.
+**Sonraki tura öncelik:** Göğüs front simetri/dolgunluk; genel uzunluk/yükseklik oranı; arka bacak side hock açısı; withers (omuz) tepe belirginliği.
