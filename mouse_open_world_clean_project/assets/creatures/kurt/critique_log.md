@@ -657,3 +657,13 @@ Prosedürel tam-gövde kurt tabanı. Kasıtlı kaba; eleştiri döngüsünün ha
 - front_leg r_paw 0.070→0.063, rear_leg r_paw 0.072→0.065 (patiler küçüldü, bacak-pati orantısı doğal, parmak ayrımı korundu) — kusur 1.
 **Sonuç render notu:** round_62_three_q/front.png — patiler daha az yumru, çevik kurt ayağı, orantı doğal; mesh sağlam.
 **Sonraki tura öncelik:** Kuyruk uç toparlama (uç hafif sivri/tutam); sırt topline; baş three_q boyun geçiş; ön bacak side hafif öne (tekrar kontrol).
+
+## Round 63 — 2026-06-01
+**Önceki (round 62) en büyük 3 kusur:**
+1. Kuyruk uç toparlama (uç biraz tıknaz, gövde gürlüğü artabilir).
+2. Sırt topline son rötuş.
+3. Baş three_q boyun geçiş.
+**Uygulanan parametre değişiklikleri:**
+- tail length 0.58→0.60, tip_r 0.060→0.050 (uç incelir/toparlanır), bush 1.55→1.62 (gövdesi gür), base_r 0.135→0.132, droop 0.52→0.54 — kusur 1.
+**Sonuç render notu:** round_63_rear_q/three_q.png — kuyruk gür süpürge, uç ince/toparlı, doğal sarkma; mesh sağlam.
+**Sonraki tura öncelik:** Sırt topline son rötuş; baş three_q boyun geçiş; arka bacak side hock-pati hizası; genel oran ince ayar.
