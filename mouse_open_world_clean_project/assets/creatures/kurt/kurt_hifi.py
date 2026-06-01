@@ -205,12 +205,21 @@ def add_fur(ob, count, children, length=0.055):
     return ps
 
 
-def setup_cycles(samples, w, h):
+def setup_cycles(samples, w, h, denoise=False):
     sc = bpy.context.scene
     sc.render.engine = "CYCLES"
     sc.cycles.device = "CPU"
     sc.cycles.samples = samples
-    sc.cycles.use_denoising = False
+    if denoise:
+        # OIDN denoiser (resmî Blender build'inde var) → düşük örnekte temiz
+        sc.cycles.use_denoising = True
+        try:
+            sc.cycles.denoiser = "OPENIMAGEDENOISE"
+            sc.cycles.denoising_input_passes = "RGB_ALBEDO_NORMAL"
+        except Exception:
+            pass
+    else:
+        sc.cycles.use_denoising = False
     sc.render.resolution_x = w
     sc.render.resolution_y = h
     world = bpy.data.worlds.new("W")
@@ -284,6 +293,7 @@ def parse_args():
     p.add_argument("--views", default="three_q")
     p.add_argument("--tag", default="hifi_01")
     p.add_argument("--mode", default="hair", choices=["hair", "pelt"])
+    p.add_argument("--denoise", action="store_true")
     p.add_argument("--save-blend", action="store_true")
     return p.parse_args(argv)
 
@@ -314,7 +324,7 @@ def main():
     if a.save_blend:
         bpy.ops.wm.save_as_mainfile(filepath=os.path.join(DIR, "kurt_hifi.blend"))
 
-    setup_cycles(a.samples, a.width, a.height)
+    setup_cycles(a.samples, a.width, a.height, denoise=a.denoise)
     add_lights()
     render_views(a.views.split(","), a.tag)
 
