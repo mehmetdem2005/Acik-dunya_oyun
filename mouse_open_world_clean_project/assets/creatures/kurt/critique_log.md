@@ -595,3 +595,13 @@ Prosedürel tam-gövde kurt tabanı. Kasıtlı kaba; eleştiri döngüsünün ha
 - hip hw 0.226→0.242, bot_z 0.360→0.328 (but aşağı dolgunlaştı); rump hw 0.186→0.198, bot_z 0.425→0.410 (but arkası dolgun) — kusur 1.
 **Sonuç render notu:** round_56_side/three_q.png — but/kalça dolgun, but kası arka bacakla kaynaştı, güçlü uyluk; mesh sağlam.
 **Sonraki tura öncelik:** Gövde top omuz hafif dar; göz/kaş çıkıntısı (kafatası yan); göğüs/sternum side önde çıkıntı (ön bacak önü); pati parmak ayrımı ince ayar.
+
+## Round 57 — 2026-06-01
+**Önceki (round 56) en büyük 3 kusur:**
+1. Göğüs/sternum side önde çıkıntı yok (göğüs ön bacakların önünde dolgun olmalı).
+2. Gövde top omuz dar.
+3. Göz/kaş çıkıntısı.
+**Uygulanan parametre değişiklikleri:**
+- neck_base bot_z 0.400→0.358, withers bot_z 0.335→0.300 (göğüs önü-altı dolgunlaştı, sternum/prosternum hissi) — kusur 1.
+**Sonuç render notu:** round_57_side/front.png — göğüs önü dolgun, sternum çıkıntısı, derin göğüs; bacak arası temiz (sarkma yok); mesh sağlam.
+**Sonraki tura öncelik:** Gövde top omuz hafif dar; göz/kaş çıkıntısı; ön bacak alt (bilek/metacarpus) hafif açı; pati biraz büyük olabilir (orantı).
