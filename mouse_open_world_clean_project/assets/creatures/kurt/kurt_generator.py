@@ -199,11 +199,14 @@ def build_rear_leg(P, side, name):
 def build_tail(P, name="KurtKuyruk"):
     T = P["tail"]; n = T["segments"]
     base = P["body_stations"][-1]
-    by, bz = base[0], 0.5 * (base[2] + base[3])
+    # Kuyruk dibini rumpa GÖMMEK için başlangıcı gövde içine (öne) ve yukarı al;
+    # böylece kopuk muz görünümü yerine rumpla kaynaşan bir base oluşur.
+    by = base[0] - 0.06
+    bz = 0.5 * (base[2] + base[3]) + 0.04
     pts = []
     for i in range(n + 1):
         t = i / n
-        y = by + T["length"] * t
+        y = by + (T["length"] + 0.06) * t
         z = bz - T["droop"] * (t ** 1.6)
         r = (T["base_r"] * (1 - t) + T["tip_r"] * t) * (1 + (T["bush"] - 1) * math.sin(math.pi * min(t * 1.2, 1)))
         pts.append(((0.0, y, z), r))
