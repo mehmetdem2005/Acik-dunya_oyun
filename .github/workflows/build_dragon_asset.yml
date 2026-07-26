@@ -99,14 +99,28 @@ jobs:
       - name: Generate production asset in Blender
         shell: bash
         run: |
-          set -euo pipefail
+          set +e
           BLENDER="${GITHUB_WORKSPACE}/.cache/blender/blender-${BLENDER_VERSION}-linux-x64/blender"
           rm -f "${ASSET_OUTPUT}/dragon_build_failure.json"
           "${BLENDER}" --background --factory-startup \
             --python tools/dragon_production/generate_dragon.py -- \
             --output "${ASSET_OUTPUT}" \
             --texture-size 1024 \
-            --preview-size 768
+            --preview-size 768 > dragon-generation.log 2>&1
+          status=$?
+          cat dragon-generation.log
+          exit "$status"
+
+      - name: Upload generation diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: dragon-generation-diagnostics
+          path: |
+            dragon-generation.log
+            assets/characters/dragon/dragon_build_failure.json
+          if-no-files-found: warn
+          retention-days: 7
 
       - name: Reopen blend and run independent QA
         shell: bash
