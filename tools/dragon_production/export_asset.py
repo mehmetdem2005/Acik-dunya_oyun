@@ -41,7 +41,12 @@ def export_gltf_assets(output_dir: Path, export_separate: bool = True, export_gl
     return result
 
 
-def write_manifest(output_dir: Path, qa_report: dict, export_paths: dict[str, str]) -> Path:
+def write_manifest(
+    output_dir: Path,
+    qa_report: dict,
+    export_paths: dict[str, str],
+    gltf_qa_report: dict | None = None,
+) -> Path:
     manifest = {
         "asset": "Dragon_Master",
         "version": "1.0.0",
@@ -62,6 +67,7 @@ def write_manifest(output_dir: Path, qa_report: dict, export_paths: dict[str, st
         "exports": {key: Path(value).name for key, value in export_paths.items()},
         "required_actions": list(REQUIRED_ACTIONS),
         "qa_summary": qa_report.get("summary", {}),
+        "gltf_qa_summary": (gltf_qa_report or {}).get("summary", {}),
         "triangle_counts": qa_report.get("triangle_counts", {}),
         "materials": qa_report.get("materials", []),
         "license_note": "Original procedural production asset generated for this repository from the supplied visual reference.",
@@ -76,7 +82,9 @@ def _select_asset_objects() -> tuple[list[bpy.types.Object], dict[bpy.types.Obje
     selected: list[bpy.types.Object] = []
     hidden_states: dict[bpy.types.Object, bool] = {}
     for obj in bpy.data.objects:
-        if not obj.name.startswith("Dragon_"):
+        is_named_asset = obj.name.startswith("Dragon_")
+        is_collision_proxy = obj.get("asset_role") == "collision_proxy"
+        if not (is_named_asset or is_collision_proxy):
             continue
         hidden_states[obj] = obj.hide_get()
         obj.hide_set(False)
