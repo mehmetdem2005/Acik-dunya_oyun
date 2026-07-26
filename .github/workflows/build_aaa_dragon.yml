@@ -49,8 +49,13 @@ jobs:
           python3 tools/dragon_pipeline/harden_builder.py \
             tools/dragon_pipeline/build_dragon.py
 
-      - name: Install texture dependencies
+      - name: Install Blender runtime and texture dependencies
         run: |
+          set -euxo pipefail
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            libegl1 libgl1 libx11-6 libxi6 libxrender1 libxfixes3 \
+            libxkbcommon0 libsm6 libice6
           python3 -m pip install --upgrade pip
           python3 -m pip install numpy pillow
 
