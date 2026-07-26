@@ -5,7 +5,7 @@ on:
     paths:
       - ".github/workflows/build_aaa_dragon.yml"
       - "tools/dragon_pipeline/**"
-      - "assets/characters/dragon/reference/**"
+      - "assets/characters/dragon/**"
   workflow_dispatch:
     inputs:
       texture_size:
@@ -39,6 +39,15 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Restore Blender builder source
+        run: |
+          set -euxo pipefail
+          cat tools/dragon_pipeline/build_dragon.py.gz.b64.part* \
+            | base64 --decode \
+            | gzip --decompress \
+            > tools/dragon_pipeline/build_dragon.py
+          test -s tools/dragon_pipeline/build_dragon.py
+
       - name: Install texture dependencies
         run: |
           python3 -m pip install --upgrade pip
@@ -67,7 +76,6 @@ jobs:
             --python tools/dragon_pipeline/build_dragon.py -- \
             --output "$OUTPUT_DIR" \
             --textures "$TEXTURE_DIR" \
-            --reference assets/characters/dragon/reference/dragon_reference.jpg \
             --blend "$BLEND_FILE"
 
       - name: Validate required outputs
@@ -94,7 +102,7 @@ jobs:
       - name: Package outputs
         run: |
           cp -r "$TEXTURE_DIR" "$OUTPUT_DIR/source_textures"
-          cp assets/characters/dragon/reference/dragon_reference.jpg "$OUTPUT_DIR/reference_dragon.jpg"
+          cp tools/dragon_pipeline/build_dragon.py "$OUTPUT_DIR/build_dragon.py"
           cd build
           zip -r dragon_aaa_asset.zip dragon
 
