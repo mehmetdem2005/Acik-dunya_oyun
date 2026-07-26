@@ -1,0 +1,197 @@
+{
+  "asset": "Dragon_Master",
+  "target_engine": "Godot 4.6",
+  "format": "glTF 2.0 metallic-roughness",
+  "summary": {
+    "errors": 0,
+    "warnings": 0,
+    "mesh_objects": 24,
+    "bones": 67,
+    "actions": 20
+  },
+  "triangle_counts": {
+    "Chest_Collision": 168,
+    "Dragon_Eyes": 1248,
+    "Dragon_Horns": 1180,
+    "Dragon_LOD0": 22888,
+    "Dragon_LOD1": 14188,
+    "Dragon_LOD2": 8238,
+    "Dragon_LOD3": 4119,
+    "Dragon_LOD4": 1831,
+    "Dragon_Mobile": 9612,
+    "Dragon_ShadowProxy": 1831,
+    "Dragon_Teeth": 592,
+    "Dragon_Tongue": 72,
+    "FrontLeg_Collision_L": 40,
+    "FrontLeg_Collision_R": 40,
+    "Head_Collision": 168,
+    "Neck_Collision": 40,
+    "Pelvis_Collision": 168,
+    "RearLeg_Collision_L": 40,
+    "RearLeg_Collision_R": 40,
+    "Tail_Collision_01": 40,
+    "Tail_Collision_02": 40,
+    "Tail_Collision_03": 40,
+    "Wing_Collision_L": 40,
+    "Wing_Collision_R": 40
+  },
+  "vertex_counts": {
+    "Chest_Collision": 86,
+    "Dragon_Eyes": 628,
+    "Dragon_Horns": 698,
+    "Dragon_LOD0": 15783,
+    "Dragon_LOD1": 11433,
+    "Dragon_LOD2": 8458,
+    "Dragon_LOD3": 5573,
+    "Dragon_LOD4": 1855,
+    "Dragon_Mobile": 9145,
+    "Dragon_ShadowProxy": 1855,
+    "Dragon_Teeth": 368,
+    "Dragon_Tongue": 38,
+    "FrontLeg_Collision_L": 22,
+    "FrontLeg_Collision_R": 22,
+    "Head_Collision": 86,
+    "Neck_Collision": 22,
+    "Pelvis_Collision": 86,
+    "RearLeg_Collision_L": 22,
+    "RearLeg_Collision_R": 22,
+    "Tail_Collision_01": 22,
+    "Tail_Collision_02": 22,
+    "Tail_Collision_03": 22,
+    "Wing_Collision_L": 22,
+    "Wing_Collision_R": 22
+  },
+  "actions": {
+    "Idle_Ground": {
+      "frame_start": 0.0,
+      "frame_end": 0.0,
+      "fcurves": 9,
+      "loop": true
+    },
+    "Idle_Alert": {
+      "frame_start": 0.0,
+      "frame_end": 0.0,
+      "fcurves": 51,
+      "loop": true
+    },
+    "Walk": {
+      "frame_start": 0.0,
+      "frame_end": 0.0,
+      "fcurves": 48,
+      "loop": true
+    },
+    "Run": {
+      "frame_start": 0.0,
+      "frame_end": 0.0,
+      "fcurves": 48,
+      "loop": true
+    },
+    "Turn_Left_90": {
+      "frame_start": 0.0,
+      "frame_end": 0.0,
+      "fcurves": 15,
+      "loop": false
+    },
+    "Turn_Right_90": {
+      "frame_start": 0.0,
+      "frame_end": 0.0,
+      "fcurves": 15,
+      "loop": false
+    },
+    "Takeoff": {
+      "frame_start": 0.0,
+      "frame_end": 0.0,
+      "fcurves": 69,
+      "loop": false
+    },
+    "Flight_Forward": {
+      "frame_start": 0.0,
+      "frame_end": 0.0,
+      "fcurves": 72,
+      "loop": true
+    },
+    "Flight_Glide": {
+      "frame_start": 0.0,
+      "frame_end": 0.0,
+      "fcurves": 72,
+      "loop": true
+    },
+    "Flight_Hover": {
+      "frame_start": 0.0,
+      "frame_end": 0.0,
+      "fcurves": 78,
+      "loop": true
+    },
+    "Landing": {
+      "frame_start": 0.0,
+      "frame_end": 0.0,
+      "fcurves": 75,
+      "loop": false
+    },
+    "Wing_Fold": {
+      "frame_start": 0.0,
+      "frame_end": 0.0,
+      "fcurves": 42,
+      "loop": false
+    },
+    "Wing_Unfold": {
+      "frame_start": 0.0,
+      "frame_end": 0.0,
+      "fcurves": 42,
+      "loop": false
+    },
+    "Roar": {
+      "frame_start": 0.0,
+      "frame_end": 0.0,
+      "fcurves": 12,
+      "loop": false
+    },
+    "Bite_Attack": {
+      "frame_start": 0.0,
+      "frame_end": 0.0,
+      "fcurves": 9,
+      "loop": false
+    },
+    "Claw_Attack_Left": {
+      "frame_start": 0.0,
+      "frame_end": 0.0,
+      "fcurves": 15,
+      "loop": false
+    },
+    "Claw_Attack_Right": {
+      "frame_start": 0.0,
+      "frame_end": 0.0,
+      "fcurves": 15,
+      "loop": false
+    },
+    "Tail_Attack": {
+      "frame_start": 0.0,
+      "frame_end": 0.0,
+      "fcurves": 30,
+      "loop": false
+    },
+    "Hit_Reaction": {
+      "frame_start": 0.0,
+      "frame_end": 0.0,
+      "fcurves": 9,
+      "loop": false
+    },
+    "Death": {
+      "frame_start": 0.0,
+      "frame_end": 0.0,
+      "fcurves": 60,
+      "loop": false
+    }
+  },
+  "materials": [
+    "M_Dragon_Body",
+    "M_Dragon_Eyes",
+    "M_Dragon_Horns_Claws",
+    "M_Dragon_Mouth",
+    "M_Dragon_Scars",
+    "M_Dragon_Teeth",
+    "M_Dragon_Ventral",
+    "M_Dragon_WingMembrane"
+  ],
+  "findings": []
+}

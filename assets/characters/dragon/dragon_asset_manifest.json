@@ -1,0 +1,89 @@
+{
+  "asset": "Dragon_Master",
+  "version": "1.0.0",
+  "target_engine": "Godot 4.6",
+  "orientation": {
+    "authoring_up": "+Z",
+    "authoring_forward": "-Y",
+    "gltf_up": "+Y",
+    "gltf_forward": "-Z",
+    "units": "meters"
+  },
+  "dimensions_m": {
+    "nose_to_tail": 12.7,
+    "shoulder_height": 4.05,
+    "head_height": 7.95,
+    "wingspan_open": 16.9
+  },
+  "exports": {
+    "gltf": "dragon_master.gltf",
+    "bin": "dragon_master.bin",
+    "glb": "dragon_master.glb"
+  },
+  "required_actions": [
+    "Idle_Ground",
+    "Idle_Alert",
+    "Walk",
+    "Run",
+    "Turn_Left_90",
+    "Turn_Right_90",
+    "Takeoff",
+    "Flight_Forward",
+    "Flight_Glide",
+    "Flight_Hover",
+    "Landing",
+    "Wing_Fold",
+    "Wing_Unfold",
+    "Roar",
+    "Bite_Attack",
+    "Claw_Attack_Left",
+    "Claw_Attack_Right",
+    "Tail_Attack",
+    "Hit_Reaction",
+    "Death"
+  ],
+  "qa_summary": {
+    "errors": 0,
+    "warnings": 0,
+    "mesh_objects": 24,
+    "bones": 67,
+    "actions": 20
+  },
+  "triangle_counts": {
+    "Chest_Collision": 168,
+    "Dragon_Eyes": 1248,
+    "Dragon_Horns": 1180,
+    "Dragon_LOD0": 22888,
+    "Dragon_LOD1": 14188,
+    "Dragon_LOD2": 8238,
+    "Dragon_LOD3": 4119,
+    "Dragon_LOD4": 1831,
+    "Dragon_Mobile": 9612,
+    "Dragon_ShadowProxy": 1831,
+    "Dragon_Teeth": 592,
+    "Dragon_Tongue": 72,
+    "FrontLeg_Collision_L": 40,
+    "FrontLeg_Collision_R": 40,
+    "Head_Collision": 168,
+    "Neck_Collision": 40,
+    "Pelvis_Collision": 168,
+    "RearLeg_Collision_L": 40,
+    "RearLeg_Collision_R": 40,
+    "Tail_Collision_01": 40,
+    "Tail_Collision_02": 40,
+    "Tail_Collision_03": 40,
+    "Wing_Collision_L": 40,
+    "Wing_Collision_R": 40
+  },
+  "materials": [
+    "M_Dragon_Body",
+    "M_Dragon_Eyes",
+    "M_Dragon_Horns_Claws",
+    "M_Dragon_Mouth",
+    "M_Dragon_Scars",
+    "M_Dragon_Teeth",
+    "M_Dragon_Ventral",
+    "M_Dragon_WingMembrane"
+  ],
+  "license_note": "Original procedural production asset generated for this repository from the supplied visual reference."
+}

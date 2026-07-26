@@ -1,0 +1,65 @@
+{
+  "status": "success",
+  "blend": "/home/runner/work/Acik-dunya_oyun/Acik-dunya_oyun/assets/characters/dragon/dragon_master.blend",
+  "exports": {
+    "gltf": "/home/runner/work/Acik-dunya_oyun/Acik-dunya_oyun/assets/characters/dragon/dragon_master.gltf",
+    "bin": "/home/runner/work/Acik-dunya_oyun/Acik-dunya_oyun/assets/characters/dragon/dragon_master.bin",
+    "glb": "/home/runner/work/Acik-dunya_oyun/Acik-dunya_oyun/assets/characters/dragon/dragon_master.glb"
+  },
+  "manifest": "/home/runner/work/Acik-dunya_oyun/Acik-dunya_oyun/assets/characters/dragon/dragon_asset_manifest.json",
+  "qa": "/home/runner/work/Acik-dunya_oyun/Acik-dunya_oyun/assets/characters/dragon/dragon_qa_report.json",
+  "previews": [],
+  "objects": [
+    "Dragon_Eyes",
+    "Dragon_Horns",
+    "Dragon_LOD0",
+    "Dragon_Teeth",
+    "Dragon_Tongue"
+  ],
+  "lods": [
+    "Dragon_LOD0",
+    "Dragon_LOD1",
+    "Dragon_LOD2",
+    "Dragon_LOD3",
+    "Dragon_LOD4",
+    "Dragon_Mobile",
+    "Dragon_ShadowProxy"
+  ],
+  "collisions": [
+    "Chest_Collision",
+    "FrontLeg_Collision_L",
+    "FrontLeg_Collision_R",
+    "Head_Collision",
+    "Neck_Collision",
+    "Pelvis_Collision",
+    "RearLeg_Collision_L",
+    "RearLeg_Collision_R",
+    "Tail_Collision_01",
+    "Tail_Collision_02",
+    "Tail_Collision_03",
+    "Wing_Collision_L",
+    "Wing_Collision_R"
+  ],
+  "actions": [
+    "Bite_Attack",
+    "Claw_Attack_Left",
+    "Claw_Attack_Right",
+    "Death",
+    "Flight_Forward",
+    "Flight_Glide",
+    "Flight_Hover",
+    "Hit_Reaction",
+    "Idle_Alert",
+    "Idle_Ground",
+    "Landing",
+    "Roar",
+    "Run",
+    "Tail_Attack",
+    "Takeoff",
+    "Turn_Left_90",
+    "Turn_Right_90",
+    "Walk",
+    "Wing_Fold",
+    "Wing_Unfold"
+  ]
+}

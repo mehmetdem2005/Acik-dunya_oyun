@@ -1,0 +1,13 @@
+name: Build Production Dragon Asset
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  maintenance:
+    runs-on: ubuntu-24.04
+    steps:
+      - run: echo "Dragon pipeline maintenance mode."

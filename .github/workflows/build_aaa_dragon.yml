@@ -1,0 +1,185 @@
+name: Build AAA Dragon Asset
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/build_aaa_dragon.yml"
+      - "tools/dragon_pipeline/**"
+      - "assets/characters/dragon/**"
+  workflow_dispatch:
+    inputs:
+      texture_size:
+        description: "PBR texture resolution"
+        required: true
+        default: "2048"
+        type: choice
+        options:
+          - "1024"
+          - "2048"
+          - "4096"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: dragon-build-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-dragon:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 120
+    env:
+      BLENDER_VERSION: "4.2.0"
+      TEXTURE_SIZE: ${{ github.event.inputs.texture_size || '2048' }}
+      OUTPUT_DIR: build/dragon
+      TEXTURE_DIR: build/dragon_textures
+      BLEND_FILE: build/dragon/dragon_master.blend
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Restore and harden Blender builder source
+        run: |
+          set -euxo pipefail
+          cat tools/dragon_pipeline/build_dragon.py.gz.b64.part* \
+            | base64 --decode \
+            | gzip --decompress \
+            > tools/dragon_pipeline/build_dragon.py
+          python3 tools/dragon_pipeline/harden_builder.py \
+            tools/dragon_pipeline/build_dragon.py
+
+      - name: Install Blender runtime and texture dependencies
+        run: |
+          set -euxo pipefail
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            libegl1 libgl1 libx11-6 libxi6 libxrender1 libxfixes3 \
+            libxkbcommon0 libsm6 libice6
+          python3 -m pip install --upgrade pip
+          python3 -m pip install numpy pillow
+
+      - name: Download Blender LTS
+        run: |
+          set -euxo pipefail
+          curl -L --retry 5 --retry-delay 5 \
+            "https://download.blender.org/release/Blender4.2/blender-${BLENDER_VERSION}-linux-x64.tar.xz" \
+            -o blender.tar.xz
+          tar -xf blender.tar.xz
+          echo "$PWD/blender-${BLENDER_VERSION}-linux-x64" >> "$GITHUB_PATH"
+
+      - name: Generate PBR texture sets
+        run: |
+          python3 tools/dragon_pipeline/generate_textures.py \
+            --output "$TEXTURE_DIR" \
+            --size "$TEXTURE_SIZE"
+
+      - name: Build rigged dragon in Blender
+        run: |
+          set -o pipefail
+          mkdir -p "$OUTPUT_DIR"
+          blender --background --factory-startup --python-exit-code 1 \
+            --python tools/dragon_pipeline/build_dragon.py -- \
+            --output "$OUTPUT_DIR" \
+            --textures "$TEXTURE_DIR" \
+            --blend "$BLEND_FILE" \
+            2>&1 | tee "$OUTPUT_DIR/blender_build.log"
+
+      - name: Inspect generated deliverables
+        if: always()
+        run: |
+          echo "Generated files:"
+          find build -maxdepth 4 -type f -printf '%p | %s bytes\n' | sort || true
+
+      - name: Validate required outputs
+        run: |
+          set -euxo pipefail
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+
+          out = Path("build/dragon")
+          required = [
+              "dragon_master.blend",
+              "dragon_master.gltf",
+              "dragon_master.glb",
+              "dragon_mobile.glb",
+              "dragon_qa_report.json",
+              "dragon_asset_manifest.json",
+          ]
+          missing = [name for name in required if not (out / name).is_file() or (out / name).stat().st_size == 0]
+          if missing:
+              raise SystemExit(f"Missing or empty outputs: {missing}")
+
+          gltf = json.loads((out / "dragon_master.gltf").read_text(encoding="utf-8"))
+          buffers = gltf.get("buffers", [])
+          if not buffers:
+              raise SystemExit("dragon_master.gltf has no buffers")
+          for buffer in buffers:
+              uri = buffer.get("uri")
+              if uri and not uri.startswith("data:"):
+                  path = out / uri
+                  if not path.is_file() or path.stat().st_size == 0:
+                      raise SystemExit(f"Missing glTF external buffer: {path}")
+
+          for image in gltf.get("images", []):
+              uri = image.get("uri")
+              if uri and not uri.startswith("data:"):
+                  path = out / uri
+                  if not path.is_file() or path.stat().st_size == 0:
+                      raise SystemExit(f"Missing glTF image: {path}")
+
+          animations = gltf.get("animations", [])
+          if len(animations) != 20:
+              raise SystemExit(f"glTF contains {len(animations)} animations; expected 20")
+          names = [animation.get("name", "") for animation in animations]
+          if len(set(names)) != 20 or any(not name for name in names):
+              raise SystemExit(f"Animation names are empty or duplicated: {names}")
+
+          accessors = gltf.get("accessors", [])
+          for animation in animations:
+              durations = []
+              for sampler in animation.get("samplers", []):
+                  accessor = accessors[sampler["input"]]
+                  minimum = accessor.get("min", [0.0])[0]
+                  maximum = accessor.get("max", [0.0])[0]
+                  durations.append(maximum - minimum)
+              if not durations or max(durations) <= 0.0:
+                  raise SystemExit(f"Animation has zero duration: {animation.get('name')}")
+
+          qa = json.loads((out / "dragon_qa_report.json").read_text(encoding="utf-8"))
+          print(json.dumps(qa["summary"], indent=2))
+          print(json.dumps(qa["triangle_counts"], indent=2))
+          if qa["summary"]["errors"]:
+              raise SystemExit("Dragon QA contains blocking errors")
+          if qa["summary"]["animations"] != 20:
+              raise SystemExit("Expected exactly 20 animation clips")
+          PY
+
+      - name: Package outputs
+        if: success()
+        run: |
+          cp -r "$TEXTURE_DIR" "$OUTPUT_DIR/source_textures"
+          cp tools/dragon_pipeline/build_dragon.py "$OUTPUT_DIR/build_dragon.py"
+          cd build
+          zip -r dragon_aaa_asset.zip dragon
+
+      - name: Upload production artifact
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: dragon-aaa-production-asset
+          path: build/dragon_aaa_asset.zip
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Upload diagnostics on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: dragon-build-diagnostics
+          path: |
+            build/dragon
+            build/dragon_textures
+          if-no-files-found: warn
+          retention-days: 7
