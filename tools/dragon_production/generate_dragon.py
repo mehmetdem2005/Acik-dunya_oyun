@@ -15,6 +15,7 @@ if str(SCRIPT_DIR.parent) not in sys.path:
 from dragon_production.animations import build_all_actions
 from dragon_production.config import BuildSettings, ROOT_NAME
 from dragon_production.export_asset import export_gltf_assets, save_blend, write_manifest
+from dragon_production.gltf_validation import validate_gltf_payload
 from dragon_production.lod_collision import build_collision_proxies, build_lods
 from dragon_production.materials import build_materials
 from dragon_production.model_builder import build_dragon_geometry
@@ -76,11 +77,6 @@ def main() -> int:
         )
         actions = build_all_actions(armature)
 
-        preview_paths: list[Path] = []
-        if settings.render_previews:
-            camera, _ = setup_preview_scene(collections["preview"])
-            preview_paths = render_previews(camera, settings.previews_dir, settings.preview_size)
-
         qa_path = settings.output_dir / "dragon_qa_report.json"
         qa_report = validate_scene(qa_path)
         if qa_report["summary"]["errors"]:
@@ -95,7 +91,31 @@ def main() -> int:
             export_separate=settings.export_gltf_separate,
             export_glb=settings.export_glb,
         )
-        manifest_path = write_manifest(settings.output_dir, qa_report, export_paths)
+        gltf_qa_path = settings.output_dir / "dragon_gltf_qa_report.json"
+        gltf_qa_report = validate_gltf_payload(
+            settings.output_dir / "dragon_master.gltf",
+            settings.output_dir / "dragon_master.bin",
+            settings.output_dir / "dragon_master.glb",
+            gltf_qa_path,
+        )
+        if gltf_qa_report["summary"]["errors"]:
+            raise RuntimeError(
+                f"glTF QA failed with {gltf_qa_report['summary']['errors']} errors. "
+                f"See {gltf_qa_path}."
+            )
+
+        preview_paths: list[Path] = []
+        if settings.render_previews:
+            camera, _ = setup_preview_scene(collections["preview"])
+            preview_paths = render_previews(camera, settings.previews_dir, settings.preview_size)
+            blend_path = save_blend(settings.output_dir)
+
+        manifest_path = write_manifest(
+            settings.output_dir,
+            qa_report,
+            export_paths,
+            gltf_qa_report,
+        )
 
         build_summary = {
             "status": "success",
@@ -103,6 +123,7 @@ def main() -> int:
             "exports": export_paths,
             "manifest": str(manifest_path),
             "qa": str(qa_path),
+            "gltf_qa": str(gltf_qa_path),
             "previews": [str(path) for path in preview_paths],
             "objects": sorted(geometry.keys()),
             "lods": sorted(lods.keys()),
