@@ -6,7 +6,7 @@ on:
       - feat/aaa-dragon-blender
     paths:
       - "tools/dragon_production/**"
-      - "tools/bootstrap/dragon_production_sources.tar.gz.b64.part*"
+      - "tools/bootstrap/**"
       - "assets/characters/dragon/*.gd"
       - "assets/characters/dragon/*.tscn"
       - "assets/characters/dragon/README.md"
@@ -16,7 +16,7 @@ on:
       - main
     paths:
       - "tools/dragon_production/**"
-      - "tools/bootstrap/dragon_production_sources.tar.gz.b64.part*"
+      - "tools/bootstrap/**"
       - "assets/characters/dragon/*.gd"
       - "assets/characters/dragon/*.tscn"
       - "assets/characters/dragon/README.md"
@@ -45,31 +45,14 @@ jobs:
       - name: Checkout production branch
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0
+          fetch-depth: 1
+          show-progress: false
 
       - name: Bootstrap production sources
         shell: bash
         run: |
           set -euo pipefail
-          python - <<'PY'
-          from __future__ import annotations
-
-          import base64
-          import hashlib
-          from pathlib import Path
-
-          expected = "8eb9c8615e691635d6e378ce25693da19014dd736a0e2efafb6698eb5398be1d"
-          parts = sorted(Path("tools/bootstrap").glob("dragon_production_sources.tar.gz.b64.part*"))
-          if len(parts) != 6:
-              raise SystemExit(f"Expected 6 bootstrap parts, found {len(parts)}: {parts}")
-          encoded = b"".join(part.read_bytes().strip() for part in parts)
-          archive = base64.b64decode(encoded, validate=True)
-          actual = hashlib.sha256(archive).hexdigest()
-          print(f"Bootstrap parts={len(parts)} encoded_bytes={len(encoded)} archive_bytes={len(archive)} sha256={actual}")
-          if actual != expected:
-              raise SystemExit(f"Bootstrap checksum mismatch: expected {expected}, got {actual}")
-          Path("/tmp/dragon_production_sources.tar.gz").write_bytes(archive)
-          PY
+          python tools/bootstrap/unpack_dragon_sources.py
           gzip --test /tmp/dragon_production_sources.tar.gz
           tar -xzf /tmp/dragon_production_sources.tar.gz
 
