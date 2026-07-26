@@ -96,14 +96,25 @@ def validate_scene(output_path: Path | None = None) -> dict:
         action = bpy.data.actions.get(name)
         if action is None:
             continue
+        keyframes = [
+            float(point.co.x)
+            for fcurve in action.fcurves
+            for point in fcurve.keyframe_points
+        ]
+        frame_start = min(keyframes) if keyframes else 0.0
+        frame_end = max(keyframes) if keyframes else 0.0
         action_stats[name] = {
-            "frame_start": float(action.frame_start),
-            "frame_end": float(action.frame_end),
+            "frame_start": frame_start,
+            "frame_end": frame_end,
+            "duration_frames": max(0.0, frame_end - frame_start),
             "fcurves": len(action.fcurves),
+            "keyframes": len(keyframes),
             "loop": bool(action.get("loop", False)),
         }
-        if len(action.fcurves) == 0:
-            findings.append(Finding("ERROR", "EMPTY_ACTION", name, "Animation action contains no curves."))
+        if len(action.fcurves) == 0 or not keyframes:
+            findings.append(Finding("ERROR", "EMPTY_ACTION", name, "Animation action contains no keyed curves."))
+        elif frame_end <= frame_start:
+            findings.append(Finding("ERROR", "ZERO_DURATION_ACTION", name, f"Invalid frame range {frame_start}..{frame_end}."))
 
     errors = sum(1 for finding in findings if finding.severity == "ERROR")
     warnings = sum(1 for finding in findings if finding.severity == "WARNING")
