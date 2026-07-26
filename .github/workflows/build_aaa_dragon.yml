@@ -1,0 +1,107 @@
+name: Build AAA Dragon Asset
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/build_aaa_dragon.yml"
+      - "tools/dragon_pipeline/**"
+      - "assets/characters/dragon/reference/**"
+  workflow_dispatch:
+    inputs:
+      texture_size:
+        description: "PBR texture resolution"
+        required: true
+        default: "2048"
+        type: choice
+        options:
+          - "1024"
+          - "2048"
+          - "4096"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: dragon-build-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-dragon:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 120
+    env:
+      BLENDER_VERSION: "4.2.0"
+      TEXTURE_SIZE: ${{ github.event.inputs.texture_size || '2048' }}
+      OUTPUT_DIR: build/dragon
+      TEXTURE_DIR: build/dragon_textures
+      BLEND_FILE: build/dragon/dragon_master.blend
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install texture dependencies
+        run: |
+          python3 -m pip install --upgrade pip
+          python3 -m pip install numpy pillow
+
+      - name: Download Blender LTS
+        run: |
+          set -euxo pipefail
+          curl -L --retry 5 --retry-delay 5 \
+            "https://download.blender.org/release/Blender4.2/blender-${BLENDER_VERSION}-linux-x64.tar.xz" \
+            -o blender.tar.xz
+          tar -xf blender.tar.xz
+          echo "$PWD/blender-${BLENDER_VERSION}-linux-x64" >> "$GITHUB_PATH"
+
+      - name: Generate PBR texture sets
+        run: |
+          python3 tools/dragon_pipeline/generate_textures.py \
+            --output "$TEXTURE_DIR" \
+            --size "$TEXTURE_SIZE"
+
+      - name: Build rigged dragon in Blender
+        run: |
+          set -euxo pipefail
+          mkdir -p "$OUTPUT_DIR"
+          blender --background --factory-startup \
+            --python tools/dragon_pipeline/build_dragon.py -- \
+            --output "$OUTPUT_DIR" \
+            --textures "$TEXTURE_DIR" \
+            --reference assets/characters/dragon/reference/dragon_reference.jpg \
+            --blend "$BLEND_FILE"
+
+      - name: Validate required outputs
+        run: |
+          set -euxo pipefail
+          test -s "$OUTPUT_DIR/dragon_master.blend"
+          test -s "$OUTPUT_DIR/dragon_master.gltf"
+          test -s "$OUTPUT_DIR/dragon_master.bin"
+          test -s "$OUTPUT_DIR/dragon_master.glb"
+          test -s "$OUTPUT_DIR/dragon_mobile.glb"
+          test -s "$OUTPUT_DIR/dragon_qa_report.json"
+          test -s "$OUTPUT_DIR/dragon_asset_manifest.json"
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          qa = json.loads(Path("build/dragon/dragon_qa_report.json").read_text())
+          print(json.dumps(qa["summary"], indent=2))
+          if qa["summary"]["errors"]:
+              raise SystemExit("Dragon QA contains blocking errors")
+          if qa["summary"]["animations"] != 20:
+              raise SystemExit("Expected exactly 20 animation clips")
+          PY
+
+      - name: Package outputs
+        run: |
+          cp -r "$TEXTURE_DIR" "$OUTPUT_DIR/source_textures"
+          cp assets/characters/dragon/reference/dragon_reference.jpg "$OUTPUT_DIR/reference_dragon.jpg"
+          cd build
+          zip -r dragon_aaa_asset.zip dragon
+
+      - name: Upload production artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: dragon-aaa-production-asset
+          path: build/dragon_aaa_asset.zip
+          if-no-files-found: error
+          retention-days: 30
