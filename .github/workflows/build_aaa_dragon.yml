@@ -71,13 +71,14 @@ jobs:
 
       - name: Build rigged dragon in Blender
         run: |
-          set -euxo pipefail
+          set -o pipefail
           mkdir -p "$OUTPUT_DIR"
           blender --background --factory-startup --python-exit-code 1 \
             --python tools/dragon_pipeline/build_dragon.py -- \
             --output "$OUTPUT_DIR" \
             --textures "$TEXTURE_DIR" \
-            --blend "$BLEND_FILE"
+            --blend "$BLEND_FILE" \
+            2>&1 | tee "$OUTPUT_DIR/blender_build.log"
 
       - name: Inspect generated deliverables
         if: always()
