@@ -115,7 +115,9 @@ def _write_blender_image(name: str, rgba: np.ndarray, path: Path, colorspace: st
     if existing is not None:
         bpy.data.images.remove(existing)
     image = bpy.data.images.new(name=name, width=width, height=height, alpha=True, float_buffer=False)
-    image.pixels.foreach_set(np.ascontiguousarray(rgba, dtype=np.float32).ravel())
+    pixels = np.ascontiguousarray(np.clip(rgba, 0.0, 1.0), dtype=np.float32).ravel()
+    image.pixels.foreach_set(pixels)
+    image.update()
     try:
         image.colorspace_settings.name = colorspace
     except TypeError:
@@ -123,6 +125,16 @@ def _write_blender_image(name: str, rgba: np.ndarray, path: Path, colorspace: st
     image.filepath_raw = str(path)
     image.file_format = "PNG"
     image.save()
+    image.reload()
+
+    verification = np.empty(len(image.pixels), dtype=np.float32)
+    image.pixels.foreach_get(verification)
+    rgb = verification.reshape((-1, 4))[:, :3]
+    dynamic_range = float(rgb.max() - rgb.min())
+    if not np.isfinite(rgb).all() or dynamic_range < 1e-4:
+        raise RuntimeError(
+            f"Texture write verification failed for {path}: dynamic_range={dynamic_range:.8f}"
+        )
 
 
 def _load_image(path: Path, colorspace: str) -> bpy.types.Image:
