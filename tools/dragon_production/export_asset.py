@@ -35,8 +35,10 @@ def export_gltf_assets(output_dir: Path, export_separate: bool = True, export_gl
             bpy.ops.export_scene.gltf(**kwargs)
             result["glb"] = str(glb_path)
     finally:
-        for obj, hidden in hidden_states.items():
+        for obj, (hidden, hidden_viewport, hidden_render) in hidden_states.items():
             obj.hide_set(hidden)
+            obj.hide_viewport = hidden_viewport
+            obj.hide_render = hidden_render
         bpy.ops.object.select_all(action="DESELECT")
     return result
 
@@ -77,19 +79,19 @@ def write_manifest(
     return path
 
 
-def _select_asset_objects() -> tuple[list[bpy.types.Object], dict[bpy.types.Object, bool]]:
+def _select_asset_objects() -> tuple[list[bpy.types.Object], dict[bpy.types.Object, tuple[bool, bool, bool]]]:
     bpy.ops.object.select_all(action="DESELECT")
     selected: list[bpy.types.Object] = []
-    hidden_states: dict[bpy.types.Object, bool] = {}
+    hidden_states: dict[bpy.types.Object, tuple[bool, bool, bool]] = {}
     for obj in bpy.data.objects:
         is_named_asset = obj.name.startswith("Dragon_")
         is_collision_proxy = obj.get("asset_role") == "collision_proxy"
         if not (is_named_asset or is_collision_proxy):
             continue
-        hidden_states[obj] = obj.hide_get()
+        hidden_states[obj] = (obj.hide_get(), obj.hide_viewport, obj.hide_render)
         obj.hide_set(False)
         obj.hide_viewport = False
-        obj.hide_render = False if obj.get("asset_role") != "collision_proxy" else True
+        obj.hide_render = False
         obj.select_set(True)
         selected.append(obj)
     if selected:
