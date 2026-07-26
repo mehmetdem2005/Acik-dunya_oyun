@@ -1,11 +1,5 @@
 #!/usr/bin/env python3
-"""Apply deterministic production QA fixes to the reconstructed Blender builder.
-
-The builder is stored as compressed text chunks because the GitHub connector only
-accepts UTF-8 files. This module performs small, asserted source upgrades before
-Blender executes it. Every replacement is exact; an unexpected source revision
-fails the build instead of silently producing a partially patched asset.
-"""
+"""Apply asserted production QA upgrades to the reconstructed Blender builder."""
 from __future__ import annotations
 
 from pathlib import Path
@@ -44,6 +38,12 @@ def main() -> None:
     hardened_duplicate_block = '''def duplicate_object(obj: bpy.types.Object, collection: bpy.types.Collection, name: str) -> bpy.types.Object:\n    clone = obj.copy()\n    if obj.data:\n        clone.data = obj.data.copy()\n    clone.name = name\n    collection.objects.link(clone)\n    return clone\n\n\ndef limit_vertex_influences(obj: bpy.types.Object, maximum: int = 4, epsilon: float = 1e-6) -> None:\n    \"\"\"Prune decimation-interpolated weights and normalize the survivors.\"\"\"\n    if obj.type != \"MESH\" or not obj.vertex_groups:\n        return\n    for vertex in obj.data.vertices:\n        active = [(ref.group, ref.weight) for ref in vertex.groups if ref.weight > epsilon]\n        if not active:\n            continue\n        active.sort(key=lambda item: item[1], reverse=True)\n        keep = active[:maximum]\n        for group_index, _weight in active[maximum:]:\n            obj.vertex_groups[group_index].remove([vertex.index])\n        total = sum(weight for _group_index, weight in keep)\n        if total <= epsilon:\n            continue\n        for group_index, weight in keep:\n            obj.vertex_groups[group_index].add([vertex.index], weight / total, \"REPLACE\")\n\n\n# -----------------------------------------------------------------------------\n# Material system\n# -----------------------------------------------------------------------------\n'''
     source = replace_once(source, duplicate_block, hardened_duplicate_block, "influence limiter")
 
+    source = replace_once(
+        source,
+        '                decimate.use_collapse_triangulate = True\n                bpy.context.view_layer.objects.active = clone',
+        '                decimate.use_collapse_triangulate = True\n                decimate_index = clone.modifiers.find(decimate.name)\n                if decimate_index > 0:\n                    clone.modifiers.move(decimate_index, 0)\n                bpy.context.view_layer.objects.active = clone',
+        "decimate modifier ordering",
+    )
     source = replace_once(
         source,
         '            clone["lod_group"] = lod_name\n            clones.append(clone)',
