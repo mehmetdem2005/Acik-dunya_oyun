@@ -123,7 +123,8 @@ jobs:
             --python tools/dragon_production/generate_dragon.py -- \
             --output "${ASSET_OUTPUT}" \
             --texture-size 1024 \
-            --preview-size 768 > dragon-generation.log 2>&1
+            --preview-size 256 \
+            --no-previews > dragon-generation.log 2>&1
           status=$?
           cat dragon-generation.log
           exit "$status"
@@ -136,6 +137,8 @@ jobs:
           path: |
             dragon-generation.log
             assets/characters/dragon/dragon_build_failure.json
+            assets/characters/dragon/dragon_qa_report.json
+            assets/characters/dragon/dragon_asset_manifest.json
           if-no-files-found: warn
           retention-days: 7
 
