@@ -46,7 +46,7 @@ jobs:
             | base64 --decode \
             | gzip --decompress \
             > tools/dragon_pipeline/build_dragon.py
-          test -s tools/dragon_pipeline/build_dragon.py
+          python3 -m py_compile tools/dragon_pipeline/build_dragon.py
 
       - name: Install texture dependencies
         run: |
@@ -78,20 +78,47 @@ jobs:
             --textures "$TEXTURE_DIR" \
             --blend "$BLEND_FILE"
 
+      - name: Inspect generated deliverables
+        if: always()
+        run: |
+          echo "Generated files:"
+          find build -maxdepth 4 -type f -printf '%p | %s bytes\n' | sort || true
+
       - name: Validate required outputs
         run: |
           set -euxo pipefail
-          test -s "$OUTPUT_DIR/dragon_master.blend"
-          test -s "$OUTPUT_DIR/dragon_master.gltf"
-          test -s "$OUTPUT_DIR/dragon_master.bin"
-          test -s "$OUTPUT_DIR/dragon_master.glb"
-          test -s "$OUTPUT_DIR/dragon_mobile.glb"
-          test -s "$OUTPUT_DIR/dragon_qa_report.json"
-          test -s "$OUTPUT_DIR/dragon_asset_manifest.json"
           python3 - <<'PY'
           import json
           from pathlib import Path
-          qa = json.loads(Path("build/dragon/dragon_qa_report.json").read_text())
+
+          out = Path("build/dragon")
+          required = [
+              "dragon_master.blend",
+              "dragon_master.gltf",
+              "dragon_master.glb",
+              "dragon_mobile.glb",
+              "dragon_qa_report.json",
+              "dragon_asset_manifest.json",
+          ]
+          missing = [name for name in required if not (out / name).is_file() or (out / name).stat().st_size == 0]
+          if missing:
+              raise SystemExit(f"Missing or empty outputs: {missing}")
+
+          gltf = json.loads((out / "dragon_master.gltf").read_text(encoding="utf-8"))
+          buffers = gltf.get("buffers", [])
+          if not buffers:
+              raise SystemExit("dragon_master.gltf has no buffers")
+          external_buffers = []
+          for buffer in buffers:
+              uri = buffer.get("uri")
+              if uri and not uri.startswith("data:"):
+                  path = out / uri
+                  external_buffers.append(path)
+                  if not path.is_file() or path.stat().st_size == 0:
+                      raise SystemExit(f"Missing glTF external buffer: {path}")
+          print("External glTF buffers:", [str(path) for path in external_buffers])
+
+          qa = json.loads((out / "dragon_qa_report.json").read_text(encoding="utf-8"))
           print(json.dumps(qa["summary"], indent=2))
           if qa["summary"]["errors"]:
               raise SystemExit("Dragon QA contains blocking errors")
@@ -100,6 +127,7 @@ jobs:
           PY
 
       - name: Package outputs
+        if: success()
         run: |
           cp -r "$TEXTURE_DIR" "$OUTPUT_DIR/source_textures"
           cp tools/dragon_pipeline/build_dragon.py "$OUTPUT_DIR/build_dragon.py"
@@ -107,9 +135,21 @@ jobs:
           zip -r dragon_aaa_asset.zip dragon
 
       - name: Upload production artifact
+        if: success()
         uses: actions/upload-artifact@v4
         with:
           name: dragon-aaa-production-asset
           path: build/dragon_aaa_asset.zip
           if-no-files-found: error
           retention-days: 30
+
+      - name: Upload diagnostics on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: dragon-build-diagnostics
+          path: |
+            build/dragon
+            build/dragon_textures
+          if-no-files-found: warn
+          retention-days: 7
