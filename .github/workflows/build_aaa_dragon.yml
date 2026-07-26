@@ -39,14 +39,15 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Restore Blender builder source
+      - name: Restore and harden Blender builder source
         run: |
           set -euxo pipefail
           cat tools/dragon_pipeline/build_dragon.py.gz.b64.part* \
             | base64 --decode \
             | gzip --decompress \
             > tools/dragon_pipeline/build_dragon.py
-          python3 -m py_compile tools/dragon_pipeline/build_dragon.py
+          python3 tools/dragon_pipeline/harden_builder.py \
+            tools/dragon_pipeline/build_dragon.py
 
       - name: Install texture dependencies
         run: |
@@ -72,7 +73,7 @@ jobs:
         run: |
           set -euxo pipefail
           mkdir -p "$OUTPUT_DIR"
-          blender --background --factory-startup \
+          blender --background --factory-startup --python-exit-code 1 \
             --python tools/dragon_pipeline/build_dragon.py -- \
             --output "$OUTPUT_DIR" \
             --textures "$TEXTURE_DIR" \
@@ -108,18 +109,41 @@ jobs:
           buffers = gltf.get("buffers", [])
           if not buffers:
               raise SystemExit("dragon_master.gltf has no buffers")
-          external_buffers = []
           for buffer in buffers:
               uri = buffer.get("uri")
               if uri and not uri.startswith("data:"):
                   path = out / uri
-                  external_buffers.append(path)
                   if not path.is_file() or path.stat().st_size == 0:
                       raise SystemExit(f"Missing glTF external buffer: {path}")
-          print("External glTF buffers:", [str(path) for path in external_buffers])
+
+          for image in gltf.get("images", []):
+              uri = image.get("uri")
+              if uri and not uri.startswith("data:"):
+                  path = out / uri
+                  if not path.is_file() or path.stat().st_size == 0:
+                      raise SystemExit(f"Missing glTF image: {path}")
+
+          animations = gltf.get("animations", [])
+          if len(animations) != 20:
+              raise SystemExit(f"glTF contains {len(animations)} animations; expected 20")
+          names = [animation.get("name", "") for animation in animations]
+          if len(set(names)) != 20 or any(not name for name in names):
+              raise SystemExit(f"Animation names are empty or duplicated: {names}")
+
+          accessors = gltf.get("accessors", [])
+          for animation in animations:
+              durations = []
+              for sampler in animation.get("samplers", []):
+                  accessor = accessors[sampler["input"]]
+                  minimum = accessor.get("min", [0.0])[0]
+                  maximum = accessor.get("max", [0.0])[0]
+                  durations.append(maximum - minimum)
+              if not durations or max(durations) <= 0.0:
+                  raise SystemExit(f"Animation has zero duration: {animation.get('name')}")
 
           qa = json.loads((out / "dragon_qa_report.json").read_text(encoding="utf-8"))
           print(json.dumps(qa["summary"], indent=2))
+          print(json.dumps(qa["triangle_counts"], indent=2))
           if qa["summary"]["errors"]:
               raise SystemExit("Dragon QA contains blocking errors")
           if qa["summary"]["animations"] != 20:
