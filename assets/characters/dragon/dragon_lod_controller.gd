@@ -17,6 +17,7 @@ const DETAIL_NODES: Array[StringName] = [
 var _asset_root: Node3D
 var _lod_nodes: Dictionary[StringName, Node3D] = {}
 var _detail_nodes: Array[Node3D] = []
+var _shadow_proxy: Node3D
 var _current_lod: StringName = &""
 var _elapsed := 0.0
 
@@ -28,7 +29,9 @@ func _ready() -> void:
         set_process(false)
         return
     _cache_nodes()
+    _configure_shadow_proxy()
     _apply_lod(_initial_lod())
+    _set_details_visible(true)
 
 
 func _process(delta: float) -> void:
@@ -41,7 +44,8 @@ func _process(delta: float) -> void:
         return
     var distance := camera.global_position.distance_to(_asset_root.global_position)
     _apply_lod(_resolve_lod(distance))
-    _set_details_visible(distance < 42.0 or force_mobile_profile)
+    var detail_limit := 28.0 if _is_mobile_profile() else 42.0
+    _set_details_visible(distance < detail_limit)
 
 
 func _cache_nodes() -> void:
@@ -49,18 +53,31 @@ func _cache_nodes() -> void:
         var node := _asset_root.find_child(String(lod_name), true, false) as Node3D
         if node != null:
             _lod_nodes[lod_name] = node
+            _set_shadow_casting(node, GeometryInstance3D.SHADOW_CASTING_SETTING_OFF)
     var mobile := _asset_root.find_child("Dragon_Mobile", true, false) as Node3D
     if mobile != null:
         _lod_nodes[&"Dragon_Mobile"] = mobile
+        _set_shadow_casting(mobile, GeometryInstance3D.SHADOW_CASTING_SETTING_OFF)
+    _shadow_proxy = _asset_root.find_child("Dragon_ShadowProxy", true, false) as Node3D
     for detail_name in DETAIL_NODES:
         var detail := _asset_root.find_child(String(detail_name), true, false) as Node3D
         if detail != null:
             _detail_nodes.append(detail)
+            _set_shadow_casting(detail, GeometryInstance3D.SHADOW_CASTING_SETTING_OFF)
+
+
+func _configure_shadow_proxy() -> void:
+    if _shadow_proxy == null:
+        push_warning("Dragon shadow proxy is missing; active LODs will cast regular shadows.")
+        for lod in _lod_nodes.values():
+            _set_shadow_casting(lod, GeometryInstance3D.SHADOW_CASTING_SETTING_ON)
+        return
+    _shadow_proxy.visible = true
+    _set_shadow_casting(_shadow_proxy, GeometryInstance3D.SHADOW_CASTING_SETTING_SHADOWS_ONLY)
 
 
 func _resolve_lod(distance: float) -> StringName:
-    var mobile_profile := force_mobile_profile or OS.has_feature("mobile")
-    if mobile_profile:
+    if _is_mobile_profile():
         if distance < 58.0 + _hysteresis_for(&"Dragon_Mobile"):
             return &"Dragon_Mobile"
         if distance < 115.0 + _hysteresis_for(&"Dragon_LOD3"):
@@ -79,7 +96,11 @@ func _hysteresis_for(candidate: StringName) -> float:
 
 
 func _initial_lod() -> StringName:
-    return &"Dragon_Mobile" if (force_mobile_profile or OS.has_feature("mobile")) else &"Dragon_LOD1"
+    return &"Dragon_Mobile" if _is_mobile_profile() else &"Dragon_LOD1"
+
+
+func _is_mobile_profile() -> bool:
+    return force_mobile_profile or OS.has_feature("mobile")
 
 
 func _apply_lod(lod_name: StringName) -> void:
@@ -96,3 +117,10 @@ func _apply_lod(lod_name: StringName) -> void:
 func _set_details_visible(value: bool) -> void:
     for detail in _detail_nodes:
         detail.visible = value
+
+
+func _set_shadow_casting(root: Node, mode: int) -> void:
+    if root is GeometryInstance3D:
+        (root as GeometryInstance3D).cast_shadow = mode
+    for child in root.get_children():
+        _set_shadow_casting(child, mode)
