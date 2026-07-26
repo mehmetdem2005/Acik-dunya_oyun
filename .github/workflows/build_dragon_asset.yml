@@ -51,8 +51,26 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          cat tools/bootstrap/dragon_production_sources.tar.gz.b64.part* | base64 --decode > /tmp/dragon_production_sources.tar.gz
-          echo "8eb9c8615e691635d6e378ce25693da19014dd736a0e2efafb6698eb5398be1d  /tmp/dragon_production_sources.tar.gz" | sha256sum --check --strict
+          python - <<'PY'
+          from __future__ import annotations
+
+          import base64
+          import hashlib
+          from pathlib import Path
+
+          expected = "8eb9c8615e691635d6e378ce25693da19014dd736a0e2efafb6698eb5398be1d"
+          parts = sorted(Path("tools/bootstrap").glob("dragon_production_sources.tar.gz.b64.part*"))
+          if len(parts) != 6:
+              raise SystemExit(f"Expected 6 bootstrap parts, found {len(parts)}: {parts}")
+          encoded = b"".join(part.read_bytes().strip() for part in parts)
+          archive = base64.b64decode(encoded, validate=True)
+          actual = hashlib.sha256(archive).hexdigest()
+          print(f"Bootstrap parts={len(parts)} encoded_bytes={len(encoded)} archive_bytes={len(archive)} sha256={actual}")
+          if actual != expected:
+              raise SystemExit(f"Bootstrap checksum mismatch: expected {expected}, got {actual}")
+          Path("/tmp/dragon_production_sources.tar.gz").write_bytes(archive)
+          PY
+          gzip --test /tmp/dragon_production_sources.tar.gz
           tar -xzf /tmp/dragon_production_sources.tar.gz
 
       - name: Cache Blender LTS archive
