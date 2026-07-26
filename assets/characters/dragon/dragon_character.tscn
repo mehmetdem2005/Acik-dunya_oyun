@@ -1,0 +1,19 @@
+[gd_scene load_steps=5 format=3]
+
+[ext_resource type="PackedScene" path="res://assets/characters/dragon/dragon_master.glb" id="1_dragon"]
+[ext_resource type="Script" path="res://assets/characters/dragon/dragon_character.gd" id="2_character"]
+[ext_resource type="Script" path="res://assets/characters/dragon/dragon_animation_controller.gd" id="3_animation"]
+[ext_resource type="Script" path="res://assets/characters/dragon/dragon_lod_controller.gd" id="4_lod"]
+
+[node name="DragonCharacter" type="CharacterBody3D"]
+script = ExtResource("2_character")
+
+[node name="VisualRoot" type="Node3D" parent="."]
+
+[node name="DragonAsset" parent="VisualRoot" instance=ExtResource("1_dragon")]
+
+[node name="AnimationController" type="Node" parent="."]
+script = ExtResource("3_animation")
+
+[node name="LODController" type="Node" parent="."]
+script = ExtResource("4_lod")
