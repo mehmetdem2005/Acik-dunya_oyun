@@ -56,6 +56,8 @@ jobs:
             python tools/bootstrap/unpack_dragon_sources.py
             gzip --test /tmp/dragon_production_sources.tar.gz
             tar -xzf /tmp/dragon_production_sources.tar.gz
+            python tools/bootstrap/patch_dragon_sources.py
+            python -m py_compile tools/dragon_production/*.py
           } > dragon-bootstrap.log 2>&1
           status=$?
           cat dragon-bootstrap.log
