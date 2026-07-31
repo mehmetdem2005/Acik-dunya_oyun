@@ -1,0 +1,85 @@
+EJDERHA - URETIM KALITE RAPORU
+==============================================================
+olusturma: 2026-07-31 13:27
+seed: 20260726
+
+GEOMETRI
+  ucgen           : 180634
+  quad / ngon     : 87529 / 0
+  vertex          : 90927
+  non-manifold edge: 0
+  acik (boundary) edge: 0
+  wire edge / loose vertex: 0 / 0
+  sifir alanli yuz: 0
+  asiri ince ucgen (oran>22): 269
+  imzali hacim (>0 = normaller disa): 33.174 m3
+
+OLCU
+  bbox min: (-9.631, -0.000, -6.755)
+  bbox max: (9.631, 8.779, 8.352)
+  genislik X (kanat aciklik, bind poz): 19.26 m
+  yukseklik Y: 8.78 m
+  uzunluk Z  : 15.11 m
+  zemin (min Y): -0.0002 m
+
+RIG
+  kemik sayisi    : 98
+  agirliksiz vertex: 0
+  vertex basina max kemik: 4
+  agirlik toplami min/max: 1.0000 / 1.0000
+
+UV
+  UV kanali sayisi: 2
+  kanallar        : UVMap, UV1_Lightmap
+  materyal slotu  : 8 (M_Dragon_Body, M_Dragon_Head, M_Dragon_Wings, M_Dragon_Horns_Claws, M_Dragon_Eyes, M_Dragon_Mouth, M_Dragon_Teeth, M_Dragon_Scars)
+
+LOD
+  LOD0     180634 ucgen
+  LOD1     109998 ucgen
+  LOD2      52000 ucgen
+  LOD3      20000 ucgen
+  LOD4       7468 ucgen
+  Mobile    65000 ucgen
+  Shadow     2848 ucgen
+
+ANIMASYON (25 klip)
+  Idle_Ground            4.00s loop
+  Idle_Alert             3.00s loop
+  Walk                   1.60s loop
+  Walk_RM                1.60s loop
+  Run                    1.00s loop
+  Run_RM                 1.00s loop
+  Turn_Left_90           1.40s one-shot
+  Turn_Right_90          1.40s one-shot
+  Takeoff                1.80s one-shot
+  Takeoff_RM             1.80s one-shot
+  Flight_Forward         1.30s loop
+  Flight_Forward_RM      1.30s loop
+  Flight_Glide           4.00s loop
+  Flight_Hover           1.10s loop
+  Landing                1.60s one-shot
+  Landing_RM             1.60s one-shot
+  Wing_Fold              1.00s one-shot
+  Wing_Unfold            1.00s one-shot
+  Roar                   2.60s one-shot
+  Bite_Attack            1.20s one-shot
+  Claw_Attack_Left       1.10s one-shot
+  Claw_Attack_Right      1.10s one-shot
+  Tail_Attack            1.30s one-shot
+  Hit_Reaction           0.70s one-shot
+  Death                  3.20s one-shot
+
+CARPISMA PROXY (13 parca)
+  Head_Collision
+  Neck_Collision
+  Chest_Collision
+  Pelvis_Collision
+  Tail_Collision_01
+  Tail_Collision_02
+  Tail_Collision_03
+  FrontLeg_Collision_L
+  FrontLeg_Collision_R
+  RearLeg_Collision_L
+  RearLeg_Collision_R
+  Wing_Collision_L
+  Wing_Collision_R

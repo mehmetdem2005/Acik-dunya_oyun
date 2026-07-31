@@ -1,0 +1,5 @@
+# Blender calisma dosyasi 92 MB ve tamamen yeniden uretilebilir:
+#   blender --background --python build_dragon.py
+dragon.blend
+dragon.blend1
+__pycache__/
