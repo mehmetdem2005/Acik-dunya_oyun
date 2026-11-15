@@ -1,0 +1,7 @@
+Godot 4.x import notes
+Place generated Tree_LowPoly_LOD0.glb into FileSystem and drag into a scene.
+Approximately 6.7 metres tall. Select the lower LOD for distant forest instances.
+Collision: trunk only (StaticBody3D/CollisionShape3D); no per-leaf collision.
+Leaf alpha uses texture alpha, with two-sided cards. Check mobile import's transparency cutoff.
+To replace leaf texture: put your transparent PNG at assets/leaf_texture.png and rerun the Blender build.
+No existing Godot scenes or scripts were modified by this tree asset branch.

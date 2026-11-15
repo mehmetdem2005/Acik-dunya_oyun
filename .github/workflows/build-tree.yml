@@ -1,0 +1,36 @@
+name: Build editable Blender tree
+on:
+  workflow_dispatch:
+  push:
+    branches: [feature/cg-geek-tree]
+    paths:
+      - 'mouse_open_world_clean_project/assets/trees/cg_geek_tree/scripts/**'
+      - '.github/workflows/build-tree.yml'
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Blender and Pillow
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y blender python3-pil
+          blender --version
+      - name: Generate original temporary textures
+        working-directory: mouse_open_world_clean_project/assets/trees/cg_geek_tree
+        run: python3 scripts/generate_textures.py
+      - name: Create editable Blender and GLB exports
+        working-directory: mouse_open_world_clean_project/assets/trees/cg_geek_tree
+        run: |
+          mkdir -p output
+          blender -b --python scripts/build_blend.py -- --lod=0
+          blender -b --python scripts/build_blend.py -- --lod=1
+          ls -lh output
+      - uses: actions/upload-artifact@v4
+        with:
+          name: cg-geek-tree-blend-and-glb
+          path: mouse_open_world_clean_project/assets/trees/cg_geek_tree/output/*
+          retention-days: 90
