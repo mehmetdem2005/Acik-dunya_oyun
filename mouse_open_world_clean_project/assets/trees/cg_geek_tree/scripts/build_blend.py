@@ -5,6 +5,7 @@ import bpy
 from pathlib import Path
 import sys
 from mathutils import Quaternion
+sys.path.insert(0, str(Path(__file__).resolve().parent))
 from tree_geometry import generate
 
 ROOT=Path(__file__).resolve().parent.parent
