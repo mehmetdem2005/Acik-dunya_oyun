@@ -14,6 +14,11 @@ jobs:
     timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install independent GLB exporter
+        run: python -m pip install --disable-pip-version-check numpy trimesh Pillow
       - name: Install Blender and Pillow
         run: |
           sudo apt-get update -qq
@@ -21,7 +26,10 @@ jobs:
           blender --version
       - name: Generate original temporary textures
         working-directory: mouse_open_world_clean_project/assets/trees/cg_geek_tree
-        run: python3 scripts/generate_textures.py
+        run: python scripts/generate_textures.py
+      - name: Generate portable GLBs
+        working-directory: mouse_open_world_clean_project/assets/trees/cg_geek_tree
+        run: python scripts/export_glb.py
       - name: Create editable Blender and GLB exports
         working-directory: mouse_open_world_clean_project/assets/trees/cg_geek_tree
         run: |
@@ -30,6 +38,8 @@ jobs:
           test -s output/Tree_LowPoly_LOD0.blend
           blender -b --python scripts/build_blend.py -- --lod=1
           test -s output/Tree_LowPoly_LOD1.blend
+          test -s output/Tree_LowPoly_LOD0.glb
+          test -s output/Tree_LowPoly_LOD1.glb
           ls -lh output
       - uses: actions/upload-artifact@v4
         with:
