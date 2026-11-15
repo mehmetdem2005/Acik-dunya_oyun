@@ -27,10 +27,13 @@ jobs:
         run: |
           mkdir -p output
           blender -b --python scripts/build_blend.py -- --lod=0
+          test -s output/Tree_LowPoly_LOD0.blend
           blender -b --python scripts/build_blend.py -- --lod=1
+          test -s output/Tree_LowPoly_LOD1.blend
           ls -lh output
       - uses: actions/upload-artifact@v4
         with:
           name: cg-geek-tree-blend-and-glb
           path: mouse_open_world_clean_project/assets/trees/cg_geek_tree/output/*
           retention-days: 90
+          if-no-files-found: error
