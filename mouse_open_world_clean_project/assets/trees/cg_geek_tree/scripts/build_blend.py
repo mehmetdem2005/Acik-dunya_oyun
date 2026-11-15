@@ -81,9 +81,5 @@ for screen in bpy.data.screens:
 
 path=OUT/f'Tree_LowPoly_LOD{LOD}.blend'
 bpy.ops.wm.save_as_mainfile(filepath=str(path),check_existing=False)
-# Blender exporter creates GLB with packed temporary images. On newer versions the
-# leaf alpha is wired to the Principled material and uses glTF alpha mode when supported.
-bpy.ops.export_scene.gltf(filepath=str(OUT/f'Tree_LowPoly_Blender_LOD{LOD}.glb'),
-                          export_format='GLB',use_selection=False,
-                          export_yup=True,export_apply=True)
-print('Created',path)
+# The independent Python GLB exporter avoids system Blender glTF plug-in dependencies.
+print('Created editable Blender scene:', path)
